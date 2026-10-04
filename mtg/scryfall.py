@@ -1,0 +1,50 @@
+"""Scryfall: card data and prices. https://scryfall.com/docs/api"""
+import time
+import urllib.parse
+
+from . import http
+
+BASE = 'https://api.scryfall.com'
+HEADERS = {'User-Agent': 'brian-mtg-tools/1.0'}
+
+
+def search(query, unique='cards', **params):
+    """Yield every card matching a Scryfall search query (follows pagination)."""
+    url = f'{BASE}/cards/search?' + urllib.parse.urlencode({'q': query, 'unique': unique, **params})
+    while url:
+        page = http.get(url, headers=HEADERS, backoff=2)
+        yield from page['data']
+        url = page.get('next_page')
+        time.sleep(0.1)
+
+
+def named(name):
+    return http.get(f'{BASE}/cards/named?' + urllib.parse.urlencode({'exact': name}), headers=HEADERS)
+
+
+def cheapest_usd(name):
+    """Lowest paper USD price across all printings (nonfoil, else foil), or None."""
+    best = None
+    try:
+        for p in search(f'!"{name}" game:paper', unique='prints', order='usd', dir='asc'):
+            v = p['prices'].get('usd') or p['prices'].get('usd_foil')
+            if v and (best is None or float(v) < best):
+                best = float(v)
+    except http.urllib.error.HTTPError:
+        return None
+    return best
+
+
+def oracle_text(card):
+    """Oracle text, joining faces for split/double-faced cards."""
+    return card.get('oracle_text') or ' // '.join(f.get('oracle_text', '') for f in card.get('card_faces', []))
+
+
+def set_pool(set_codes):
+    """Every distinct non-token card printed in any of the given sets."""
+    query = '(' + ' or '.join(f'e:{s}' for s in set_codes) + ') -t:token'
+    return list(search(query, order='name'))
+
+
+# Every Ravnica set and Ravnica-only product, as used for the guild decks.
+RAVNICA_SETS = ['rav', 'gpt', 'dis', 'rtr', 'gtc', 'dgm', 'grn', 'rna', 'war', 'mkm', 'rvr', 'clu', 'gk1', 'gk2']

@@ -1,0 +1,24 @@
+"""Decklist text files.
+
+Format: an optional header line '# Deck Name | COLORS' (e.g. '# Boros Legion | RW'), then
+'4 Card Name' lines. Other lines are ignored.
+"""
+import os
+from collections import Counter
+
+BASICS = {'Plains', 'Island', 'Swamp', 'Mountain', 'Forest'}
+
+
+def parse(path):
+    """Return (name, colors, Counter{card: qty})."""
+    name, colors, cards = os.path.splitext(os.path.basename(path))[0], '', Counter()
+    for line in open(path):
+        line = line.strip()
+        if line.startswith('#'):
+            head = line.lstrip('# ').split('|')
+            name = head[0].strip()
+            colors = head[1].strip() if len(head) > 1 else ''
+        elif line and line[0].isdigit():
+            qty, card = line.split(' ', 1)
+            cards[card.strip()] += int(qty)
+    return name, colors, cards
