@@ -1,11 +1,11 @@
 ---
 id: T-1
 title: Six new Commander decks (bracket ~3.75)
-status: doing
+status: done
 labels: []
 depends: []
 created: 2026-10-04T17:40:04Z
-updated: 2026-10-04T18:11:02Z
+updated: 2026-10-04T18:12:36Z
 kind: build
 risk: high
 riskReason: "diff: touches scripts/check_commander.py (scripts); touches scripts/upload_decks.py (scripts); handles secrets; 911 changed lines"
@@ -13,6 +13,8 @@ size: medium
 build:
   at: 2026-10-04T18:10:57Z
   agent: mtg-agent-1
+merged: ce34b8043d8e56dffa701c378e348577863f2f22
+mergedAt: 2026-10-04T18:12:36Z
 ---
 Build and upload to Archidekt's Commander folder (1914431), for online play:
 Karazikar, the Eye Tyrant · Jon Irenicus, Shattered One · Tivit, Seller of Secrets · Gluntch, the Bestower · Maelstrom Wanderer · The Wise Mothman.
