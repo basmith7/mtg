@@ -5,10 +5,10 @@ status: doing
 labels: []
 depends: []
 created: 2026-10-04T17:40:04Z
-updated: 2026-10-04T18:10:57Z
+updated: 2026-10-04T18:11:02Z
 kind: build
-risk: low
-riskReason: Only creates new Archidekt decks; nothing existing is changed or deleted
+risk: high
+riskReason: "diff: touches scripts/check_commander.py (scripts); touches scripts/upload_decks.py (scripts); handles secrets; 911 changed lines"
 size: medium
 build:
   at: 2026-10-04T18:10:57Z
