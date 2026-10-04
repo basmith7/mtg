@@ -5,7 +5,7 @@ status: doing
 labels: []
 depends: []
 created: 2026-10-04T17:40:04Z
-updated: 2026-10-04T18:08:18Z
+updated: 2026-10-04T18:08:19Z
 kind: build
 risk: low
 riskReason: Only creates new Archidekt decks; nothing existing is changed or deleted
@@ -19,4 +19,4 @@ Rules from Brian: fun first, winning second. Bracket "3.75" = strong 3 / light 4
 ## Done when
 - [x] Six 100-card lists in decks/commander/ pass check_commander.py (singleton, colour identity, Commander-legal, Game Changers ≤ 4, no UB outside Mothman)
 - [x] Each deck has a primer (how it plays, key cards checked against Scryfall oracle text)
-- [ ] All six are on Archidekt in the Commander folder with 100 cards, the commander in the Commander category, and the primer attached
+- [x] All six are on Archidekt in the Commander folder with 100 cards, the commander in the Commander category, and the primer attached
