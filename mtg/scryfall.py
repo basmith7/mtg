@@ -71,6 +71,7 @@ def ub_only(names):
         q = '(' + ' or '.join(f'!"{n.split(" // ")[0]}"' for n in names[i:i + 40]) + ') not:universesbeyond'
         try:
             has_normal |= {name for c in search(q) for name in (c['name'], c['name'].split(' // ')[0])}
-        except http.urllib.error.HTTPError:  # 404: none of this chunk has a normal printing
-            pass
+        except http.urllib.error.HTTPError as e:  # 404: none of this chunk has a normal printing
+            if e.code != 404:
+                raise
     return [n for n in names if n not in has_normal and n.split(' // ')[0] not in has_normal]
