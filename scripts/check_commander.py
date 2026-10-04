@@ -40,7 +40,7 @@ def check(path, max_gc, allow_ub):
         if not c:
             problems.append(f'not found on Scryfall: {card}')
             continue
-        if q > 1 and card not in decklist.BASICS and 'any number of cards named' not in scryfall.oracle_text(c):
+        if q > 1 and 'Basic' not in c['type_line'] and 'any number of cards named' not in scryfall.oracle_text(c):
             problems.append(f'{q} copies: {card}')
         if c['legalities'].get('commander') != 'legal':
             problems.append(f'not Commander-legal: {card}')

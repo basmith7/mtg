@@ -27,4 +27,4 @@ def parse(path):
 
 def commanders(path):
     """Names from the file's 'Commander: Card Name' lines."""
-    return [line.split(':', 1)[1].strip() for line in open(path) if line.lower().startswith('commander:')]
+    return [line.split(':', 1)[1].strip() for line in map(str.strip, open(path)) if line.lower().startswith('commander:')]

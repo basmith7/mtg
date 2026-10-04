@@ -5,7 +5,7 @@
 
 --primers is a Python file defining PRIMERS = {deck file name: light-markdown text}. Without it, a
 'deck.md' beside 'deck.txt' is used as that deck's primer. Commander lists ('Commander:' lines, see
-mtg/decklist.py) file their commanders under Commander; pass --format commander.
+mtg/decklist.py) file their commanders under Commander.
 Cards are filed under their card type (Creature, Instant, ...). Needs cache/pool.json for type lines
 when cards aren't looked up from Scryfall (falls back to Scryfall per card).
 """
@@ -26,7 +26,7 @@ def main():
     ap.add_argument('decks', nargs='+')
     ap.add_argument('--folder', type=int, required=True)
     ap.add_argument('--primers')
-    ap.add_argument('--format', default='custom')
+    ap.add_argument('--format', help='default: commander for lists with a Commander: line, else custom')
     a = ap.parse_args()
 
     primers = {}
@@ -45,7 +45,7 @@ def main():
     for path in a.decks:
         name, _, cards = decklist.parse(path)
         cmdrs = decklist.commanders(path)
-        did = archidekt.create_deck(name, a.format, a.folder)
+        did = archidekt.create_deck(name, a.format or ('commander' if cmdrs else 'custom'), a.folder)
         archidekt.add_cards(did, [(archidekt.card_id(c), q, 'Commander' if c in cmdrs else category(c), False)
                                   for c, q in cards.items()])
         md = os.path.splitext(path)[0] + '.md'

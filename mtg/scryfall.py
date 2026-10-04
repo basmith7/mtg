@@ -67,11 +67,18 @@ def collection(names):
 def ub_only(names):
     """The names whose every printing is Universes Beyond (e.g. Fallout cards, but not Sol Ring)."""
     names, has_normal = list(names), set()
-    for i in range(0, len(names), 40):
-        q = '(' + ' or '.join(f'!"{n.split(" // ")[0]}"' for n in names[i:i + 40]) + ') not:universesbeyond'
-        try:
-            has_normal |= {name for c in search(q) for name in (c['name'], c['name'].split(' // ')[0])}
-        except http.urllib.error.HTTPError as e:  # 404: none of this chunk has a normal printing
-            if e.code != 404:
-                raise
+    chunk, size = [], 0
+    for n in names + [None]:  # Scryfall truncates queries around 1000 characters, so chunk by length
+        term = f'!"{n.split(" // ")[0]}"' if n else ''
+        if chunk and (n is None or size + len(term) > 800):
+            q = '(' + ' or '.join(chunk) + ') not:universesbeyond'
+            try:
+                has_normal |= {name for c in search(q) for name in (c['name'], c['name'].split(' // ')[0])}
+            except http.urllib.error.HTTPError as e:  # 404: none of this chunk has a normal printing
+                if e.code != 404:
+                    raise
+            chunk, size = [], 0
+        if n:
+            chunk.append(term)
+            size += len(term) + 4
     return [n for n in names if n not in has_normal and n.split(' // ')[0] not in has_normal]
