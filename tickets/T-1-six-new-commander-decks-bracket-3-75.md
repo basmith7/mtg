@@ -5,11 +5,14 @@ status: doing
 labels: []
 depends: []
 created: 2026-10-04T17:40:04Z
-updated: 2026-10-04T18:08:19Z
+updated: 2026-10-04T18:10:57Z
 kind: build
 risk: low
 riskReason: Only creates new Archidekt decks; nothing existing is changed or deleted
 size: medium
+build:
+  at: 2026-10-04T18:10:57Z
+  agent: mtg-agent-1
 ---
 Build and upload to Archidekt's Commander folder (1914431), for online play:
 Karazikar, the Eye Tyrant · Jon Irenicus, Shattered One · Tivit, Seller of Secrets · Gluntch, the Bestower · Maelstrom Wanderer · The Wise Mothman.
