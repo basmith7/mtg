@@ -48,3 +48,29 @@ def set_pool(set_codes):
 
 # Every Ravnica set and Ravnica-only product, as used for the guild decks.
 RAVNICA_SETS = ['rav', 'gpt', 'dis', 'rtr', 'gtc', 'dgm', 'grn', 'rna', 'war', 'mkm', 'rvr', 'clu', 'gk1', 'gk2']
+
+
+def collection(names):
+    """{name: card} for many card names, 75 per request. Missing names are left out.
+    Split and double-faced cards are looked up by their front name, so 'Fire // Ice' works too."""
+    names, out = list(names), {}
+    for i in range(0, len(names), 75):
+        r = http.request('POST', f'{BASE}/cards/collection', headers=HEADERS,
+                         body={'identifiers': [{'name': n.split(' // ')[0]} for n in names[i:i + 75]]})
+        for c in r['data']:
+            out[c['name']] = c
+            out.setdefault(c['name'].split(' // ')[0], c)
+        time.sleep(0.1)
+    return out
+
+
+def ub_only(names):
+    """The names whose every printing is Universes Beyond (e.g. Fallout cards, but not Sol Ring)."""
+    names, has_normal = list(names), set()
+    for i in range(0, len(names), 40):
+        q = '(' + ' or '.join(f'!"{n.split(" // ")[0]}"' for n in names[i:i + 40]) + ') not:universesbeyond'
+        try:
+            has_normal |= {name for c in search(q) for name in (c['name'], c['name'].split(' // ')[0])}
+        except http.urllib.error.HTTPError:  # 404: none of this chunk has a normal printing
+            pass
+    return [n for n in names if n not in has_normal and n.split(' // ')[0] not in has_normal]

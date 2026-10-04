@@ -3,7 +3,9 @@
 
     scripts/upload_decks.py --folder 1914718 --primers decks/ravnica/primers_core.py decks/ravnica/power/*.txt
 
---primers is a Python file defining PRIMERS = {deck file name: light-markdown text}.
+--primers is a Python file defining PRIMERS = {deck file name: light-markdown text}. Without it, a
+'deck.md' beside 'deck.txt' is used as that deck's primer. Commander lists ('Commander:' lines, see
+mtg/decklist.py) file their commanders under Commander; pass --format commander.
 Cards are filed under their card type (Creature, Instant, ...). Needs cache/pool.json for type lines
 when cards aren't looked up from Scryfall (falls back to Scryfall per card).
 """
@@ -42,9 +44,12 @@ def main():
 
     for path in a.decks:
         name, _, cards = decklist.parse(path)
+        cmdrs = decklist.commanders(path)
         did = archidekt.create_deck(name, a.format, a.folder)
-        archidekt.add_cards(did, [(archidekt.card_id(c), q, category(c), False) for c, q in cards.items()])
-        primer = primers.get(os.path.basename(path))
+        archidekt.add_cards(did, [(archidekt.card_id(c), q, 'Commander' if c in cmdrs else category(c), False)
+                                  for c, q in cards.items()])
+        md = os.path.splitext(path)[0] + '.md'
+        primer = primers.get(os.path.basename(path)) or (open(md).read() if os.path.exists(md) else None)
         if primer:
             archidekt.update(did, description=quill.to_delta(primer), hasPrimer=True)
         got = archidekt.deck(did)

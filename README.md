@@ -13,7 +13,10 @@ Scryfall card data and pricing, and deck projects.
   - `build_pool.py [sets...]` — every card from some sets into `cache/pool.json` (default: Ravnica).
   - `check_decks.py` — validate decklists (60 cards, 4-of, colors, in pool) and price them, with an
     optional buy/proxy split and owned-card allocation.
-  - `upload_decks.py` — create decks on Archidekt in a folder, file cards by type, attach primers.
+  - `check_commander.py` — validate Commander lists: 100 singleton cards, colour identity, legality,
+    Game Changer count (`--max-gc`, default 4) and no Universes Beyond (`--allow-ub` to permit).
+  - `upload_decks.py` — create decks on Archidekt in a folder, file cards by type (commanders under
+    Commander), attach primers (`--primers` file, or a `deck.md` beside `deck.txt`).
 - **`decks/`** — deck projects. `decks/ravnica/`: the 22 Ravnica-sets-only decks from 2026-10-03
   (`power/` = the 10 guild decks, `extra/` = 12 themed decks, `core/` = cheaper beginner versions of the
   guild decks), their primers, `BUY_ALL.txt` / `PROXY_ALL.txt`, and `spare_cards.json` (owned cards not
@@ -48,4 +51,6 @@ scryfall.cheapest_usd('Lightning Helix')
 8 Mountain
 ```
 
-The header's color letters (WUBRG) drive the color check.
+The header's color letters (WUBRG) drive the color check. Commander lists add a
+`Commander: Card Name` line and list the commander as `1 Card Name` too, so they total 100;
+`decks/commander/` holds them, with `BRIEF.md` describing the power target and house rules.
