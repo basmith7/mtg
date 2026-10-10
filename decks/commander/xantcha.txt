@@ -75,11 +75,11 @@ Commander: Xantcha, Sleeper Agent
 1 Stormfist Crusader
 1 Thought Vessel
 1 Toxic Deluge
-1 Treasure Nabber
+1 Demonic Tutor
 1 Vandalblast
 1 Varchild, Betrayer of Kjeldor
 1 Vengeful Ancestor
-1 Vow of Lightning
-1 Vow of Malice
+1 Fire Covenant
+1 Repercussion
 1 Vow of Torment
 1 Xantcha, Sleeper Agent
