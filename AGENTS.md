@@ -9,8 +9,8 @@
   Scryfall wants ~10 req/s max and an `Accept` header.
 - **Before writing to Archidekt**, back up what you'll change (`archidekt.deck(id)` JSON), and confirm
   deletes with Brian. Archive rather than delete.
-- Casual decks: Brian proxies cards worth $1 or more (`check_decks.py --proxy-at 1`) and sleeves
-  everything. Most Commander decks are played online; the Paper folder holds real decks.
+- Deck-building rules live in `decks/commander/BRIEF.md`. Brian plays Commander online; paper decks
+  are rare and get their own rules when they come up.
 - Card text you put in primers or recommendations: check it against Scryfall oracle text, don't
   rely on memory.
 - `decks/PLAYLOG.md` records how decks actually played. Read it before building or tuning a deck,

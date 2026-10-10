@@ -1,38 +1,42 @@
-# Brief for the 2026-10 Commander decks
+# Commander deck rules
 
-Brian is building six new Commander decks to play **online** (MTGO/Arena-style clients or SpellTable,
-so price doesn't matter and any card is available).
+How Brian wants Commander decks built. This is the default for every deck unless he says otherwise
+for one. He plays Commander **online** (MTGO/Arena-style clients or SpellTable), so price doesn't
+matter and any card is available. Paper decks are rare; agree rules for those one at a time.
 
 ## Who he is as a player
-His existing decks lean toward table politics and weird interaction: forced combat and goad
-(Kardur, Thantis), stealing (Kotis, Don Andres, Tergrid), chaos (Yusri coin flips, Obosh odd costs,
-Xantcha), meld, and spellslinging. He tags commanders "Very Silly", "Hmmmm" and "Actually Good".
-**Fun first, winning second.** A good deck here makes memorable turns and interacts with the whole
-table, and can still close a game.
+His decks lean toward table politics and weird interaction: forced combat and goad (Kardur, Thantis),
+stealing (Kotis, Don Andres, Tergrid), chaos (Yusri coin flips, Obosh odd costs, Xantcha), meld, and
+spellslinging. He tags commanders "Very Silly", "Hmmmm" and "Actually Good". **Fun first, winning
+second.** A good deck makes memorable turns, interacts with the whole table, and can still close a
+game. `decks/PLAYLOG.md` records how his decks actually play; it beats this paragraph when they differ.
 
-## Power target: "bracket 3.75"
-A strong bracket 3 or light bracket 4:
-- **At most 4 Game Changers** (Scryfall `is:gamechanger`; the checker counts them). Use them only where
-  they fit the theme. Don't add them just because they're strong.
-- Real interaction: around 8–10 pieces of removal or counters, 1–3 board wipes if they fit, and
-  efficient ramp and card draw.
-- Tutors are fine in moderation.
-- **No fast-mana package.** Sol Ring and Arcane Signet are fine. Skip Mana Vault, Chrome Mox and
-  Mox Diamond, and Mana Crypt is banned.
-- No extra-turn chains.
-- Combos are welcome if they're fun and not a turn-2 or turn-3 win: no cheap infinite combo that wins
-  out of nowhere early. Late-game finishers and synergies that happen to go infinite late are fine,
-  but say so in the primer.
-- No mass land destruction.
+## Power: "bracket 3.75", everything in moderation
+A strong bracket 3 or light bracket 4. The rule is moderation, not a checklist: the deck should feel
+strong and interactive without being oppressive or deciding the game early. The numbers below are
+guideposts, so break them when the deck's plan calls for it and say why.
+- **Game Changers:** around 4 at most, and only where they fit the theme.
+- **Interaction:** enough to answer threats, usually 8–10 removal or counters. Board wipes depend on
+  the plan: a control deck wants several, a creature deck may want none or one that spares its board.
+- **Ramp and draw:** efficient, enough to do what the deck wants on time.
+- **Tutors:** a few are fine.
+- **Fast mana:** Sol Ring and Arcane Signet are fine; skip the Mana Vault / Chrome Mox / Mox Diamond
+  package (Mana Crypt is banned anyway).
+- **Combos:** welcome if they're fun and not a turn-2 or turn-3 win. Late-game finishers and synergies
+  that happen to go infinite late are fine; say so in the primer.
+- **Avoid:** extra-turn chains and mass land destruction.
 
-## Rules
-- **No Universes Beyond cards** (Fallout, Warhammer, LotR, Doctor Who, Final Fantasy, Marvel, etc.).
-  D&D sets (AFR, CLB, AFC) count as normal Magic. **Exception:** the Wise Mothman deck may use UB
-  cards, especially Fallout rad-counter cards.
-- Verify every card exists and does what you think. The rules text in the primer must match Scryfall
-  oracle text (`from mtg import scryfall; scryfall.named(name)` or `scryfall.search(query)`, about
-  10 requests a second max). Don't rely on memory.
+## Cards
+- **Universes Beyond** (Fallout, Warhammer, LotR, Doctor Who, Final Fantasy, Marvel, etc.): avoid
+  them, and only if a deck really needs one, ask Brian first. D&D sets (AFR, CLB, AFC) count as normal
+  Magic. The Wise Mothman deck is already approved for UB cards, especially Fallout rad-counter cards.
+- Verify every card exists and does what you think. Rules text in the primer must match Scryfall
+  oracle text (`scryfall.collection(names)`, `scryfall.oracle_text(card)`). Don't rely on memory.
 - Use the exact Scryfall card names. Double-faced and split cards take the full name with ` // `.
+
+## Someone else's list
+When importing a deck (a netdeck, a video, a friend's list), ask Brian whether to keep it close to
+the original or tune it to these rules before changing cards. Credit the original author in the primer.
 
 ## Files
 Write two files in `decks/commander/`:
@@ -59,18 +63,20 @@ links. Keep it about 300–500 words, in plain, direct English. Sections:
 
 ## Check before you finish
 ```
-scripts/check_commander.py decks/commander/<slug>.txt          # add --allow-ub for the Mothman deck only
+scripts/check_commander.py decks/commander/<slug>.txt          # --allow-ub only where UB is approved
 scripts/deck_stats.py decks/commander/<slug>.txt               # role counts, mana sources, goldfish
 ```
-It must pass with no `!!` lines. It also asks Commander Spellbook which combos the deck contains: a
-combo marked `FAST` (pieces total mana value 6 or less, or Spellbook rates it Ruthless/Banned) that
-goes infinite is a `!!` problem; slower combos are fine. **The primer's "How it wins" combo claims must come from this output**:
-name every included combo that is infinite or wins the game, say what it needs and that it's a late-game
-finisher, and don't claim combos the checker didn't list. Run with `--near` to find combos one card away
-(for suggestions, or to be sure you didn't leave one half-built). Run `deck_stats.py` too and fix any
-LOW/SHORT flags or explain them in your reply. Also look at the land count (usually 35–37, fewer with heavy ramp)
-and the curve it prints. While building, only write the two deck files: uploading to Archidekt and
-committing are separate steps (see `.claude/skills/commander-deck`), done when Brian has asked for them.
+The checker's `!!` lines are flags, not verdicts: fix them or explain why the deck is still in
+moderation. It asks Commander Spellbook which combos the deck contains and marks an infinite combo
+`FAST` (pieces total mana value 6 or less, or Spellbook rates it Ruthless/Banned), the proxy for "could
+win on turn 2 or 3". **The primer's combo claims must come from this output**: name every included combo
+that is infinite or wins the game, say what it needs, and don't claim combos the checker didn't list.
+`--near` shows combos one card away (for suggestions, or to avoid leaving one half-built).
+`deck_stats.py` flags LOW/HIGH role counts against generic targets; judge them against the deck's plan.
+Also look at the land count (usually 35–37, fewer with heavy ramp) and the curve.
+
+While building, only write the two deck files: uploading to Archidekt and committing are separate
+steps (see `.claude/skills/commander-deck`), done when Brian has asked for them.
 
 End your reply with the checker's output, your Game Changers and why you chose them, and anything you
 weren't sure about.

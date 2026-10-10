@@ -75,4 +75,4 @@ scryfall.cheapest_usd('Lightning Helix')
 The header's color letters (WUBRG) drive the color check. Commander lists add a
 `Commander: Card Name` line and list the commander as `1 Card Name` too, so they total 100;
 `decks/commander/` holds them. Later `#` lines (such as `# source: <url>`, which `import_deck.py` adds) are
-comments. `decks/commander/` with `BRIEF.md` describing the power target and house rules.
+comments. `decks/commander/` with `BRIEF.md`: Brian's deck-building rules (the default for every deck).
