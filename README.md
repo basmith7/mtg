@@ -6,7 +6,7 @@ Scryfall card data and pricing, and deck projects.
 - **[docs/apis.md](docs/apis.md)** — how each site's API works (Archidekt and Moxfield are private,
   reverse-engineered APIs). Start here.
 - **`mtg/`** — small Python clients, standard library only:
-  `archidekt.py` (login/refresh, decks, folders, tags, collection, card ids, writes),
+  `archidekt.py` (login/refresh, decks, folders, tags, collection, card ids, writes, `sync`),
   `moxfield.py` (public decks, shared collection), `scryfall.py` (search, cheapest price, set pools),
   `quill.py` (markdown → Archidekt primer format), `decklist.py` (decklist files).
 - **`scripts/`**
@@ -17,6 +17,10 @@ Scryfall card data and pricing, and deck projects.
     Game Changer count (`--max-gc`, default 4) and no Universes Beyond (`--allow-ub` to permit).
   - `upload_decks.py` — create decks on Archidekt in a folder, file cards by type (commanders under
     Commander), attach primers (`--primers` file, or a `deck.md` beside `deck.txt`).
+  - `sync_deck.py <deck id or URL> deck.txt` — make an Archidekt deck match a decklist: removes, adds and
+    adjusts quantities (Maybeboard/Sideboard untouched, existing categories kept), renames the deck to the
+    file's header, updates the primer from a `deck.md` beside it (`--primer`), then re-reads and verifies.
+    `--dry-run` prints the diff only; `--no-rename` keeps the name. Backs up to `~/.cache/mtg-backups/`.
 - **`decks/`** — deck projects. `decks/ravnica/`: the 22 Ravnica-sets-only decks from 2026-10-03
   (`power/` = the 10 guild decks, `extra/` = 12 themed decks, `core/` = cheaper beginner versions of the
   guild decks), their primers, `BUY_ALL.txt` / `PROXY_ALL.txt`, and `spare_cards.json` (owned cards not

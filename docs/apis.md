@@ -74,6 +74,14 @@ Brian's account: username `basmith7`, user id `309724`. Password is in 1Password
   "customCmc": null, "companion": false, "flippedDefault": false, "label": ",#656565"}}]}`.
   One call can carry the whole deck. Categories are created on demand; "Commander", "Sideboard" and
   "Maybeboard" are special (Maybeboard is excluded from the deck count). `modifier` can be "Foil".
+- **Remove cards:** same endpoint, `"action": "remove"`, with the same fields plus `"deckRelationId": <the deck
+  card entry's top-level "id" from GET /api/decks/{id}/>` (not `card.id`, which is still sent as `cardid`).
+  The card's current `categories` and `modifications` (incl. `quantity`) go along. The response looks like
+  `{"add": [], "createdCategories": []}`.
+- **Change quantity/category in place:** `"action": "modify"` (found in the `_app` bundle's `prepareSave`:
+  the web UI sends `modify` for any existing entry and `add` for new ones) with `deckRelationId`, `cardid`, and
+  the new `categories` and `modifications.quantity`. Verified 2026-10-09; no remove + re-add needed.
+  Add, modify and remove can share a request, but the client sends them as separate calls.
 - **Rename / description / primer:** `PATCH /api/decks/{id}/update/` with `{"name"}` or
   `{"description": <Quill delta JSON string>, "hasPrimer": true}`. The update endpoint **ignores**
   `parentFolder`.
@@ -140,5 +148,6 @@ Archidekt is a Next.js app. Fetch a page (deck, folder, collection), collect its
 `/_next/static/...js` bundles, and grep for `super.get(`, `super.post(`, `super.patch(` and `"/api/`.
 Page-specific features (folders, collection import) live in bundles that only load on that page, so
 fetch the relevant page first. That's how `massUpdate`, `modifyCards/v2` and `token/refresh` were found.
+The deck-editing actions (`add`/`modify`/`remove`) are in `_app-*.js`, in `prepareSave` / `makeSaveRequest`.
 Collection CSV import (`/api/collection/upload/v2/`, form upload) and text import
 (`/api/collection/textImport/`) exist but haven't been exercised.
