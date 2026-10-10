@@ -10,9 +10,9 @@ within the commanders', at most --max-gc Game Changers, and no Universes-Beyond-
 --allow-ub. Also prints the curve and land count. Exits 1 if any deck has problems.
 
 Then asks Commander Spellbook which combos the deck contains (network; --no-combos skips it).
-Two-card infinite combos are problems (`!!`); combos of two cards or with every piece at mana
-value 3 or less are marked "early". --near also lists combos missing one card. Primers should take
-their combo claims from this output.
+Combos are fine if they're fun and late (Brian's rule). A combo is FAST when its pieces total mana
+value 6 or less, or Spellbook rates it Ruthless or Banned; a fast infinite combo is a problem (`!!`).
+--near also lists combos missing one card. Primers should take their combo claims from this output.
 """
 import argparse
 import os
@@ -22,6 +22,8 @@ from collections import Counter
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 from mtg import decklist, scryfall, spellbook
 
+FAST_MV = 6  # combo pieces totalling this much mana value or less can land by turn 3-4
+
 
 def show_combos(cmdrs, cards, data, near):
     """Print Spellbook combos; return problem strings."""
@@ -29,12 +31,17 @@ def show_combos(cmdrs, cards, data, near):
         c = data.get(n) or next((v for k, v in data.items() if k.split(' // ')[0] == n), None)
         return c.get('cmc', 0) if c else 99
 
+    def total(c):
+        return int(sum(mv(n) for n in c['cards']))
+
+    def fast(c):
+        return total(c) <= FAST_MV or c['bracket'] in ('Ruthless', 'Banned')
+
     found = spellbook.find_combos(cmdrs, list(cards))
     problems = []
 
     def line(c, tag=''):
-        early = len(c['cards']) == 2 or max(mv(n) for n in c['cards']) <= 3
-        print(f'   {tag}{" + ".join(c["cards"])} [{c["bracket"]}]{" EARLY" if early else ""}')
+        print(f'   {tag}{" + ".join(c["cards"])} [{c["bracket"]}] total MV {total(c)}{" FAST" if fast(c) else ""}')
         print(f'      -> {"; ".join(c["results"])}')
         if c['prerequisites'] and not tag:
             print(f'      needs: {c["prerequisites"].replace(chr(10), " ")}')
@@ -43,8 +50,8 @@ def show_combos(cmdrs, cards, data, near):
     print(f'   combos: {len(found["included"])} included, {len(found["almost"])} one card away')
     for c in found['included']:
         line(c)
-        if len(c['cards']) == 2 and any(r.lower().startswith('infinite') for r in c['results']):
-            problems.append(f'two-card infinite combo: {" + ".join(c["cards"])} ({c["url"]})')
+        if fast(c) and any(r.lower().startswith('infinite') for r in c['results']):
+            problems.append(f'fast infinite combo: {" + ".join(c["cards"])} ({c["url"]})')
     if near:
         print('   near (missing one card):')
         for c in found['almost']:
