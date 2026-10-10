@@ -10,6 +10,8 @@ If an endpoint stops working, re-derive it (see "Finding endpoints" at the botto
 | Scryfall | Card data, oracle text, prices, set searches | None | Public, documented |
 | Archidekt | Brian's decks, folders, tags, primers, collection | JWT (login) | Private, undocumented |
 | Moxfield | Reading Brian's public decks and shared collection | None for public data; login blocked | Private, undocumented |
+| Commander Spellbook | Combos a decklist contains or is one card from | None | Public, OpenAPI schema |
+| EDHREC | Card inclusion % and synergy per commander, themes, average decks | None | Private JSON, undocumented |
 | MTGGoldfish | Reading decklists out of articles | None | Scraping |
 
 Python clients for all of these live in `mtg/` (see the README).
@@ -74,6 +76,14 @@ Brian's account: username `basmith7`, user id `309724`. Password is in 1Password
   "customCmc": null, "companion": false, "flippedDefault": false, "label": ",#656565"}}]}`.
   One call can carry the whole deck. Categories are created on demand; "Commander", "Sideboard" and
   "Maybeboard" are special (Maybeboard is excluded from the deck count). `modifier` can be "Foil".
+- **Remove cards:** same endpoint, `"action": "remove"`, with the same fields plus `"deckRelationId": <the deck
+  card entry's top-level "id" from GET /api/decks/{id}/>` (not `card.id`, which is still sent as `cardid`).
+  The card's current `categories` and `modifications` (incl. `quantity`) go along. The response looks like
+  `{"add": [], "createdCategories": []}`.
+- **Change quantity/category in place:** `"action": "modify"` (found in the `_app` bundle's `prepareSave`:
+  the web UI sends `modify` for any existing entry and `add` for new ones) with `deckRelationId`, `cardid`, and
+  the new `categories` and `modifications.quantity`. Verified 2026-10-09; no remove + re-add needed.
+  Add, modify and remove can share a request, but the client sends them as separate calls.
 - **Rename / description / primer:** `PATCH /api/decks/{id}/update/` with `{"name"}` or
   `{"description": <Quill delta JSON string>, "hasPrimer": true}`. The update endpoint **ignores**
   `parentFolder`.
@@ -126,11 +136,80 @@ nothing over the above.
 
 ---
 
+## Commander Spellbook — `https://backend.commanderspellbook.com`
+
+Public, no auth. OpenAPI schema (Swagger) at `/schema/`; client is `mtg/spellbook.py`. Checked 2026-10-09.
+
+- `POST /find-my-combos` with `{"commanders": [{"card": "Name"}], "main": [{"card": "Name", "quantity": 1}]}`
+  (`text/plain` decklist bodies also work). Use exact card names; list the commander under `commanders` only.
+  The response is paginated, but `results` is one object holding all the lists:
+  `included` (combos fully in the deck), `almostIncluded` (missing one card, within the deck's colours),
+  plus `...ByAddingColors`, `...ByChangingCommanders` variants and `identity`.
+- Each variant (combo) has: `id` (page is `https://commanderspellbook.com/combo/<id>/`), `uses[]`
+  (`card.name`, `quantity`, `zoneLocations`, `mustBeCommander`), `requires[]` (non-card templates such as
+  "a creature"), `produces[]` (`feature.name`, `feature.status`, e.g. "Infinite damage"),
+  `bracketTag`, `easyPrerequisites`, `notablePrerequisites`, `manaNeeded`, `manaValueNeeded`,
+  `description` (steps), `popularity`, `legalities`, `prices`.
+- `produces` includes helper features (`status` `H`, e.g. "Infinite creature ETB") alongside the headline
+  ones (`S` standalone); the client shows non-helper results. Feature names beginning "Infinite" are how
+  `check_commander.py` spots infinite combos.
+- `bracketTag`: C Core, E Exhibition, O Oddball, P Powerful, S Spicy, R Ruthless, B Banned (Spellbook's
+  own tiers, not the same as Brian's "B3.75"). No mana values come back; the checker gets them from Scryfall.
+- Combo names in `uses` are sometimes a face name only; `uses` can also list a combo's commander.
+- Cheap to call (one request per deck, ~1 s); no rate limit hit so far.
+## EDHREC — `https://json.edhrec.com/pages`
+
+No auth, no documentation; these are the JSON files the edhrec.com site loads (found 2026-10-09).
+Browser `User-Agent` works; the client keeps ~1 request/sec and caches responses 7 days in `cache/edhrec/`.
+Slugs: lowercase ASCII, accents stripped, apostrophes dropped, other punctuation to `-`
+(`Ruric Thar, the Unbowed` -> `ruric-thar-the-unbowed`; `Fire // Ice` front face only for commanders).
+
+- `/commanders/{slug}.json` — the commander page.
+- `/commanders/{slug}/{theme}.json` — a theme (slugs from `tag_counts`, e.g. `burn`, `stax`, `ramp`).
+- `/commanders/{slug}/budget.json`, `/expensive.json` — budget variants. (Combined theme+budget paths were not tried.)
+- `/average-decks/{slug}.json` — average decklist: `deck.cards` = `{Type: [[name, qty], ...]}`,
+  `deck.commander_v2`. Same page-level keys as the commander page.
+- `/cards/{slug}.json` — one card: `container.json_dict.card` (`num_decks`, `potential_decks`, `salt`,
+  `prices`, `color_identity`...) plus cardlists of related cards.
+
+Commander page shape: top-level `tag_counts` (`[{slug, value, count}]` = themes), `budget_counts`,
+`bracket_counts`, `similar` (commander names), `panels` (combos, mana curve), `header`, and
+`container.json_dict.cardlists[]`: `{header, tag, cardviews[]}`. Headers: `New Cards`, `Top Cards`,
+`High Lift Cards`, then `Creatures`, `Instants`, `Sorceries`, `Utility Artifacts`, `Enchantments`,
+`Planeswalkers`, `Utility Lands`, `Mana Artifacts`, `Lands`. Each cardview: `name`, `slug`, `num_decks`,
+`potential_decks`, `synergy` (fraction, -1..1), `lift`, `trend_zscore`. There is no inclusion field:
+**inclusion = num_decks / potential_decks**.
+
+Gotchas: the highlight lists (`Top Cards` etc.) *remove* their cards from the type lists, so merge them
+(`mtg/edhrec.py` does, preferring the type list). Each list is capped (~50 creatures), so a card absent from
+the lists is not necessarily rare in the deck. Basics appear in `Lands`.
+
+---
+
 ## MTGGoldfish — `https://www.mtggoldfish.com`
 
 No API. Articles embed decks as `<ins class="widget-deck-placeholder" data-id="N">`.
 - `GET /deck/download/{id}` — plain-text decklist ("4 Card Name", blank line before sideboard).
-- `GET /deck/{id}` — the deck page (name in `<title>`).
+- `GET /deck/{id}` — the deck page (name in `<title>`). Commander downloads don't mark the commander
+  (all 100 cards are plain lines); the breadcrumb `/archetype/...` link on the page names it.
+
+---
+
+## Instagram, Linktree, yt-dlp (deck links from reels)
+
+Instagram has no usable API without login (`/api/v1/users/web_profile_info/` returns "require_login",
+and the plain profile HTML hides the bio). What works (2026-10-09, `scripts/import_deck.py`):
+- `.venv/bin/yt-dlp --write-info-json --skip-download -o 'dir/%(id)s' <reel url>` gives `description` (the
+  caption), `channel` (handle, e.g. `unmagical.mtg`) and `uploader` (display name). yt-dlp isn't installed
+  system-wide: `python3 -m venv .venv && .venv/bin/pip install yt-dlp` (`.venv/` is git-ignored).
+- The bio link isn't exposed, so we guess `linktr.ee/<handle>` (also beacons.ai, bio.site, with
+  `.mtg`/`_mtg` suffixes stripped); beacons.ai returns 403 to scripts. `--bio-link` overrides the guess.
+- A Linktree page embeds `__NEXT_DATA__`; its `"url":"..."` entries include `moxfield.com/users/<name>`.
+- `GET /v2/decks/search?authorUserNames=<name>` (Moxfield) and `/api/decks/v3/?ownerUsername=<name>`
+  (Archidekt) list that person's decks; names are matched against the caption, most recent first.
+  Example: reel `Dd67dxZkSQF` ("54 FERAL HOGS DECKLIST...") -> linktr.ee/unmagical -> Moxfield user
+  `willy` -> deck "54 Feral Hogs" (`t9G16DLc5EO0uYOuDftBIQ`).
+- Archidekt's `GET /api/decks/{id}/` needs no auth for public decks (`auth=False` in the client).
 
 ---
 
@@ -140,5 +219,6 @@ Archidekt is a Next.js app. Fetch a page (deck, folder, collection), collect its
 `/_next/static/...js` bundles, and grep for `super.get(`, `super.post(`, `super.patch(` and `"/api/`.
 Page-specific features (folders, collection import) live in bundles that only load on that page, so
 fetch the relevant page first. That's how `massUpdate`, `modifyCards/v2` and `token/refresh` were found.
+The deck-editing actions (`add`/`modify`/`remove`) are in `_app-*.js`, in `prepareSave` / `makeSaveRequest`.
 Collection CSV import (`/api/collection/upload/v2/`, form upload) and text import
 (`/api/collection/textImport/`) exist but haven't been exercised.
