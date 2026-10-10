@@ -27,15 +27,16 @@ FAST_MV = 6  # combo pieces totalling this much mana value or less can land by t
 
 def show_combos(cmdrs, cards, data, near):
     """Print Spellbook combos; return problem strings."""
-    def mv(n):
-        c = data.get(n) or next((v for k, v in data.items() if k.split(' // ')[0] == n), None)
-        return c.get('cmc', 0) if c else 99
+    def mv(n):  # Spellbook sometimes names one face of a double-faced card
+        c = data.get(n) or next((v for k, v in data.items() if n in k.split(' // ')), None)
+        return c.get('cmc', 0) if c else None
 
     def total(c):
-        return int(sum(mv(n) for n in c['cards']))
+        mvs = [mv(n) for n in c['cards']]
+        return '?' if None in mvs else int(sum(mvs))
 
-    def fast(c):
-        return total(c) <= FAST_MV or c['bracket'] in ('Ruthless', 'Banned')
+    def fast(c):  # an unknown mana value counts as fast, so it gets looked at
+        return total(c) == '?' or total(c) <= FAST_MV or c['bracket'] in ('Ruthless', 'Banned')
 
     found = spellbook.find_combos(cmdrs, list(cards))
     problems = []
@@ -102,7 +103,7 @@ def check(path, max_gc, allow_ub, combos=True, near=False):
     if combos:
         try:
             problems += show_combos(cmdrs, cards, data, near)
-        except OSError as e:
+        except (OSError, KeyError, TypeError) as e:  # network down or an unexpected response
             print(f'   combos: Spellbook unavailable ({e})')
     for p in problems:
         print(f'   !! {p}')

@@ -41,6 +41,8 @@ class Unsure(Exception):
 
 
 def fetch(url):
+    if not url.startswith(('http://', 'https://')):
+        raise ValueError(f'not a web URL: {url}')
     req = urllib.request.Request(url, headers={'User-Agent': http.BROWSER_UA})
     with urllib.request.urlopen(req, timeout=30) as r:
         return r.read().decode('utf-8', 'replace')

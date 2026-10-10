@@ -3,6 +3,7 @@ Commander: Ruric Thar, the Unbowed
 1 Acidic Slime
 1 Anzrag, the Quake-Mole
 1 Apocalypse Hydra
+1 Bane of Progress
 1 Beast Whisperer
 1 Beast Within
 1 Birds of Paradise
@@ -31,7 +32,6 @@ Commander: Ruric Thar, the Unbowed
 1 Grumgully, the Generous
 1 Gruul Ragebeast
 1 Gruul Turf
-1 Harsh Mentor
 1 Heroic Intervention
 1 Ilharg, the Raze-Boar
 1 Ilysian Caryatid
@@ -47,28 +47,28 @@ Commander: Ruric Thar, the Unbowed
 1 Mosswort Bridge
 8 Mountain
 1 Natural Order
-1 Ogre Battledriver
 1 Ohran Frostfang
 1 Paradise Druid
-1 Path of Ancestry
 1 Pathbreaker Ibex
+1 Path of Ancestry
 1 Priest of Titania
 1 Primal Surge
 1 Raggadragga, Goreguts Boss
 1 Rampaging Baloths
 1 Reclamation Sage
+1 Rhythm of the Wild
 1 Rockfall Vale
 1 Rogue's Passage
 1 Rootbound Crag
 1 Ruric Thar, the Unbowed
 1 Sakura-Tribe Elder
 1 Savage Ventmaw
-1 Savageborn Hydra
 1 Scytheclaw Raptor
 1 Shamanic Revelation
 1 Silverback Elder
 1 Skarrg, the Rage Pits
 1 Solemn Simulacrum
+1 Sol Ring
 1 Somberwald Sage
 1 Soul of the Harvest
 1 Spinerock Knoll
