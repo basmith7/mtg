@@ -17,6 +17,7 @@ Scryfall card data and pricing, and deck projects.
     Game Changer count (`--max-gc`, default 4) and no Universes Beyond (`--allow-ub` to permit).
   - `upload_decks.py` — create decks on Archidekt in a folder, file cards by type (commanders under
     Commander), attach primers (`--primers` file, or a `deck.md` beside `deck.txt`).
+- **`decks/PLAYLOG.md`** — how decks actually played and what Brian enjoys; read before tuning a deck.
 - **`decks/`** — deck projects. `decks/ravnica/`: the 22 Ravnica-sets-only decks from 2026-10-03
   (`power/` = the 10 guild decks, `extra/` = 12 themed decks, `core/` = cheaper beginner versions of the
   guild decks), their primers, `BUY_ALL.txt` / `PROXY_ALL.txt`, and `spare_cards.json` (owned cards not
