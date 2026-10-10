@@ -25,6 +25,11 @@ Scryfall card data and pricing, and deck projects.
   - `import_deck.py <url|file>` — turn a Moxfield / Archidekt / MTGGoldfish / plain-text / Instagram link into
     a deck.txt (`-o` to write, `--name` to rename). Instagram needs yt-dlp in a repo-local venv:
     `python3 -m venv .venv && .venv/bin/pip install yt-dlp`.
+  - `deck_stats.py` — numbers for a decklist: role counts from Scryfall oracle tags (ramp, draw, removal,
+    counters, wipes, tutors, protection, recursion) against targets, coloured sources vs pip demand,
+    land count, curve and types, and a 10k-game goldfish (odds of casting the commander on curve, ramp
+    by turn 2). Targets live in dicts at the top of the script; role tags are noisy, so read the lists.
+    `scripts/deck_stats.py decks/commander/<slug>.txt [--games N] [--seed N]`
   - `upload_decks.py` — create decks on Archidekt in a folder, file cards by type (commanders under
     Commander), attach primers (`--primers` file, or a `deck.md` beside `deck.txt`).
   - `sync_deck.py <deck id or URL> deck.txt` — make an Archidekt deck match a decklist: removes, adds and
