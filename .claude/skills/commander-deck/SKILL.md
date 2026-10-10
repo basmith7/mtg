@@ -5,7 +5,7 @@ description: Use when Brian wants a Magic deck built, tuned, imported or put on 
 
 # Commander deck workflow
 
-Read `AGENTS.md`, `decks/commander/BRIEF.md` (power target, card rules, primer format) and `decks/PLAYLOG.md`
+Read `AGENTS.md`, `decks/commander/RULES.md` (power target, card rules, primer format) and `decks/PLAYLOG.md`
 (what he actually enjoys) first. Run everything from the repo root. Brian plays Commander online,
 so price doesn't matter; paper decks are rare and get their own rules. Universes Beyond cards: ask first.
 
@@ -14,7 +14,7 @@ so price doesn't matter; paper decks are rare and get their own rules. Universes
 plain-text lists and Instagram reels (caption → link-in-bio → Moxfield/Archidekt profile). Instagram
 needs the repo `.venv` with yt-dlp; the script prints the one-line setup if it's missing. If it lists
 candidates instead of picking one, show Brian the candidates rather than guessing.
-Then ask Brian whether to keep the list close to the original or tune it to BRIEF.md before changing
+Then ask Brian whether to keep the list close to the original or tune it to RULES.md before changing
 cards. Rename the header to "Commander – Nickname (B#)" and credit the original author in the primer.
 
 ## Building or tuning
@@ -34,7 +34,7 @@ cards. Rename the header to "Commander – Nickname (B#)" and credit the origina
    building the full list. Tuning an existing deck: just do it and report the swaps.
 
 ## Primer
-`<slug>.md` beside the list, in the format BRIEF.md describes (what/why fun, How it plays, How it wins,
+`<slug>.md` beside the list, in the format RULES.md describes (what/why fun, How it plays, How it wins,
 Key cards, Tips; ~300–500 words; `[[Card Name]]` links). Combo claims come from the checker's output
 only. Card counts you state (e.g. "94 permanents") must be computed, not estimated.
 

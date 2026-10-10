@@ -35,7 +35,7 @@ ROLES = {
     'land-ramp': ('otag:land-ramp -t:land', None),  # only feeds the simulation
 }
 TARGETS = {  # not per-tag
-    'removal+counters': (8, 10),  # BRIEF.md
+    'removal+counters': (8, 10),  # RULES.md
     'lands': (35, 37),            # Commander; 60-card decks get 22-26 instead
 }
 TARGETS_60 = {'lands': (22, 26), 'removal+counters': (6, 10)}

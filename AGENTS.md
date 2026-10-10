@@ -9,7 +9,7 @@
   Scryfall wants ~10 req/s max and an `Accept` header.
 - **Before writing to Archidekt**, back up what you'll change (`archidekt.deck(id)` JSON), and confirm
   deletes with Brian. Archive rather than delete.
-- Deck-building rules live in `decks/commander/BRIEF.md`. Brian plays Commander online; paper decks
+- Deck-building rules live in `decks/commander/RULES.md`. Brian plays Commander online; paper decks
   are rare and get their own rules when they come up.
 - Card text you put in primers or recommendations: check it against Scryfall oracle text, don't
   rely on memory.
