@@ -268,9 +268,8 @@ def stats(path, games, seed):
           ' next turn; no tax, no other plays.')
     print(f'mulligans: ' + ', '.join(f'{k}: {mulls[k] / games:.1%}' for k in sorted(mulls)))
     if cmc is not None:
-        on = sum(t <= cmc for t in ct) / games
-        nxt = sum(t <= cmc + 1 for t in ct) / games
-        print(f'commander (MV {cmc}) castable by turn {cmc}: {on:.1%}; by turn {cmc + 1}: {nxt:.1%}')
+        by = ', '.join(f'T{t} {sum(x <= t for x in ct) / games:.0%}' for t in range(max(2, cmc - 3), cmc + 2))
+        print(f'commander (MV {cmc}) castable by turn: {by}  (turns before T{cmc} need ramp)')
     print(f'lands drawn by turn 4 (in hand + played): {lands4:.2f}; all 4 land drops by turn 4: {drops4:.1%}')
     print(f'ramp piece cast by turn 2: {ramp2:.1%}  ({sum(1 for c in lib if c[0] in ("rock", "dork", "lramp"))} ramp cards modelled)')
     print()
