@@ -10,7 +10,7 @@ Scryfall card data and pricing, and deck projects.
   `moxfield.py` (public decks, shared collection), `scryfall.py` (search, cheapest price, set pools),
   `edhrec.py` (EDHREC recs, themes, average decks; cached), `spellbook.py` (Commander Spellbook: combos
   in a decklist), `quill.py` (markdown → Archidekt primer format), `decklist.py` (decklist files).
-- **`.claude/skills/commander-deck`** — the import/build/tune/primer/upload workflow (loads when a session starts in this folder).
+- **`.claude/skills/commander-deck`** — the import/build/tune/primer/upload workflow (available to sessions started in this folder).
 - **`scripts/`**
   - `build_pool.py [sets...]` — every card from some sets into `cache/pool.json` (default: Ravnica).
   - `check_decks.py` — validate decklists (60 cards, 4-of, colors, in pool) and price them, with an
@@ -18,7 +18,7 @@ Scryfall card data and pricing, and deck projects.
   - `check_commander.py` — validate Commander lists: 100 singleton cards, colour identity, legality,
     Game Changer count (`--max-gc`, default 4) and no Universes Beyond (`--allow-ub` to permit). Also lists the
     combos the deck contains via Commander Spellbook (fast infinite combos — pieces totalling 6 mana value or
-    less, or rated Ruthless — are `!!` problems; `--near` adds combos missing one card, `--no-combos` skips
+    less, or rated Ruthless/Banned — are `!!` problems; `--near` adds combos missing one card, `--no-combos` skips
     the network call).
   - `edhrec_recs.py "Commander" [--theme X] [--deck file]` — EDHREC recommendations by category with
     inclusion% and synergy; with `--deck`, what you're missing and cut candidates.
@@ -33,8 +33,9 @@ Scryfall card data and pricing, and deck projects.
   - `upload_decks.py` — create decks on Archidekt in a folder, file cards by type (commanders under
     Commander), attach primers (`--primers` file, or a `deck.md` beside `deck.txt`).
   - `sync_deck.py <deck id or URL> deck.txt` — make an Archidekt deck match a decklist: removes, adds and
-    adjusts quantities (Maybeboard/Sideboard untouched, existing categories kept), renames the deck to the
-    file's header, updates the primer from a `deck.md` beside it (`--primer`), then re-reads and verifies.
+    adjusts quantities (Maybeboard, Sideboard and not-in-deck categories untouched, existing categories kept),
+    renames the deck to the file's `#` header, updates the primer from a `deck.md` beside it (`--primer`,
+    `--no-primer`), then re-reads and verifies. New card ids are resolved before any write.
     `--dry-run` prints the diff only; `--no-rename` keeps the name. Backs up to `~/.cache/mtg-backups/`.
 - **`decks/PLAYLOG.md`** — how decks actually played and what Brian enjoys; read before tuning a deck.
 - **`decks/`** — deck projects. `decks/ravnica/`: the 22 Ravnica-sets-only decks from 2026-10-03

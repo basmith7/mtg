@@ -69,7 +69,8 @@ name every included combo that is infinite or wins the game, say what it needs a
 finisher, and don't claim combos the checker didn't list. Run with `--near` to find combos one card away
 (for suggestions, or to be sure you didn't leave one half-built). Run `deck_stats.py` too and fix any
 LOW/SHORT flags or explain them in your reply. Also look at the land count (usually 35–37, fewer with heavy ramp)
-and the curve it prints. Don't touch Archidekt, git, or any other file.
+and the curve it prints. While building, only write the two deck files: uploading to Archidekt and
+committing are separate steps (see `.claude/skills/commander-deck`), done when Brian has asked for them.
 
 End your reply with the checker's output, your Game Changers and why you chose them, and anything you
 weren't sure about.

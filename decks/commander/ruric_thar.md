@@ -18,8 +18,8 @@ Built on willy's (@unmagical.mtg) "54 Feral Hogs" list ([Moxfield](https://moxfi
 - [[Ruric Thar, the Unbowed]]: 6/6 with reach and vigilance. It attacks each combat if able. Whenever a player casts a noncreature spell, it deals 6 damage to that player, and that includes you.
 - [[Terror of the Peaks]]: whenever another creature you control enters, it deals damage equal to that creature's power to any target. Spells your opponents cast that target it cost 3 extra life.
 - [[Ilharg, the Raze-Boar]]: when it attacks, put a creature from your hand onto the battlefield tapped and attacking. It goes back to your hand at the end step, and you can drop it again next turn. Pairs well with Terror.
-- [[Gruul Ragebeast]]: whenever it or another creature you control enters, that creature fights target creature an opponent controls. Your big creatures double as removal.
-- [[Scytheclaw Raptor]]: whenever a player casts a spell when it isn't their turn, it deals 4 damage to them. With Ruric on the table, an instant-speed removal spell costs that player 10 life.
+- [[Gruul Ragebeast]]: whenever it or another creature you control enters, that creature fights target creature an opponent controls. Your big creatures double as removal, but the fight isn't optional: a mana dork that enters while an opponent has a creature has to fight it. Cast Ragebeast after your dorks are down.
+- [[Scytheclaw Raptor]]: whenever a player casts a spell when it isn't their turn, it deals 4 damage to them. With Ruric on the table, a removal spell cast on someone else's turn costs that player 10 life (6 on their own turn).
 - [[Raggadragga, Goreguts Boss]]: your mana creatures get +2/+2 and untap when they attack. Whenever you cast a spell with seven or more mana spent on it, untap target creature and give it +7/+7 and trample.
 - [[Garruk's Horde]]: play with the top card of your library revealed, and cast creature spells from there.
 - [[Craterhoof Behemoth]]: haste. When it enters, your creatures gain trample and get +X/+X, where X is the number of creatures you control.

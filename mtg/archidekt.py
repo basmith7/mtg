@@ -177,8 +177,9 @@ def add_cards(deck_id, cards):
 
 
 def _entry_mods(e, quantity=None):
-    return {'quantity': quantity or e['quantity'], 'modifier': e.get('modifier') or 'Normal', 'customCmc': None,
-            'companion': False, 'flippedDefault': False, 'label': ',#656565'}
+    return {'quantity': quantity or e['quantity'], 'modifier': e.get('modifier') or 'Normal',
+            'customCmc': e.get('customCmc'), 'companion': bool(e.get('companion')),
+            'flippedDefault': bool(e.get('flippedDefault')), 'label': e.get('label') or ',#656565'}
 
 
 def _patch(deck_id, action, entries, categories=None, quantities=None):
@@ -194,20 +195,22 @@ def remove_cards(deck_id, entries):
 
 
 def modify_cards(deck_id, changes):
-    """changes: iterable of (deck card entry, new quantity, new category); changes them in place."""
+    """changes: iterable of (deck card entry, new quantity, new categories list or None to keep them)."""
     changes = list(changes)
     return _patch(deck_id, 'modify', [e for e, _, _ in changes],
-                  {i: [c] for i, (_, _, c) in enumerate(changes)}, {i: q for i, (_, q, _) in enumerate(changes)})
+                  {i: c for i, (_, _, c) in enumerate(changes) if c}, {i: q for i, (_, q, _) in enumerate(changes)})
 
 
 SIDE = {'Maybeboard', 'Sideboard'}
 
 
 def _main(d):
-    """{card name: [entries]} for the deck's main entries (Maybeboard/Sideboard left out)."""
+    """{card name: [entries]} for the deck's main entries: Maybeboard, Sideboard and any category
+    marked not included in the deck are left out (and so never touched by sync)."""
+    side = SIDE | {c['name'] for c in d.get('categories', []) if not c.get('includedInDeck', True)}
     out = {}
     for e in d['cards']:
-        if not SIDE & set(e['categories']):
+        if not side & set(e['categories']):
             out.setdefault(e['card']['oracleCard']['name'], []).append(e)
     return out
 
@@ -215,11 +218,13 @@ def _main(d):
 def sync(deck_id, decklist_path, primer_path=None, dry_run=False, rename=True):
     """Make a deck's main list match a decklist file. Returns a summary dict.
 
-    Existing cards keep their categories (only Commander membership is enforced); Maybeboard and
-    Sideboard entries on the site are left alone. Backs up the deck JSON before writing.
+    Existing cards keep their categories (only Commander membership is enforced); Maybeboard,
+    Sideboard and not-in-deck categories on the site are left alone. Renames only if the file has a
+    '# Name' header. Resolves every new card id before writing anything, and backs up the deck JSON.
     """
     d = deck(deck_id)
     name, _, want = decklist.parse(decklist_path)
+    rename = rename and open(decklist_path).readline().startswith('#')
     cmdrs = decklist.commanders(decklist_path)
     have = _main(d)
     cat = lambda c: 'Commander' if c in cmdrs else category(c)
@@ -238,23 +243,25 @@ def sync(deck_id, decklist_path, primer_path=None, dry_run=False, rename=True):
         e = entries[0]
         is_cmdr = 'Commander' in e['categories']
         if e['quantity'] != q or is_cmdr != (c in cmdrs):
-            mod.append((e, q, cat(c) if is_cmdr != (c in cmdrs) else e['categories'][0]))
+            mod.append((e, q, [cat(c)] if is_cmdr != (c in cmdrs) else None))
     summary = {'removed': sorted(e['card']['oracleCard']['name'] for e in rm),
                'added': [f'{q} {c}' for c, q, _ in add],
                'changed': [f"{e['card']['oracleCard']['name']}: {e['quantity']} -> {q}" if e['quantity'] != q
-                           else f"{e['card']['oracleCard']['name']}: -> {k}" for e, q, k in mod],
+                           else f"{e['card']['oracleCard']['name']}: -> {k[0]}" for e, q, k in mod],
                'renamed': name if rename and name != d['name'] else None,
                'primer': bool(primer_path), 'dry_run': dry_run, 'match': None}
     if dry_run:
         return summary
+    new = [(card_id(c), q, k, False) for c, q, k in add]  # fails here, before any write, on an unknown card
     backups = os.path.expanduser('~/.cache/mtg-backups')
     os.makedirs(backups, exist_ok=True)
-    stamp = datetime.datetime.now().strftime('%Y%m%d-%H%M%S')
+    stamp = datetime.datetime.now().strftime('%Y%m%d-%H%M%S-%f')
     json.dump(d, open(os.path.join(backups, f'archidekt-{deck_id}-{stamp}.json'), 'w'))
+    summary['backup'] = os.path.join(backups, f'archidekt-{deck_id}-{stamp}.json')
     remove_cards(deck_id, rm)
     modify_cards(deck_id, mod)
-    if add:
-        add_cards(deck_id, [(card_id(c), q, k, False) for c, q, k in add])
+    if new:
+        add_cards(deck_id, new)
     if summary['renamed']:
         update(deck_id, name=name)
     if primer_path:

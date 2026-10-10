@@ -24,7 +24,8 @@ Rename the header to "Commander – Nickname (B#)" and credit the original autho
 2. **Check roles and mana.** `scripts/deck_stats.py <file>` shows ramp, draw, removal and wipe counts
    against targets, colour sources, and a goldfish sim (commander on curve %). Fix shortfalls.
 3. **Check legality and combos.** `scripts/check_commander.py <file> --near` must show no `!!` lines.
-   Fun late combos are fine; fast infinite combos (pieces totalling 6 MV or less) are not. `--near`
+   Fun late combos are fine; fast infinite combos (pieces totalling 6 MV or less, or rated Ruthless/Banned by
+   Spellbook) are not. `--near`
    shows combos one card away, for suggestions or to avoid half-building one.
 4. **Verify card text** against Scryfall (`scryfall.collection(names)`, `scryfall.oracle_text(card)`)
    before writing anything about a card.
@@ -37,12 +38,15 @@ Key cards, Tips; ~300–500 words; `[[Card Name]]` links). Combo claims come fro
 only. Card counts you state (e.g. "94 permanents") must be computed, not estimated.
 
 ## Archidekt
+Writes go to Brian's real account: upload or sync only when he asked for the deck on Archidekt (or
+confirm first), and check the folder id before creating anything.
 - New deck: `scripts/upload_decks.py --folder <id> decks/commander/<slug>.txt` (uses the `.md` primer).
   Folders: Commander `1914431` (played online), Paper `1914435`, Lists & Ideas `1914436` (other people's
   lists and ideas), Archive `1914437`.
 - Existing deck: `scripts/sync_deck.py <id or url> <file> --dry-run`, then without `--dry-run`. It backs
   up first and verifies afterwards.
-- Never delete on Archidekt without asking; archive instead.
+- `sync_deck.py` overwrites the primer from the `.md` beside the list; pass `--no-primer` to leave it.
+- Never delete on Archidekt without asking; archive instead: `archidekt.move([deck_id], 1914437)`.
 
 ## Finishing
 Commit the deck files on a branch and open a PR (Brian merges with merge commits). Report the Archidekt

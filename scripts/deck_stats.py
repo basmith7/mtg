@@ -97,6 +97,8 @@ def mana_producer(c):
         return None
     if 'Artifact' not in tl and 'Creature' not in tl:
         return None
+    if re.search(r'(Sacrifice|Exile)[^.\n]*: Add|Add[^.\n]*\. (Sacrifice|Exile)', txt):
+        return None  # one-shot or sacrifice-outlet mana (Lotus Petal, Spirit Guides, Ashnod's Altar)
     amount = 2 if re.search(r'Add \{[WUBRGC]\}\{[WUBRGC]\}', txt) else 1
     return set(c['produced_mana']), amount, 'Artifact' in tl and 'Creature' not in tl
 

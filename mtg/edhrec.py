@@ -42,8 +42,11 @@ def _fetch(path):
         data = http.get(f'{BASE}/{path}.json')
     finally:
         _last = time.time()
+    if '_raw' in data:  # a 200 that wasn't JSON (e.g. an error page): don't cache it
+        raise ValueError(f'EDHREC returned non-JSON for {path}')
     os.makedirs(CACHE, exist_ok=True)
-    json.dump(data, open(f, 'w'))
+    json.dump(data, open(f + '.tmp', 'w'))
+    os.replace(f + '.tmp', f)
     return data
 
 
