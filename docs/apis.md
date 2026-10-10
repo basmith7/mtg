@@ -130,7 +130,26 @@ nothing over the above.
 
 No API. Articles embed decks as `<ins class="widget-deck-placeholder" data-id="N">`.
 - `GET /deck/download/{id}` — plain-text decklist ("4 Card Name", blank line before sideboard).
-- `GET /deck/{id}` — the deck page (name in `<title>`).
+- `GET /deck/{id}` — the deck page (name in `<title>`). Commander downloads don't mark the commander
+  (all 100 cards are plain lines); the breadcrumb `/archetype/...` link on the page names it.
+
+---
+
+## Instagram, Linktree, yt-dlp (deck links from reels)
+
+Instagram has no usable API without login (`/api/v1/users/web_profile_info/` returns "require_login",
+and the plain profile HTML hides the bio). What works (2026-10-09, `scripts/import_deck.py`):
+- `.venv/bin/yt-dlp --write-info-json --skip-download -o 'dir/%(id)s' <reel url>` gives `description` (the
+  caption), `channel` (handle, e.g. `unmagical.mtg`) and `uploader` (display name). yt-dlp isn't installed
+  system-wide: `python3 -m venv .venv && .venv/bin/pip install yt-dlp` (`.venv/` is git-ignored).
+- The bio link isn't exposed, so we guess `linktr.ee/<handle>` (also beacons.ai, bio.site, with
+  `.mtg`/`_mtg` suffixes stripped); beacons.ai returns 403 to scripts. `--bio-link` overrides the guess.
+- A Linktree page embeds `__NEXT_DATA__`; its `"url":"..."` entries include `moxfield.com/users/<name>`.
+- `GET /v2/decks/search?authorUserNames=<name>` (Moxfield) and `/api/decks/v3/?ownerUsername=<name>`
+  (Archidekt) list that person's decks; names are matched against the caption, most recent first.
+  Example: reel `Dd67dxZkSQF` ("54 FERAL HOGS DECKLIST...") -> linktr.ee/unmagical -> Moxfield user
+  `willy` -> deck "54 Feral Hogs" (`t9G16DLc5EO0uYOuDftBIQ`).
+- Archidekt's `GET /api/decks/{id}/` needs no auth for public decks (`auth=False` in the client).
 
 ---
 
