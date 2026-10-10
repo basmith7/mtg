@@ -3,6 +3,7 @@
 Logs in once via 1Password, caches the JWT in ~/.config/mtg/archidekt-session.json, and renews it
 with the refresh token, so Brian only gets a 1Password prompt when the refresh token has expired too.
 """
+import datetime
 import json
 import os
 import subprocess
@@ -10,7 +11,7 @@ import time
 import urllib.error
 import urllib.parse
 
-from . import http
+from . import decklist, http, quill, scryfall
 
 BASE = 'https://archidekt.com'
 USERNAME = 'basmith7'
@@ -103,6 +104,21 @@ def search_tags(text):
     return call('GET', '/api/decks/tags/v2/?' + urllib.parse.urlencode({'q': text}), auth=False)
 
 
+# ---- categories ----------------------------------------------------------------------------
+
+_POOL = os.path.join(os.path.dirname(__file__), '..', 'cache', 'pool.json')
+_TYPE_LINES = None
+
+
+def category(card):
+    """Type category for a card name (cache/pool.json type lines, else Scryfall)."""
+    global _TYPE_LINES
+    if _TYPE_LINES is None:
+        _TYPE_LINES = {c['name']: c['type_line'] for c in json.load(open(_POOL))} if os.path.exists(_POOL) else {}
+    tl = _TYPE_LINES.get(card) or scryfall.named(card)['type_line']
+    return next((t for t in TYPES if t in tl.split('//')[0]), 'Other')
+
+
 # ---- card ids ------------------------------------------------------------------------------
 
 _ID_CACHE = os.path.join(os.path.dirname(__file__), '..', 'cache', 'archidekt_card_ids.json')
@@ -158,6 +174,94 @@ def add_cards(deck_id, cards):
                                'companion': False, 'flippedDefault': False, 'label': ',#656565'}}
             for i, (cid, q, cat, foil) in enumerate(cards)]
     return call('PATCH', f'/api/decks/{deck_id}/modifyCards/v2/', {'cards': adds})
+
+
+def _entry_mods(e, quantity=None):
+    return {'quantity': quantity or e['quantity'], 'modifier': e.get('modifier') or 'Normal', 'customCmc': None,
+            'companion': False, 'flippedDefault': False, 'label': ',#656565'}
+
+
+def _patch(deck_id, action, entries, categories=None, quantities=None):
+    cards = [{'action': action, 'cardid': e['card']['id'], 'categories': (categories or {}).get(i, e['categories']),
+              'patchId': f'{action[0]}{i}', 'deckRelationId': e['id'],
+              'modifications': _entry_mods(e, (quantities or {}).get(i))} for i, e in enumerate(entries)]
+    return call('PATCH', f'/api/decks/{deck_id}/modifyCards/v2/', {'cards': cards}) if cards else {}
+
+
+def remove_cards(deck_id, entries):
+    """entries: the deck's own card entries (from deck(id)['cards'])."""
+    return _patch(deck_id, 'remove', entries)
+
+
+def modify_cards(deck_id, changes):
+    """changes: iterable of (deck card entry, new quantity, new category); changes them in place."""
+    changes = list(changes)
+    return _patch(deck_id, 'modify', [e for e, _, _ in changes],
+                  {i: [c] for i, (_, _, c) in enumerate(changes)}, {i: q for i, (_, q, _) in enumerate(changes)})
+
+
+SIDE = {'Maybeboard', 'Sideboard'}
+
+
+def _main(d):
+    """{card name: [entries]} for the deck's main entries (Maybeboard/Sideboard left out)."""
+    out = {}
+    for e in d['cards']:
+        if not SIDE & set(e['categories']):
+            out.setdefault(e['card']['oracleCard']['name'], []).append(e)
+    return out
+
+
+def sync(deck_id, decklist_path, primer_path=None, dry_run=False, rename=True):
+    """Make a deck's main list match a decklist file. Returns a summary dict.
+
+    Existing cards keep their categories (only Commander membership is enforced); Maybeboard and
+    Sideboard entries on the site are left alone. Backs up the deck JSON before writing.
+    """
+    d = deck(deck_id)
+    name, _, want = decklist.parse(decklist_path)
+    cmdrs = decklist.commanders(decklist_path)
+    have = _main(d)
+    cat = lambda c: 'Commander' if c in cmdrs else category(c)
+    rm, mod, add = [], [], []
+    for c, entries in have.items():
+        if c not in want:
+            rm += entries
+    for c, q in want.items():
+        entries = have.get(c, [])
+        if len(entries) > 1:  # split across printings/categories: rebuild as one entry
+            rm += entries
+            entries = []
+        if not entries:
+            add.append((c, q, cat(c)))
+            continue
+        e = entries[0]
+        is_cmdr = 'Commander' in e['categories']
+        if e['quantity'] != q or is_cmdr != (c in cmdrs):
+            mod.append((e, q, cat(c) if is_cmdr != (c in cmdrs) else e['categories'][0]))
+    summary = {'removed': sorted(e['card']['oracleCard']['name'] for e in rm),
+               'added': [f'{q} {c}' for c, q, _ in add],
+               'changed': [f"{e['card']['oracleCard']['name']}: {e['quantity']} -> {q}" if e['quantity'] != q
+                           else f"{e['card']['oracleCard']['name']}: -> {k}" for e, q, k in mod],
+               'renamed': name if rename and name != d['name'] else None,
+               'primer': bool(primer_path), 'dry_run': dry_run, 'match': None}
+    if dry_run:
+        return summary
+    backups = os.path.expanduser('~/.cache/mtg-backups')
+    os.makedirs(backups, exist_ok=True)
+    stamp = datetime.datetime.now().strftime('%Y%m%d-%H%M%S')
+    json.dump(d, open(os.path.join(backups, f'archidekt-{deck_id}-{stamp}.json'), 'w'))
+    remove_cards(deck_id, rm)
+    modify_cards(deck_id, mod)
+    if add:
+        add_cards(deck_id, [(card_id(c), q, k, False) for c, q, k in add])
+    if summary['renamed']:
+        update(deck_id, name=name)
+    if primer_path:
+        update(deck_id, description=quill.to_delta(open(primer_path).read()), hasPrimer=True)
+    got = {c: sum(e['quantity'] for e in es) for c, es in _main(deck(deck_id)).items()}
+    summary['match'] = got == dict(want)
+    return summary
 
 
 def update(deck_id, **fields):

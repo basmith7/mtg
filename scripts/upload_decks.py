@@ -11,14 +11,11 @@ when cards aren't looked up from Scryfall (falls back to Scryfall per card).
 """
 import argparse
 import importlib.util
-import json
 import os
 import sys
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
-from mtg import archidekt, decklist, quill, scryfall
-
-POOL = os.path.join(os.path.dirname(__file__), '..', 'cache', 'pool.json')
+from mtg import archidekt, decklist, quill
 
 
 def main():
@@ -36,17 +33,12 @@ def main():
         sys.path.insert(0, os.path.dirname(os.path.abspath(a.primers)))
         spec.loader.exec_module(mod)
         primers = mod.PRIMERS
-    types = {c['name']: c['type_line'] for c in json.load(open(POOL))} if os.path.exists(POOL) else {}
-
-    def category(card):
-        tl = types.get(card) or scryfall.named(card)['type_line']
-        return next((t for t in archidekt.TYPES if t in tl.split('//')[0]), 'Other')
 
     for path in a.decks:
         name, _, cards = decklist.parse(path)
         cmdrs = decklist.commanders(path)
         did = archidekt.create_deck(name, a.format or ('commander' if cmdrs else 'custom'), a.folder)
-        archidekt.add_cards(did, [(archidekt.card_id(c), q, 'Commander' if c in cmdrs else category(c), False)
+        archidekt.add_cards(did, [(archidekt.card_id(c), q, 'Commander' if c in cmdrs else archidekt.category(c), False)
                                   for c, q in cards.items()])
         md = os.path.splitext(path)[0] + '.md'
         primer = primers.get(os.path.basename(path)) or (open(md).read() if os.path.exists(md) else None)
