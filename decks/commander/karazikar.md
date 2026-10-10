@@ -4,33 +4,31 @@ A black-red goad deck that turns the whole table into a brawl and gets paid for 
 
 ## How it plays
 
-- **Early:** Ramp with rocks and play cheap goad pieces like [[Agitator Ant]], [[Shiny Impetus]] and [[Bothersome Quasit]]. Set up defenses that make attacking you bad, such as [[Marchesa's Decree]] and [[Kazuul, Tyrant of the Cliffs]].
-- **Mid:** Cast Karazikar on turn four or five. Every time you attack, it taps and goads a creature, and every time an opponent attacks someone else, you both draw and lose 1 life. Add [[Fumiko the Lowblood]], [[Kardur, Doomscourge]] or [[Rite of the Raging Storm]] so attacks keep happening every turn.
-- **Late:** Opponents are low on life and creatures. Finish them with drain: [[Gray Merchant of Asphodel]], [[Exsanguinate]], [[Torment of Hailfire]], or a big [[Insurrection]] turn.
+- **Early:** Ramp with rocks and play cheap goad pieces like [[Agitator Ant]], [[Shiny Impetus]] and [[Bothersome Quasit]].
+- **Mid:** Karazikar is castable by turn four only about 42% of the time and by turn five about 74%, so ramp first. Once it lands, equip [[Lightning Greaves]] for free so it can attack right away and can't be targeted. Whenever you attack a player, it taps and goads a creature that player controls, and every time an opponent attacks someone else, you both draw and lose 1 life. Add [[Fumiko the Lowblood]] or [[Kardur, Doomscourge]] so attacks keep coming.
+- **Late:** Opponents are low on life and creatures. Finish them with drain: [[Exsanguinate]], [[Torment of Hailfire]], or a big [[Insurrection]] turn. Keep the monarch with [[Skyline Despot]] for a 5/5 Dragon every upkeep.
 
 ## How it wins
 
-- Let the table wear itself down, then drain the survivors with [[Exsanguinate]], [[Torment of Hailfire]] or [[Gray Merchant of Asphodel]].
+- Let the table wear itself down, then drain the survivors with [[Exsanguinate]] or [[Torment of Hailfire]].
 - [[Blood Artist]], [[Falkenrath Noble]], [[Syr Konrad, the Grim]] and [[Kardur, Doomscourge]] drain the table as creatures die in combat.
-- [[Insurrection]] or [[Mob Rule]] takes everyone's creatures for a swing that ends the game.
-- There are no two-card infinite combos.
+- [[Insurrection]] takes everyone's creatures for a swing that ends the game. [[Mob Rule]] takes only creatures with power 4 or more, or only power 3 or less.
+- The checker finds no infinite or game-winning combos in the deck, so there is no combo finish.
 
 ## Key cards
 
-- [[Karazikar, the Eye Tyrant]]: when you attack a player, tap and goad one of their creatures. When an opponent attacks another opponent, you and the attacker each draw a card and lose 1 life.
 - [[Kardur, Doomscourge]]: when it enters, opponents' creatures must attack someone other than you until your next turn. Whenever an attacking creature dies, each opponent loses 1 life and you gain 1.
 - [[Fumiko the Lowblood]]: creatures your opponents control attack each combat if able.
 - [[Rite of the Raging Storm]]: every player gets a 5/1 trample, haste Lightning Rager on their upkeep, and those Ragers can't attack you.
-- [[Vengeful Ancestor]]: goads a creature when it enters or attacks. Whenever a goaded creature attacks, it deals 1 damage to its controller.
-- [[Bothersome Quasit]]: every noncreature spell you cast goads something, and goaded creatures can't block.
-- [[Sower of Discord]]: pick two players. Whenever one of them is dealt damage, the other loses that much life too.
 - [[Marchesa's Decree]]: makes you the monarch, and anyone attacking you loses 1 life per creature.
-- [[Curse of Opulence]]: whenever the cursed player is attacked, you and each opponent attacking them create a Gold token.
+- [[Xantcha, Sleeper Agent]]: enters under an opponent's control and must attack each combat. Any player can pay {3} to make its controller lose 2 life and draw a card. Pure chaos.
+- [[Lightning Greaves]]: equip {0}. Karazikar gets haste and shroud, so it can attack at once and survive removal.
+- [[Parasitic Impetus]]: a goaded +2/+2 Aura. When the creature attacks, its controller loses 2 life and you gain 2, which pays back some of your life loss.
+- [[Fire Covenant]]: pay X life to deal X damage divided among any creatures, at instant speed. Great after combat, mind your life.
 
 ## Tips
 
 - Karazikar's draw costs you life too. Watch your total, and lean on [[Vampire Nighthawk]], [[Kardur, Doomscourge]] and the drain cards to stay healthy.
-- Pitch yourself as the harmless one. Every goad and Karazikar trigger points attacks away from you. Help whoever is behind so nobody runs away with the game.
+- Pitch yourself as the harmless one. Every goad and Karazikar trigger points attacks away from you.
 - Wipe the board with [[Blasphemous Act]] or [[Toxic Deluge]] only when your own board is weak or someone is about to win.
-- [[Goblin Spymaster]] gives each opponent a Goblin at their end step that makes all their creatures attack each combat. Unlike goad, they can still swing at you, so keep blockers up.
 - **Mulligan for:** two or more lands, a mana rock, and one early goad piece or defense card. Karazikar itself is the engine, so ramp matters more than payoffs.

@@ -45,10 +45,10 @@ Commander: Maelstrom Wanderer
 1 Beast Within
 1 Chaos Warp
 1 Pongify
-1 Rapid Hybridization
+1 Brainstorm
 1 Ravenform
 1 Mizzium Mortars
-1 Bane of Progress
+1 Goreclaw, Terror of Qal Sisma
 1 Duplicant
 1 Mystic Snake
 1 Cyclonic Rift

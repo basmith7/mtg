@@ -77,8 +77,8 @@ Commander: Jon Irenicus, Shattered One
 1 Undercity Sewers
 1 Shipwreck Marsh
 1 Creeping Tar Pit
-1 Restless Reef
-1 Path of Ancestry
+1 Baleful Strix
+1 Wrong Turn
 1 Bojuka Bog
 10 Island
 10 Swamp

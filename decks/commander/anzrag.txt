@@ -5,7 +5,7 @@ Commander: Anzrag, the Quake-Mole
 1 Lure
 1 Nemesis Mask
 1 Taunting Elf
-1 Gaea's Protector
+1 Tamiyo's Safekeeping
 1 Irresistible Prey
 1 Neyith of the Dire Hunt
 1 Engulfing Slagwurm
@@ -15,7 +15,7 @@ Commander: Anzrag, the Quake-Mole
 1 Battle Strain
 1 No Quarter
 1 Ohran Frostfang
-1 Basilisk Collar
+1 Roar of Challenge
 1 Aggravated Assault
 1 Moraug, Fury of Akoum
 1 Hellkite Charger
@@ -54,7 +54,7 @@ Commander: Anzrag, the Quake-Mole
 1 Guardian Project
 1 Tireless Tracker
 1 Rishkar's Expertise
-1 Escape to the Wilds
+1 Goreclaw, Terror of Qal Sisma
 1 Beast Within
 1 Chaos Warp
 1 Krosan Grip

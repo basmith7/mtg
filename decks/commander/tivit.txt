@@ -2,7 +2,7 @@
 Commander: Tivit, Seller of Secrets
 1 Tivit, Seller of Secrets
 1 Council's Judgment
-1 Expropriate
+1 Cyclonic Rift
 1 Capital Punishment
 1 Tyrant's Choice
 1 Coercive Portal
@@ -29,7 +29,7 @@ Commander: Tivit, Seller of Secrets
 1 Charming Prince
 1 Flickerwisp
 1 Revel in Riches
-1 Mechanized Production
+1 Academy Manufactor
 1 Disciple of the Vault
 1 Marionette Apprentice
 1 Erdwal Illuminator
