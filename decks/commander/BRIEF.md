@@ -20,8 +20,9 @@ A strong bracket 3 or light bracket 4:
 - **No fast-mana package.** Sol Ring and Arcane Signet are fine. Skip Mana Vault, Chrome Mox and
   Mox Diamond, and Mana Crypt is banned.
 - No extra-turn chains.
-- No two-card infinite combo that wins out of nowhere in the early game. Late-game finishers and
-  synergies that happen to go infinite late are fine, but say so in the primer.
+- Combos are welcome if they're fun and not a turn-2 or turn-3 win: no cheap infinite combo that wins
+  out of nowhere early. Late-game finishers and synergies that happen to go infinite late are fine,
+  but say so in the primer.
 - No mass land destruction.
 
 ## Rules
@@ -60,7 +61,12 @@ links. Keep it about 300–500 words, in plain, direct English. Sections:
 ```
 scripts/check_commander.py decks/commander/<slug>.txt          # add --allow-ub for the Mothman deck only
 ```
-It must pass with no `!!` lines. Also look at the land count (usually 35–37, fewer with heavy ramp)
+It must pass with no `!!` lines. It also asks Commander Spellbook which combos the deck contains: a
+combo marked `FAST` (pieces total mana value 6 or less, or Spellbook rates it Ruthless/Banned) that
+goes infinite is a `!!` problem; slower combos are fine. **The primer's "How it wins" combo claims must come from this output**:
+name every included combo that is infinite or wins the game, say what it needs and that it's a late-game
+finisher, and don't claim combos the checker didn't list. Run with `--near` to find combos one card away
+(for suggestions, or to be sure you didn't leave one half-built). Also look at the land count (usually 35–37, fewer with heavy ramp)
 and the curve it prints. Don't touch Archidekt, git, or any other file.
 
 End your reply with the checker's output, your Game Changers and why you chose them, and anything you
