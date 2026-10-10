@@ -61,7 +61,8 @@ def from_moxfield(public_id, url=''):
 
 def from_archidekt(deck_id, url=''):
     d = archidekt.call('GET', f'/api/decks/{deck_id}/', auth=False)
-    out = {c['name'] for c in d['categories'] if not c.get('includedInDeck', True)} | SKIP_SECTIONS
+    # Archidekt's own flag says which categories count; 'Tokens' etc. can be real in-deck categories
+    out = {c['name'] for c in d['categories'] if not c.get('includedInDeck', True)} | archidekt.SIDE
     cmdrs, cards = [], Counter()
     for c in d['cards']:
         cats = {x.lower() for x in c['categories']}

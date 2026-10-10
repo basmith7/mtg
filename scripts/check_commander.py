@@ -39,6 +39,9 @@ def show_combos(cmdrs, cards, data, near):
         return total(c) == '?' or total(c) <= FAST_MV or c['bracket'] in ('Ruthless', 'Banned')
 
     found = spellbook.find_combos(cmdrs, list(cards))
+    if near:  # look up the missing pieces too, so near-miss combos get a real total
+        missing = {n for c in found['almost'] for n in c['cards'] if mv(n) is None}
+        data = {**data, **(scryfall.collection(missing) if missing else {})}
     problems = []
 
     def line(c, tag=''):
