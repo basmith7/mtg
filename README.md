@@ -15,6 +15,11 @@ Scryfall card data and pricing, and deck projects.
     optional buy/proxy split and owned-card allocation.
   - `check_commander.py` — validate Commander lists: 100 singleton cards, colour identity, legality,
     Game Changer count (`--max-gc`, default 4) and no Universes Beyond (`--allow-ub` to permit).
+  - `deck_stats.py` — numbers for a decklist: role counts from Scryfall oracle tags (ramp, draw, removal,
+    counters, wipes, tutors, protection, recursion) against targets, coloured sources vs pip demand,
+    land count, curve and types, and a 10k-game goldfish (odds of casting the commander on curve, ramp
+    by turn 2). Targets live in dicts at the top of the script; role tags are noisy, so read the lists.
+    `scripts/deck_stats.py decks/commander/<slug>.txt [--games N] [--seed N]`
   - `upload_decks.py` — create decks on Archidekt in a folder, file cards by type (commanders under
     Commander), attach primers (`--primers` file, or a `deck.md` beside `deck.txt`).
 - **`decks/`** — deck projects. `decks/ravnica/`: the 22 Ravnica-sets-only decks from 2026-10-03

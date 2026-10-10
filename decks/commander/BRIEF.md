@@ -59,8 +59,9 @@ links. Keep it about 300–500 words, in plain, direct English. Sections:
 ## Check before you finish
 ```
 scripts/check_commander.py decks/commander/<slug>.txt          # add --allow-ub for the Mothman deck only
+scripts/deck_stats.py decks/commander/<slug>.txt               # role counts, mana sources, goldfish
 ```
-It must pass with no `!!` lines. Also look at the land count (usually 35–37, fewer with heavy ramp)
+It must pass with no `!!` lines. Run `deck_stats.py` too and fix any LOW/SHORT flags or explain them in your reply. Also look at the land count (usually 35–37, fewer with heavy ramp)
 and the curve it prints. Don't touch Archidekt, git, or any other file.
 
 End your reply with the checker's output, your Game Changers and why you chose them, and anything you
