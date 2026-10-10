@@ -28,11 +28,11 @@ Commander: The Wise Mothman
 1 Ruin Crab
 1 Bruvac the Grandiloquent
 1 Fraying Sanity
-1 Maddening Cacophony
+1 Heroic Intervention
 1 Mesmeric Orb
 1 Syr Konrad, the Grim
 1 Stitcher's Supplier
-1 Satyr Wayfinder
+1 Winding Constrictor
 1 Hardened Scales
 1 Evolution Sage
 1 Flux Channeler
@@ -48,7 +48,7 @@ Commander: The Wise Mothman
 1 Living Death
 1 Counterspell
 1 Arcane Denial
-1 Pongify
+1 Putrefy
 1 Beast Within
 1 Assassin's Trophy
 1 Infernal Grasp
@@ -65,7 +65,7 @@ Commander: The Wise Mothman
 1 Phenax, God of Deception
 1 Consuming Aberration
 1 Feed the Swarm
-1 Grisly Salvage
+1 Talisman of Dominance
 1 Command Tower
 1 Exotic Orchard
 1 Opulent Palace

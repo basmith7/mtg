@@ -54,12 +54,12 @@ Commander: Gluntch, the Bestower
 1 Farewell
 1 Austere Command
 1 Felidar Sovereign
-1 Test of Endurance
+1 Master of Ceremonies
 1 Craterhoof Behemoth
 1 Akroma's Will
 1 Aetherflux Reservoir
 1 Finale of Devastation
-1 Guardian Project
+1 Tenuous Truce
 1 Sylvan Library
 1 Rishkar's Expertise
 1 Return of the Wildspeaker
@@ -82,6 +82,6 @@ Commander: Gluntch, the Bestower
 1 Gavony Township
 1 Graypelt Refuge
 1 Temple of Plenty
-1 Kor Haven
+1 Flumph
 9 Forest
 8 Plains
