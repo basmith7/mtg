@@ -9,6 +9,7 @@ Scryfall card data and pricing, and deck projects.
   `archidekt.py` (login/refresh, decks, folders, tags, collection, card ids, writes),
   `moxfield.py` (public decks, shared collection), `scryfall.py` (search, cheapest price, set pools),
   `quill.py` (markdown → Archidekt primer format), `decklist.py` (decklist files).
+- **`.claude/skills/commander-deck`** — the import/build/tune/primer/upload workflow (loads when a session starts in this folder).
 - **`scripts/`**
   - `build_pool.py [sets...]` — every card from some sets into `cache/pool.json` (default: Ravnica).
   - `check_decks.py` — validate decklists (60 cards, 4-of, colors, in pool) and price them, with an
