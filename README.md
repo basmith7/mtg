@@ -18,6 +18,9 @@ Scryfall card data and pricing, and deck projects.
   - `import_deck.py <url|file>` — turn a Moxfield / Archidekt / MTGGoldfish / plain-text / Instagram link into
     a deck.txt (`-o` to write, `--name` to rename). Instagram needs yt-dlp in a repo-local venv:
     `python3 -m venv .venv && .venv/bin/pip install yt-dlp`.
+  - `import_deck.py <url|file>` — turn a Moxfield / Archidekt / MTGGoldfish / plain-text / Instagram link into
+    a deck.txt (`-o` to write, `--name` to rename). Instagram needs yt-dlp in a repo-local venv:
+    `python3 -m venv .venv && .venv/bin/pip install yt-dlp`.
   - `upload_decks.py` — create decks on Archidekt in a folder, file cards by type (commanders under
     Commander), attach primers (`--primers` file, or a `deck.md` beside `deck.txt`).
 - **`decks/`** — deck projects. `decks/ravnica/`: the 22 Ravnica-sets-only decks from 2026-10-03
