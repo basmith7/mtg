@@ -21,6 +21,9 @@ Scryfall card data and pricing, and deck projects.
     the network call).
   - `edhrec_recs.py "Commander" [--theme X] [--deck file]` — EDHREC recommendations by category with
     inclusion% and synergy; with `--deck`, what you're missing and cut candidates.
+  - `import_deck.py <url|file>` — turn a Moxfield / Archidekt / MTGGoldfish / plain-text / Instagram link into
+    a deck.txt (`-o` to write, `--name` to rename). Instagram needs yt-dlp in a repo-local venv:
+    `python3 -m venv .venv && .venv/bin/pip install yt-dlp`.
   - `upload_decks.py` — create decks on Archidekt in a folder, file cards by type (commanders under
     Commander), attach primers (`--primers` file, or a `deck.md` beside `deck.txt`).
   - `sync_deck.py <deck id or URL> deck.txt` — make an Archidekt deck match a decklist: removes, adds and
@@ -64,4 +67,5 @@ scryfall.cheapest_usd('Lightning Helix')
 
 The header's color letters (WUBRG) drive the color check. Commander lists add a
 `Commander: Card Name` line and list the commander as `1 Card Name` too, so they total 100;
-`decks/commander/` holds them, with `BRIEF.md` describing the power target and house rules.
+`decks/commander/` holds them. Later `#` lines (such as `# source: <url>`, which `import_deck.py` adds) are
+comments. `decks/commander/` with `BRIEF.md` describing the power target and house rules.
