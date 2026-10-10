@@ -60,7 +60,12 @@ links. Keep it about 300–500 words, in plain, direct English. Sections:
 ```
 scripts/check_commander.py decks/commander/<slug>.txt          # add --allow-ub for the Mothman deck only
 ```
-It must pass with no `!!` lines. Also look at the land count (usually 35–37, fewer with heavy ramp)
+It must pass with no `!!` lines. It also asks Commander Spellbook which combos the deck contains: a
+two-card infinite combo is a `!!` problem, and combos marked `EARLY` (two cards, or every piece at mana
+value 3 or less) need a look. **The primer's "How it wins" combo claims must come from this output**:
+name every included combo that is infinite or wins the game, say what it needs and that it's a late-game
+finisher, and don't claim combos the checker didn't list. Run with `--near` to find combos one card away
+(for suggestions, or to be sure you didn't leave one half-built). Also look at the land count (usually 35–37, fewer with heavy ramp)
 and the curve it prints. Don't touch Archidekt, git, or any other file.
 
 End your reply with the checker's output, your Game Changers and why you chose them, and anything you
