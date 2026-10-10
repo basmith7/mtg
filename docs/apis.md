@@ -10,6 +10,7 @@ If an endpoint stops working, re-derive it (see "Finding endpoints" at the botto
 | Scryfall | Card data, oracle text, prices, set searches | None | Public, documented |
 | Archidekt | Brian's decks, folders, tags, primers, collection | JWT (login) | Private, undocumented |
 | Moxfield | Reading Brian's public decks and shared collection | None for public data; login blocked | Private, undocumented |
+| EDHREC | Card inclusion % and synergy per commander, themes, average decks | None | Private JSON, undocumented |
 | MTGGoldfish | Reading decklists out of articles | None | Scraping |
 
 Python clients for all of these live in `mtg/` (see the README).
@@ -123,6 +124,35 @@ The `v3` deck endpoint sits behind Cloudflare; `v2` works with a normal browser 
 
 The third-party `moxfield-api` npm package only wraps the public deck/search/card endpoints; it adds
 nothing over the above.
+
+---
+
+## EDHREC — `https://json.edhrec.com/pages`
+
+No auth, no documentation; these are the JSON files the edhrec.com site loads (found 2026-10-09).
+Browser `User-Agent` works; the client keeps ~1 request/sec and caches responses 7 days in `cache/edhrec/`.
+Slugs: lowercase ASCII, accents stripped, apostrophes dropped, other punctuation to `-`
+(`Ruric Thar, the Unbowed` -> `ruric-thar-the-unbowed`; `Fire // Ice` front face only for commanders).
+
+- `/commanders/{slug}.json` — the commander page.
+- `/commanders/{slug}/{theme}.json` — a theme (slugs from `tag_counts`, e.g. `burn`, `stax`, `ramp`).
+- `/commanders/{slug}/budget.json`, `/expensive.json` — budget variants. (Combined theme+budget paths were not tried.)
+- `/average-decks/{slug}.json` — average decklist: `deck.cards` = `{Type: [[name, qty], ...]}`,
+  `deck.commander_v2`. Same page-level keys as the commander page.
+- `/cards/{slug}.json` — one card: `container.json_dict.card` (`num_decks`, `potential_decks`, `salt`,
+  `prices`, `color_identity`...) plus cardlists of related cards.
+
+Commander page shape: top-level `tag_counts` (`[{slug, value, count}]` = themes), `budget_counts`,
+`bracket_counts`, `similar` (commander names), `panels` (combos, mana curve), `header`, and
+`container.json_dict.cardlists[]`: `{header, tag, cardviews[]}`. Headers: `New Cards`, `Top Cards`,
+`High Lift Cards`, then `Creatures`, `Instants`, `Sorceries`, `Utility Artifacts`, `Enchantments`,
+`Planeswalkers`, `Utility Lands`, `Mana Artifacts`, `Lands`. Each cardview: `name`, `slug`, `num_decks`,
+`potential_decks`, `synergy` (fraction, -1..1), `lift`, `trend_zscore`. There is no inclusion field:
+**inclusion = num_decks / potential_decks**.
+
+Gotchas: the highlight lists (`Top Cards` etc.) *remove* their cards from the type lists, so merge them
+(`mtg/edhrec.py` does, preferring the type list). Each list is capped (~50 creatures), so a card absent from
+the lists is not necessarily rare in the deck. Basics appear in `Lands`.
 
 ---
 
