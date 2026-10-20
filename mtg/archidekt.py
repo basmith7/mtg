@@ -1,7 +1,7 @@
 """Archidekt client (private API; see docs/apis.md).
 
-Logs in once via 1Password, caches the JWT in ~/.config/mtg/archidekt-session.json, and renews it
-with the refresh token, so Brian only gets a 1Password prompt when the refresh token has expired too.
+Logs in once with ARCHIDEKT_PASSWORD from the repo's gitignored .env (falling back to 1Password, which
+prompts Brian), caches the JWT in ~/.config/mtg/archidekt-session.json, and renews it with the refresh token.
 """
 import datetime
 import json
@@ -18,6 +18,7 @@ USERNAME = 'basmith7'
 USER_ID = 309724
 OP_ITEM = '727iygg5qogmtfsx7mfphyubbi'
 SESSION = os.path.expanduser('~/.config/mtg/archidekt-session.json')
+ENV_FILE = os.path.join(os.path.dirname(__file__), '..', '.env')
 TYPES = ['Land', 'Creature', 'Planeswalker', 'Battle', 'Artifact', 'Enchantment', 'Instant', 'Sorcery']
 FORMATS = {'standard': 1, 'modern': 2, 'commander': 3, 'legacy': 4, 'vintage': 5, 'pauper': 6, 'custom': 7,
            'pioneer': 15, 'historic': 16, 'brawl': 13, 'oathbreaker': 14, 'premodern': 22}
@@ -30,10 +31,23 @@ def _save(session):
         json.dump(session, f)
 
 
+def _password():
+    """ARCHIDEKT_PASSWORD from the environment or .env, else 1Password. Never print it."""
+    pw = os.environ.get('ARCHIDEKT_PASSWORD')
+    if not pw and os.path.exists(ENV_FILE):
+        for line in open(ENV_FILE):
+            key, _, value = line.strip().partition('=')
+            if key == 'ARCHIDEKT_PASSWORD':
+                pw = value.strip().strip('"\'')
+    if pw:
+        return pw
+    return subprocess.run(['op', 'item', 'get', OP_ITEM, '--fields', 'password', '--reveal'],
+                          capture_output=True, text=True, check=True).stdout.strip()
+
+
 def login():
-    """Full login. Pipes the password from 1Password; never prints it."""
-    pw = subprocess.run(['op', 'item', 'get', OP_ITEM, '--fields', 'password', '--reveal'],
-                        capture_output=True, text=True, check=True).stdout.strip()
+    """Full login; never prints the password."""
+    pw = _password()
     r = http.request('POST', f'{BASE}/api/rest-auth/login/', {'username': USERNAME, 'password': pw})
     _save({'access': r['access_token'], 'refresh': r.get('refresh_token')})
 
