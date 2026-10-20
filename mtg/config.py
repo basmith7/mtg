@@ -7,6 +7,8 @@ import os
 import subprocess
 
 _REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+# Downloaded data and deck backups, shared by every checkout: ~/.cache/mtg.
+CACHE = os.path.join(os.environ.get('XDG_CACHE_HOME') or os.path.expanduser('~/.cache'), 'mtg')
 
 
 @functools.cache

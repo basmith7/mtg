@@ -5,7 +5,7 @@
     scripts/deck_stats.py --games 20000 --seed 7 decks/commander/*.txt
 
 Roles come from Scryfall oracle tags (`otag:`), one query per role restricted to the deck's cards;
-answers are cached per card in cache/deck_stats_roles.json. Tags are crowd-sourced and a bit noisy,
+answers are cached per card in ~/.cache/mtg/deck_stats_roles.json. Tags are crowd-sourced and a bit noisy,
 so each role query also excludes lands and overlapping roles; read the card lists, not just counts.
 Known noise: ramp counts rituals and treasure makers, removal counts burn and pingers, and
 land-or-spell cards (Valakut Awakening) count as neither lands nor ramp, so LOW flags can be false.
@@ -24,7 +24,7 @@ from collections import Counter
 
 ROOT = os.path.join(os.path.dirname(__file__), '..')
 sys.path.insert(0, ROOT)
-from mtg import decklist, http, scryfall
+from mtg import config, decklist, http, scryfall
 
 # Role -> (Scryfall query suffix, target (min, max) or None). Edit targets freely.
 ROLES = {
@@ -50,7 +50,7 @@ SHOW = ['ramp', 'draw', 'removal', 'counterspell', 'board-wipe', 'tutor', 'prote
 # against his article. Treat as a rough flag, not a verdict. Index: pips -> list for MV 1,2,3,4,5+.
 KARSTEN_99 = {1: [19, 16, 14, 13, 12], 2: [99, 24, 21, 19, 17], 3: [99, 99, 28, 25, 22]}
 
-CACHE = os.path.join(ROOT, 'cache', 'deck_stats_roles.json')
+CACHE = os.path.join(config.CACHE, 'deck_stats_roles.json')
 TYPES = ['Land', 'Creature', 'Planeswalker', 'Battle', 'Artifact', 'Enchantment', 'Instant', 'Sorcery']
 
 

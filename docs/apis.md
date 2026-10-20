@@ -7,9 +7,9 @@ If an endpoint stops working, re-derive it (see "Finding endpoints" at the botto
 
 | Service | What we use it for | Auth | Stability |
 |---|---|---|---|
-| Scryfall | Card data, oracle text, prices, set searches | None | Public, documented |
-| Archidekt | Your decks (the canonical copy), folders, tags, primers, collection | JWT (login) | Private, undocumented |
-| Moxfield | Reading public decks and a collection shared by link | None for public data; login blocked | Private, undocumented |
+| Scryfall | Card data, oracle text, legality, search | None | Public, documented |
+| Archidekt | Your decks (the canonical copy), folders, primers | JWT (login) | Private, undocumented |
+| Moxfield | Reading public decks | None for public data; login blocked | Private, undocumented |
 | Commander Spellbook | Combos a decklist contains or is one card from | None | Public, OpenAPI schema |
 | EDHREC | Card inclusion % and synergy per commander, themes, average decks | None | Private JSON, undocumented |
 | MTGGoldfish | Reading decklists out of articles | None | Scraping |
@@ -26,13 +26,9 @@ The limit is per machine, so several agents running checkers at once hit 429s.
 
 - `GET /cards/search?q=<query>&unique=cards|prints&order=usd&dir=asc` — full Scryfall search syntax.
   Paginated: follow `next_page` until absent.
-  - Every card from a set list: `q=(e:rav or e:gtc or ...) -t:token`, `unique=cards`.
-  - Cheapest printing of a card: `q=!"Card Name" game:paper`, `unique=prints`, `order=usd`, `dir=asc`,
-    then take the lowest `prices.usd` (fall back to `prices.usd_foil`).
 - `GET /cards/named?exact=<name>` — one card. `fuzzy=` also works.
 - Useful card fields: `name`, `mana_cost`, `type_line`, `oracle_text` (or `card_faces[].oracle_text` for
   split/DFC cards), `color_identity`, `rarity`, `legalities`, `prices.usd`, `id` (Scryfall UUID).
-- Prices are TCGplayer market prices, updated daily. Shipping is not included.
 - `POST /cards/collection` (75 names a request) accepts a double-faced card's front-face name, and
   `scryfall.collection()` returns such cards under both the full and the front name, so looping over its
   values gives duplicates. Cards not yet released aren't there (EDHREC has no page for them either).
@@ -45,8 +41,7 @@ Archidekt as `card.uid`.
 ## Archidekt — `https://archidekt.com`
 
 Account settings come from `mtg/config.py`: the environment, else the gitignored `.env` in the main
-checkout (keys in `.env.example`): `ARCHIDEKT_USERNAME`, `ARCHIDEKT_USER_ID` (numeric, used by the
-collection endpoint) and `ARCHIDEKT_PASSWORD`. Without a password the client reads it from the 1Password
+checkout (keys in `.env.example`): `ARCHIDEKT_USERNAME` and `ARCHIDEKT_PASSWORD`. Without a password the client reads it from the 1Password
 item `ARCHIDEKT_OP_ITEM`, which prompts.
 
 ### Auth
@@ -138,8 +133,7 @@ is the number in its URL. `scripts/whoami.py` prints their names.
 
 ## Moxfield — `https://api2.moxfield.com`
 
-Username from `MOXFIELD_USERNAME`. **Scripted login is
-blocked** (`POST /v1/account/token` returns a bare 400, likely a captcha), so we only read public data.
+**Scripted login is blocked** (`POST /v1/account/token` returns a bare 400, likely a captcha), so we only read public data.
 The `v3` deck endpoint sits behind Cloudflare; `v2` works with a normal browser `User-Agent`.
 
 - `GET /v2/decks/all/{publicId}` — a deck. Boards: `commanders`, `mainboard`, `sideboard`, `maybeboard`,
@@ -147,7 +141,7 @@ The `v3` deck endpoint sits behind Cloudflare; `v2` works with a normal browser 
 - `GET /v2/decks/search?authorUserNames=<username>&pageSize=100` — a user's **public** decks.
 - `GET /v1/users/<username>` — profile (shows `collectionVisibility`).
 - `GET /v1/collections/search/{collectionId}?pageNumber=N&pageSize=100&sortType=cardName&sortDirection=ascending`
-  — a collection shared by link. Ours: `MOXFIELD_COLLECTION_ID`. Entries have `quantity`, `isFoil`,
+  — a collection shared by link. Entries have `quantity`, `isFoil`,
   `card.scryfall_id`. Paginated by `totalPages`.
 
 The third-party `moxfield-api` npm package only wraps the public deck/search/card endpoints; it adds
@@ -179,7 +173,7 @@ Public, no auth. OpenAPI schema (Swagger) at `/schema/`; client is `mtg/spellboo
 ## EDHREC — `https://json.edhrec.com/pages`
 
 No auth, no documentation; these are the JSON files the edhrec.com site loads (found 2026-10-09).
-Browser `User-Agent` works; the client keeps ~1 request/sec and caches responses 7 days in `cache/edhrec/`.
+Browser `User-Agent` works; the client keeps ~1 request/sec and caches responses 7 days in `~/.cache/mtg/edhrec/`.
 Slugs: lowercase ASCII, accents stripped, apostrophes dropped, other punctuation to `-`
 (`Ruric Thar, the Unbowed` -> `ruric-thar-the-unbowed`; `Fire // Ice` front face only for commanders).
 

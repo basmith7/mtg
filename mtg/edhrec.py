@@ -11,10 +11,10 @@ import re
 import time
 import unicodedata
 
-from mtg import http
+from mtg import config, http
 
 BASE = 'https://json.edhrec.com/pages'
-CACHE = os.path.join(os.path.dirname(__file__), '..', 'cache', 'edhrec')
+CACHE = os.path.join(config.CACHE, 'edhrec')
 TTL = 7 * 86400
 DELAY = 1.0
 _last = 0.0

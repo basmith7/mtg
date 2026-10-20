@@ -13,8 +13,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 from mtg import archidekt, config
 
 ROOT = os.path.join(os.path.dirname(__file__), '..')
-FOLDERS = {'ARCHIDEKT_DECKS_FOLDER': 'decks you play (default for upload and pull)',
-           'ARCHIDEKT_IDEAS_FOLDER': "other people's lists and ideas",
+FOLDERS = {'ARCHIDEKT_DECKS_FOLDER': 'decks you play (default for pull and push)',
            'ARCHIDEKT_ARCHIVE_FOLDER': 'retired decks (archive, never delete)'}
 
 

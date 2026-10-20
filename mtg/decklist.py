@@ -1,7 +1,8 @@
 """Decklist text files.
 
 Format: an optional header line '# Deck Name | COLORS' (e.g. '# Boros Legion | RW'), then
-'4 Card Name' lines; later '#' lines (e.g. '# source: <url>') are comments. Commander decks add
+'4 Card Name' lines. Later '# key: value' lines are metadata: '# source:' is the deck's Archidekt URL and
+'# updated:' the site version the list was last pulled from or pushed as. Commander decks add
 'Commander: Card Name' lines; the commander is also listed as '1 Card Name' so the count is 100.
 Other lines are ignored.
 """
@@ -36,18 +37,30 @@ def commanders(path):
     return [line.split(':', 1)[1].strip() for line in map(str.strip, open(path)) if line.lower().startswith('commander:')]
 
 
-def source(path):
-    """The URL on the file's '# source: <url>' line, if any."""
+def meta(path, key):
+    """The value on the file's '# key: value' line, if any."""
     for line in map(str.strip, open(path)):
-        if line.lower().startswith('# source:'):
+        if line.lower().startswith(f'# {key}:'):
             return line.split(':', 1)[1].strip()
 
 
-def render(name, colors, commanders, cards, source=None):
-    """The decklist text for parse() to read back: header, optional source, Commander lines, cards."""
+def set_meta(path, key, value):
+    """Write a '# key: value' line, replacing the old one or adding it after the header."""
+    lines = open(path).read().split('\n')
+    new = f'# {key}: {value}'
+    at = next((i for i, l in enumerate(lines) if l.strip().lower().startswith(f'# {key}:')), None)
+    if at is None:
+        lines.insert(1 if lines[0].startswith('#') else 0, new)
+    else:
+        lines[at] = new
+    with open(path, 'w') as f:
+        f.write('\n'.join(lines))
+
+
+def render(name, colors, commanders, cards, source=None, updated=None):
+    """The decklist text for parse() to read back: header, metadata, Commander lines, cards."""
     lines = [f'# {name} | {colors}']
-    if source:
-        lines.append(f'# source: {source}')
+    lines += [f'# {k}: {v}' for k, v in (('source', source), ('updated', updated)) if v]
     lines += [f'Commander: {c}' for c in commanders]
     lines += [f'{q} {c}' for c, q in sorted(cards.items())]
     return '\n'.join(lines) + '\n'

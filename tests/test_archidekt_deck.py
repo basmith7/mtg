@@ -1,10 +1,7 @@
-import json
-import os
-import tempfile
 import unittest
 from collections import Counter
 
-from mtg import archidekt, decklist, quill
+from mtg import archidekt, quill
 
 
 def entry(name, qty=1, cats=('Creature',), deleted=False):
@@ -37,39 +34,11 @@ class ExportTest(unittest.TestCase):
         self.assertEqual(e['dropped'], [])
 
 
-class CompareTest(unittest.TestCase):
-    def write(self, cards, primer=None):
-        d = tempfile.mkdtemp()
-        path = os.path.join(d, 'q.txt')
-        with open(path, 'w') as f:
-            f.write(decklist.render('Q – Games (B3.75)', 'R', ['Q, Stacking the Deck'], Counter(cards)))
-        if primer is not None:
-            with open(os.path.join(d, 'q.md'), 'w') as f:
-                f.write(primer)
-        return path
-
-    def test_matching_deck(self):
-        e = archidekt.export(DECK)
-        c = archidekt.compare(self.write(e['cards'], e['primer'] + '\n'), DECK)
-        self.assertEqual(c, {'missing_on_site': [], 'extra_on_site': [], 'qty_diffs': [],
-                             'commanders_match': True, 'primer': 'same'})
-
-    def test_differences(self):
-        cards = dict(archidekt.export(DECK)['cards'], **{'Mountain': 29, 'Arcane Signet': 1})
-        del cards['Sol Ring']
-        c = archidekt.compare(self.write(cards, 'Something else.'), DECK)
-        self.assertEqual(c['missing_on_site'], ['Arcane Signet'])
-        self.assertEqual(c['extra_on_site'], ['Sol Ring'])
-        self.assertEqual(c['qty_diffs'], ['Mountain: 29 here, 30 on site'])
-        self.assertEqual(c['primer'], 'differs')
-        self.assertEqual(archidekt.compare(self.write(cards), DECK)['primer'], 'site only')
-
-
 class DeckIdTest(unittest.TestCase):
-    def test_deck_id(self):
-        self.assertEqual(archidekt.deck_id('27632721'), 27632721)
-        self.assertEqual(archidekt.deck_id('https://archidekt.com/decks/27632721/q_games'), 27632721)
-        self.assertIsNone(archidekt.deck_id('https://moxfield.com/decks/abc'))
+    def test_deck_id_of(self):
+        self.assertEqual(archidekt.deck_id_of('27632721'), 27632721)
+        self.assertEqual(archidekt.deck_id_of('https://archidekt.com/decks/27632721/q_games'), 27632721)
+        self.assertIsNone(archidekt.deck_id_of('https://moxfield.com/decks/abc'))
 
 
 if __name__ == '__main__':

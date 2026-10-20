@@ -6,7 +6,7 @@
   who this checkout belongs to (`MTG_PLAYER` in `.env`); their profile is `players/<player>.md`.
   "The player" below means them.
 - **Decks live on Archidekt, not in git.** `decks/` is a gitignored working copy. Pull a deck
-  (`scripts/pull_deck.py`) before tuning it; a fresh worktree has no decks until you do. Two sessions
+  (`scripts/pull.py`) before tuning it; a fresh worktree has no decks until you do. Two sessions
   sharing one checkout step on each other's deck files and uploads: give each its own worktree.
 - **Credentials:** never print the Archidekt password or read the gitignored `.env` that holds it.
   `mtg/config.py` reads account settings from there (keys in `.env.example`; linked worktrees use the
@@ -14,8 +14,8 @@
   player. Tokens are cached in `~/.config/mtg/archidekt-session.json`.
 - **Rate limits:** Archidekt returns 429 quickly (keep ~1 req/s; resolve card ids in bulk with
   `archidekt.resolve`, never one name at a time); Scryfall wants ~10 req/s max and an `Accept` header.
-- **Before writing to Archidekt**, back up what you'll change (`sync_deck.py` does this), and confirm
-  deletes with the player. Archive rather than delete (`archidekt.archive`). If `sync_deck.py`
+- **Before writing to Archidekt**, back up what you'll change (`push.py` does this), and confirm
+  deletes with the player. Archive rather than delete (`archidekt.archive`). If `push.py`
   refuses because the site deck changed, pull and redo the change on top; don't `--force` over the
   player's site edits.
 - House rules for Commander decks live in `RULES.md`; each player's taste and preferences in their

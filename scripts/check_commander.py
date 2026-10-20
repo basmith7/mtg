@@ -85,7 +85,7 @@ def check(path, max_gc, allow_ub, combos=True, near=False):
         if not c:
             problems.append(f'not found on Scryfall: {card}')
             continue
-        if c['name'] != card:  # Archidekt can't find a double-faced/split card by its front face
+        if c['name'] != card:  # the site exports the full name, so a front-face name shows up as a change
             problems.append(f'use the full name: {card} -> {c["name"]}')
         if q > 1 and 'Basic' not in c['type_line'] and 'any number of cards named' not in scryfall.oracle_text(c):
             problems.append(f'{q} copies: {card}')

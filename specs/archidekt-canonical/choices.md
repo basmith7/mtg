@@ -72,3 +72,28 @@
   (needs a Scryfall round trip first, and picked a different printing for 18 of 83 cards) and a local
   card database such as MTGJSON or Scryfall bulk data (has no Archidekt ids, so it can't replace this
   call; our Scryfall use is a few cached requests per deck). The `archidekt_card_ids.json` cache goes.
+
+## Start-over review (2026-10-20)
+
+Brian: "is this how we would build everything if we started over? nothing is important so don't keep
+it for tradition ... does everything earn its place?"
+- **Stale guard moved into the file** (`# updated: <site updatedAt>`), replacing the per-machine
+  `~/.cache/mtg/archidekt-seen.json`. The seen file tracked what the *machine* last saw, not what the
+  *file* was based on: pull in two worktrees, push from one, and the other's older copy would push
+  over it unrefused, which is the parallel-agent setup AGENTS.md recommends.
+- **One push command.** `sync_deck.py`, `upload_decks.py` and `verify_decks.py` became `push.py`: a
+  list with a `# source:` line updates its deck, one without creates the deck (refusing if the name is
+  already on the account), `--dry-run` over many lists replaces verify. `pull_deck.py` became `pull.py`.
+  `archidekt.compare` went (a second diff that had to agree with `sync`'s). Dropped flags with no use:
+  `--primer <path>`, `--no-rename`, `--deck`. Pull no longer matches local files by name (migration-era).
+- **Deleted, recoverable from git:** `sim_q.py` (352 lines hard-coded to one deck), the Ravnica paper
+  tooling (`check_decks.py` pricing/proxy lists, `build_pool.py`, `scryfall.set_pool`/`cheapest_usd`),
+  unused client functions (Archidekt collection, folder tree/create, tags; Moxfield collection;
+  `scryfall.named`) and the settings only they read (`ARCHIDEKT_USER_ID`, `ARCHIDEKT_IDEAS_FOLDER`,
+  `MOXFIELD_*`).
+- **One cache dir**, `~/.cache/mtg` (EDHREC pages, role tags, deck backups), so worktrees share it
+  without the repo `cache/` symlink.
+- **Kept on purpose:** stdlib-only scripts with a `sys.path` line (zero install for friends beats a
+  packaged CLI), the `| COLOURS` header (useful at a glance; dropping it would mean re-pulling every
+  copy), the Instagram importer (works, isolated), deck_stats' 60-card mode (a few lines, Ravnica decks
+  still exist).

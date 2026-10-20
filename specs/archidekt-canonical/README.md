@@ -2,8 +2,10 @@
 
 ## Next Agent Prompt
 
-_Last updated 2026-10-20._ Status: everything but 08 is done. Next: Brian closes PR #14 (its rule
-change is ported here), then whole-spec review, the PR for this branch, then 08.
+_Last updated 2026-10-20._ Status: everything but 08 is done, plus a start-over review (see the end of
+choices.md). Next: Brian closes PR #14 (its rule change is ported here), then the PR for this branch,
+then 08. After merging, re-pull the working copy (`scripts/pull.py`): older lists have no `# updated:`
+line, so push refuses them until pulled.
 
 You are finishing this spec in the worktree `~/Projects/mtg-public` (branch `chore/public-archidekt`,
 from master). Every local deck is verified on Archidekt; backups of both checkouts' `decks/` are in

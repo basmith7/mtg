@@ -25,14 +25,13 @@ script also runs by hand.
 Archidekt is where the decks live; this repo holds the tools. `decks/` is a local, gitignored working
 copy:
 
-1. **Pull** a deck, or a whole folder, with `scripts/pull_deck.py`. Each deck becomes a decklist
-   `.txt` with its primer `.md` beside it. The `# source:` line in the list links it back to its deck.
+1. **Pull** a deck, or a whole folder, with `scripts/pull.py`. Each deck becomes a decklist `.txt`
+   with its primer `.md` beside it. The list's `# source:` line links it to its deck, and `# updated:`
+   records which version of the deck it is.
 2. **Tune** it locally with the checkers in `scripts/`.
-3. **Push** it with `scripts/sync_deck.py`, or create a new deck with `scripts/upload_decks.py`.
-   Sync backs up first, and it refuses to overwrite a deck that changed on the site since it was last
-   pulled.
-
-`scripts/verify_decks.py` compares local lists with the site, card for card.
+3. **Push** it with `scripts/push.py`, which also creates the deck for a new list. Push backs up
+   first, and refuses to overwrite a deck that changed on the site since the list's version.
+   `--dry-run` shows what differs, for one list or all of them.
 
 What stays in git besides code: [RULES.md](RULES.md), the playgroup's house rules for Commander decks,
 and [players/](players/README.md), one profile per player with their taste and play log.

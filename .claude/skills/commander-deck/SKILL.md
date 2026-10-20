@@ -12,7 +12,7 @@ description: Use when the player wants a Magic deck built, tuned, imported or pu
    `players/<player>.md` (their taste, extra preferences and play log). Where the profile and the house
    rules differ, the profile wins.
 3. Run everything from the repo root. Decks live on Archidekt and `decks/` is a gitignored working
-   copy, so pull before touching an existing deck: `scripts/pull_deck.py <id|url>`, or no argument for
+   copy, so pull before touching an existing deck: `scripts/pull.py <id|url>`, or no argument for
    every deck in their decks folder.
 
 ## Importing a deck from a link
@@ -57,15 +57,13 @@ facts about the deck and never mentions the checker, sims or scripts. Card count
 permanents") must be computed, not estimated. Agents tend to run long: hold the 300–500 words.
 
 ## Archidekt
-Writes go to the player's real account: upload or sync only when they asked for the deck on Archidekt
-(or confirm first).
-- New deck: `scripts/upload_decks.py decks/commander/<slug>.txt` creates it in their decks folder
-  (`--folder <id>` for another), attaches the `.md` primer and adds a `# source:` line linking the file
-  to the new deck. Names already on the account are skipped.
-- Existing deck: `scripts/sync_deck.py <file> --dry-run`, then without `--dry-run`. It finds the deck from
-  the file's `# source:` line, backs up first and verifies afterwards. It refuses if the deck changed on
-  the site since your pull: pull again and redo your change rather than `--force`.
-- The primer is pushed from the `.md` beside the list only when it changed; `--no-primer` leaves it.
+Writes go to the player's real account: push only when they asked for the deck on Archidekt (or
+confirm first).
+- `scripts/push.py <file> --dry-run`, then without `--dry-run`. A file with a `# source:` line updates
+  that deck; one without becomes a new deck in their decks folder (`--folder <id>` for another) and gets
+  the line. Push backs up first and verifies afterwards. It refuses if the deck changed on the site since
+  the file's `# updated:` version: pull again and redo your change rather than `--force`.
+- The `.md` beside the list is the primer, pushed only when it changed; `--no-primer` leaves it.
 - Never delete on Archidekt without asking; archive instead: `archidekt.archive([deck_id])`.
 
 ## Finishing

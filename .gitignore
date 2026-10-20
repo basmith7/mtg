@@ -1,8 +1,6 @@
-# Archidekt holds the decks; decks/ is each player's local working copy (scripts/pull_deck.py).
+# Archidekt holds the decks; decks/ is each player's local working copy (scripts/pull.py).
 /decks/
-/cache
 __pycache__/
 *.pyc
-/out/
 /.venv/
 .env
