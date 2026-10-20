@@ -97,3 +97,28 @@ it for tradition ... does everything earn its place?"
   packaged CLI), the `| COLOURS` header (useful at a glance; dropping it would mean re-pulling every
   copy), the Instagram importer (works, isolated), deck_stats' 60-card mode (a few lines, Ravnica decks
   still exist).
+
+## Audit before merge (2026-10-20)
+
+Verdicts on the choices above that carry weight, least confident first. The rest are sound,
+low-stakes discretion (naming, file placement, doc layout).
+
+- **Card ids come from a private parser endpoint** (`massDeckEdit`). When a deck gains a card, push
+  sends the new names to the endpoint the site's own "Import cards" box uses and takes the ids it
+  returns. If Archidekt changes that endpoint, every push that adds cards fails before writing (resolve
+  runs first), and the per-name lookup in docs/apis.md is the fallback to rebuild. *Sound, medium:* a
+  loud failure with nothing half-written.
+- **A new list whose name is already on the account is refused**, archived decks included. Push asks
+  for every deck the player owns and stops if one has the same name, telling them to pull it. That
+  stops a re-run or a lost `# source:` line from creating a duplicate, but a player deliberately reusing
+  an archived deck's name must rename one of them. *Sound, medium:* the duplicate is the worse failure.
+- **Lists from before `# updated:` are refused until pulled again.** Push treats "no version recorded"
+  as "the site may have changed". Every working copy needs one `scripts/pull.py` after this merges;
+  the alternative (trust unversioned files once) would reopen the overwrite this guard exists for.
+  *Sound, high:* the hard-cutover policy, noted in the handoff.
+- **Paper tooling deleted** (Ravnica pricing, proxy lists, set pools, the Q simulator). *Sound, high:*
+  Brian asked for the start-over cut, decks are online-first, and git history keeps them.
+- **The version lives in the list, not on the machine.** *Sound, high:* it fixes a real overwrite
+  between worktrees (see the start-over section).
+- **`--dry-run` exits 0 even when lists differ** (verify used to exit 1). *Sound, high:* nothing
+  scripts it; exit 1 now means a push failed or was refused.
