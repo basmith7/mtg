@@ -15,4 +15,3 @@
   rely on memory.
 - `decks/PLAYLOG.md` records how decks actually played. Read it before building or tuning a deck,
   and whenever Brian mentions how a game went, add an entry (and update the "enjoys" summary).
-- Small task: just do it and verify. A new deck project is a medium task: brainstorm briefly first.
