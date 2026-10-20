@@ -40,16 +40,17 @@ Archidekt as `card.uid`.
 
 ## Archidekt — `https://archidekt.com`
 
-Brian's account: username `basmith7`, user id `309724`. Password is in 1Password item
-`727iygg5qogmtfsx7mfphyubbi` ("archidekt.com").
+Brian's account: username `basmith7`, user id `309724`. The client reads the password from
+`ARCHIDEKT_PASSWORD` in the repo's `.env` (gitignored, mode 600). If that's missing it falls back to
+1Password item `727iygg5qogmtfsx7mfphyubbi` ("archidekt.com"), which prompts Brian.
 
 ### Auth
 - `POST /api/rest-auth/login/` `{"username", "password"}` → `access_token`, `refresh_token`.
   Send `Authorization: JWT <access_token>` on every call.
 - `POST /api/rest-auth/token/refresh/` `{"refresh": <refresh_token>}` → new `access`. Use this when a
-  call returns 401 — **don't log in again**: every `op` call pops a 1Password prompt for Brian.
+  call returns 401 — don't log in again needlessly (the client does this).
 - The client caches tokens in `~/.config/mtg/archidekt-session.json` (mode 600, outside the repo).
-- Never print the password. Pipe it from `op` straight into the login request.
+- Never print the password or read `.env` into the transcript.
 
 ### Reading
 - `GET /api/decks/{id}/` — full deck: `name`, `deckFormat`, `description`, `hasPrimer`, `parentFolder`,
