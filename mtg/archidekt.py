@@ -195,13 +195,17 @@ def main_cards(d):
     return out
 
 
+def is_commander(entry):
+    return 'commander' in map(str.lower, entry['categories'])
+
+
 def export(d):
     """A deck JSON as a decklist: {name, commanders, cards (Counter), primer (markdown), dropped
     (primer formatting markdown can't hold, see quill.from_delta)}."""
     main = main_cards(d)
     primer, dropped = quill.from_delta(d.get('description') or '')
     return {'name': d['name'],
-            'commanders': [c for c, es in main.items() if any('commander' in map(str.lower, e['categories']) for e in es)],
+            'commanders': [c for c, es in main.items() if any(map(is_commander, es))],
             'cards': Counter({c: sum(e['quantity'] for e in es) for c, es in main.items()}),
             'primer': primer, 'dropped': dropped}
 
@@ -244,10 +248,10 @@ def sync(path, primer=True, dry_run=False, force=False):
             add.append((c, q))
             continue
         e = entries[0]
-        if e['quantity'] != q or ('Commander' in e['categories']) != (c in cmdrs):
+        if e['quantity'] != q or is_commander(e) != (c in cmdrs):
             mod.append((e, c, q))
     # Card ids and categories for what's added or moved; an unknown card fails here, before any write.
-    cards = resolve([c for c, _ in add] + [c for e, c, _ in mod if ('Commander' in e['categories']) != (c in cmdrs)])
+    cards = resolve([c for c, _ in add] + [c for e, c, _ in mod if is_commander(e) != (c in cmdrs)])
     cat = lambda c: 'Commander' if c in cmdrs else cards[c][1]
     mod = [(e, q, [cat(c)] if c in cards else None) for e, c, q in mod]
     site_md, dropped = quill.from_delta(d.get('description') or '')

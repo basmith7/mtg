@@ -7,9 +7,10 @@
     scripts/pull.py                                          # every deck in ARCHIDEKT_DECKS_FOLDER
 
 Writes the list and its primer as a '.md' beside it, overwriting both. Without -o a deck goes to the
-local file whose '# source:' line names it, else to decks/commander/<name>.txt for Commander decks and
-decks/<name>.txt otherwise. The '# updated:' line records the site version, for push.py. Primer formatting the
-markdown can't hold is reported and dropped (the text is kept).
+local file whose '# source:' line names it, else to decks/commander/<commander>.txt for Commander decks
+and decks/<name>.txt otherwise (the full deck name when that file is taken). The '# updated:' line
+records the site version, for push.py. Primer formatting the markdown can't hold is reported and
+dropped (the text is kept).
 """
 import argparse
 import glob
@@ -28,8 +29,11 @@ def local_path(deck_id, name, commander):
     for f in glob.glob(os.path.join(DECKS, '**', '*.txt'), recursive=True):
         if archidekt.deck_id_of(decklist.meta(f, 'source') or '') == deck_id:
             return f
-    slug = re.sub(r'[^a-z0-9]+', '_', name.split(' – ')[0].lower()).strip('_')
-    return os.path.join(DECKS, 'commander' if commander else '', slug + '.txt')
+    slug = lambda s: re.sub(r'[^a-z0-9]+', '_', s.lower()).strip('_')
+    folder = os.path.join(DECKS, 'commander' if commander else '')
+    path = os.path.join(folder, slug(name.split(' – ')[0]) + '.txt')
+    # A second deck for the same commander must not overwrite the first one's file.
+    return os.path.join(folder, slug(name) + '.txt') if os.path.exists(path) else path
 
 
 def pull(deck_id, path=None):
