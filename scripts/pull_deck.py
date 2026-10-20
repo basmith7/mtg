@@ -3,7 +3,8 @@
 
     scripts/pull_deck.py https://archidekt.com/decks/27632721     # or a deck id
     scripts/pull_deck.py 27632721 -o decks/commander/q.txt
-    scripts/pull_deck.py --folder 1914431                         # every deck in a folder
+    scripts/pull_deck.py --folder <id>                            # every deck in a folder
+    scripts/pull_deck.py                                          # every deck in ARCHIDEKT_DECKS_FOLDER
 
 Writes the list and its primer as a '.md' beside it, overwriting both. Without -o a deck goes to the
 local file that already holds it (matched by its '# source:' URL, then by its '# Name' header), else to
@@ -18,7 +19,7 @@ import sys
 import time
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
-from mtg import archidekt, decklist, scryfall
+from mtg import archidekt, config, decklist, scryfall
 
 DECKS = os.path.join(os.path.dirname(__file__), '..', 'decks')
 
@@ -64,10 +65,12 @@ def main():
     ids = [archidekt.deck_id(x) for x in a.decks]
     if None in ids:
         sys.exit(f'pull_deck: not a deck id or Archidekt URL: {a.decks[ids.index(None)]}')
+    if not ids and not a.folder:
+        a.folder = [int(config.get('ARCHIDEKT_DECKS_FOLDER'))]
     for folder in a.folder:
         ids += [d['id'] for d in archidekt.folder(folder)['decks']]
-    if not ids or (a.out and len(ids) != 1):
-        ap.error('give one or more decks or --folder; -o takes exactly one deck')
+    if a.out and len(ids) != 1:
+        ap.error('-o takes exactly one deck')
     for i, deck_id in enumerate(ids):
         if i:
             time.sleep(1)  # Archidekt rate-limits quickly

@@ -2,23 +2,25 @@
 
 ## Next Agent Prompt
 
-_Last updated 2026-10-20._ Status: 01–05 and 07 done; 00's code done. Next: slice 00's gate (the
-roulette session must finish and merge), then 06 cutover, then 08.
+_Last updated 2026-10-20._ Status: everything but 08 is done. Next: Brian closes PR #14 (its rule
+change is ported here), then whole-spec review, the PR for this branch, then 08.
 
-You are implementing this spec in the worktree `~/Projects/mtg-public` (branch
-`chore/public-archidekt`, from master). The main checkout `~/Projects/mtg` is shared with another
-agent session that is uploading the roulette batch; don't edit files there until slice 00 passes.
-Start at slice 00. Before ending a pass, tick the TODO below and rewrite this section with the next
-pickup point.
+You are finishing this spec in the worktree `~/Projects/mtg-public` (branch `chore/public-archidekt`,
+from master). Every local deck is verified on Archidekt; backups of both checkouts' `decks/` are in
+`~/.cache/mtg-backups/decks-*.tgz`. **Merging this branch into a checkout deletes its tracked deck
+files** (the cutover untracks them): copy `decks/` aside first and restore it after, keeping this
+worktree's `decks/ravnica/` (it has the new `.md` primers and `# source:` lines). Before ending a pass,
+tick the TODO below and rewrite this section with the next pickup point.
 
-- [ ] 00 Gate: roulette batch merged, `verify_decks.py` shows every local deck on Archidekt — [slices/00-gate-verify.md](slices/00-gate-verify.md)
+- [x] 00 Gate: roulette batch merged, `verify_decks.py` shows every local deck on Archidekt — [slices/00-gate-verify.md](slices/00-gate-verify.md)
 - [x] 01 Config seam: account details out of code — [slices/01-config.md](slices/01-config.md)
 - [x] 02 Decklist + primer round-trip, offline — [slices/02-roundtrip.md](slices/02-roundtrip.md)
 - [x] 03 `pull_deck.py` (one deck or a whole folder) — [slices/03-pull.md](slices/03-pull.md)
 - [x] 04 Stale-push guard on `sync` — [slices/04-stale-guard.md](slices/04-stale-guard.md)
 - [x] 05 Ravnica: primers to `.md`, upload Core decks — [slices/05-ravnica.md](slices/05-ravnica.md)
-- [ ] 06 Audit, backup, cutover (gitignore + untrack) — [slices/06-cutover.md](slices/06-cutover.md)
+- [x] 06 Audit, backup, cutover (gitignore + untrack) — [slices/06-cutover.md](slices/06-cutover.md)
 - [x] 07 Docs, LICENSE, skill workflow — [slices/07-docs.md](slices/07-docs.md)
+- [x] 09 A playgroup: house rules + player profiles — [slices/09-players.md](slices/09-players.md)
 - [ ] 08 Delete merged branches; flip public (gated) — [slices/08-publish.md](slices/08-publish.md)
 
 Warnings: never print or `cat` `.env`; never `git push --all`/`--mirror` (local `refs/t3/*`
@@ -37,7 +39,8 @@ but are gitignored. Code, docs, `decks/PLAYLOG.md` and `decks/commander/RULES.md
   editing decks purely via API calls (hard to check a whole draft before it goes live).
 - **Roulette batch** goes to the Commander folder (1914431); another session is uploading it now.
 - **Ravnica Core** decks get uploaded as separate decks, "<Name> (Core)", folder 1914718.
-- **PLAYLOG.md and RULES.md** stay committed and become public.
+- **PLAYLOG.md and RULES.md** stay committed and become public; later reshaped by slice 09 into
+  house rules plus per-player profiles (`players/`), the audience being Brian's playgroup.
 - **Hard cutover:** no compat shims, no migrations. Old decks stay in git history (no rewrite;
   they aren't sensitive).
 - **Merged-branch deletion** approved ("Let's do all that"). **Flipping visibility** is not yet

@@ -48,3 +48,20 @@
 - **README sheds the script/flag roster:** each script's docstring is its usage. Price-cache note
   moved into `check_decks.py`'s docstring.
 - **LICENSE holder "basmith7"** (the GitHub account), MIT, 2026.
+
+## Slices 06 and 09, and the roulette session's lessons
+- **`decks/` is ignored wholesale** (PLAYLOG and RULES moved out), and `/cache` without a trailing
+  slash so a worktree's `cache` symlink to the main checkout's cache is ignored too.
+- **Profiles are named for `MTG_PLAYER`** (`players/brian.md`); "Universes Beyond: ask first" and
+  "plays online" moved from the house rules into Brian's profile.
+- **Folder ids are `.env` settings**, not docs; `upload_decks.py` and `pull_deck.py` default to
+  `ARCHIDEKT_DECKS_FOLDER`.
+- **The checker flags non-canonical names** (`use the full name: A -> A // B`): Archidekt can't find a
+  double-faced card by its front face, and that failure surfaced only at upload.
+- **PR #14's primer-audience rule ported** (primers never mention our tools); its deck files are
+  redundant with Archidekt, so it can close unmerged.
+- **Not built (noted in docs instead):** a `--primer-only` sync (pull-first plus "primer written only if
+  changed" covers it), a cap on `check_commander.py --near` output, and deck_stats role-tag noise.
+- **Tahngarth:** Tear Asunder (black kicker in an RG deck) swapped for Return to Nature before upload.
+- **Anzrag** had an empty archived twin on Archidekt; the local file now carries the real deck's
+  `# source:` line.

@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """Upload decklists (with optional primers) to your Archidekt account.
 
-    scripts/upload_decks.py --folder 1914718 decks/ravnica/core/*.txt
+    scripts/upload_decks.py decks/commander/foo.txt            # into ARCHIDEKT_DECKS_FOLDER
+    scripts/upload_decks.py --folder <id> decks/ravnica/core/*.txt
 
 A 'deck.md' beside 'deck.txt' is that deck's primer. Each file gets a '# source:' line linking it to
 its new deck, for sync_deck.py. A file whose deck name already exists on the account is skipped, so
@@ -14,15 +15,16 @@ import os
 import sys
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
-from mtg import archidekt, decklist, quill
+from mtg import archidekt, config, decklist, quill
 
 
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('decks', nargs='+')
-    ap.add_argument('--folder', type=int, required=True)
+    ap.add_argument('--folder', type=int, help='Archidekt folder id (default: ARCHIDEKT_DECKS_FOLDER)')
     ap.add_argument('--format', help='default: commander for lists with a Commander: line, else custom')
     a = ap.parse_args()
+    a.folder = a.folder or int(config.get('ARCHIDEKT_DECKS_FOLDER'))
 
     existing = {d['name']: d['id'] for d in archidekt.my_decks()}
     for path in a.decks:

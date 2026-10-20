@@ -1,63 +1,79 @@
 ---
 name: commander-deck
-description: Use when Brian wants a Magic deck built, tuned, imported or put on Archidekt — "build a <commander> deck", "improve this deck", "add this deck (link) to Archidekt", "write a primer", or when he says how a game with one of his decks went.
+description: Use when the player wants a Magic deck built, tuned, imported or put on Archidekt — "build a <commander> deck", "improve this deck", "add this deck (link) to Archidekt", "write a primer", or when they say how a game with one of their decks went.
 ---
 
 # Commander deck workflow
 
-Read `AGENTS.md`, `decks/commander/RULES.md` (power target, card rules, primer format) and `decks/PLAYLOG.md`
-(what he actually enjoys) first. Run everything from the repo root. Decks live on Archidekt;
-`decks/` is a gitignored working copy, so pull before touching an existing deck:
-`scripts/pull_deck.py <id|url>` (or `--folder 1914431` for every Commander deck).
-Brian plays Commander online, so price doesn't matter; paper decks are rare and get their own rules. Universes Beyond cards: ask first.
+## Before anything
+1. `scripts/whoami.py` says who the player is (`MTG_PLAYER`) and which Archidekt folders are theirs.
+   If it fails, help them fill in `.env` from `.env.example` before going further.
+2. Read `AGENTS.md`, `RULES.md` (house rules: power target, card rules, primer format) and
+   `players/<player>.md` (their taste, extra preferences and play log). Where the profile and the house
+   rules differ, the profile wins.
+3. Run everything from the repo root. Decks live on Archidekt and `decks/` is a gitignored working
+   copy, so pull before touching an existing deck: `scripts/pull_deck.py <id|url>`, or no argument for
+   every deck in their decks folder.
 
 ## Importing a deck from a link
-Someone else's deck: `scripts/import_deck.py <url> -o decks/commander/<slug>.txt` handles Moxfield, Archidekt, MTGGoldfish,
-plain-text lists and Instagram reels (caption → link-in-bio → Moxfield/Archidekt profile). Instagram
-needs the repo `.venv` with yt-dlp; the script prints the one-line setup if it's missing. If it lists
-candidates instead of picking one, show Brian the candidates rather than guessing.
-Then ask Brian whether to keep the list close to the original or tune it to RULES.md before changing
-cards. Rename the header to "Commander – Nickname (B#)" and credit the original author in the primer.
+Someone else's deck: `scripts/import_deck.py <url> -o decks/commander/<slug>.txt` handles Moxfield,
+Archidekt, MTGGoldfish, plain-text lists and Instagram reels (caption → link-in-bio → Moxfield/Archidekt
+profile). Instagram needs the repo `.venv` with yt-dlp; the script prints the one-line setup if it's
+missing. If it lists candidates instead of picking one, show the player the candidates rather than
+guessing. Then ask whether to keep the list close to the original or tune it to the rules before
+changing cards. Rename the header to "Commander – Nickname (B#)" and credit the original author in the
+primer.
 
 ## Building or tuning
 1. **Start from data, not memory.** `scripts/edhrec_recs.py "<Commander>" --themes`, then
-   `--theme <t>` for the angle Brian wants, and `--deck <file>` on a draft for missing staples and cut
-   candidates. "Not on the EDHREC list" only means outside its top lists; low inclusion % is the real
-   cut signal. Taste beats popularity: keep odd, fun cards that fit the PLAYLOG.
+   `--theme <t>` for the angle the player wants, and `--deck <file>` on a draft for missing staples and
+   cut candidates. "Not on the EDHREC list" only means outside its top lists; low inclusion % is the
+   real cut signal. Taste beats popularity: keep odd, fun cards that fit the player's profile.
 2. **Check roles and mana.** `scripts/deck_stats.py <file>` shows ramp, draw, removal and wipe counts
    against targets, colour sources, and a goldfish sim (commander on curve %). Fix shortfalls.
-3. **Check legality and combos.** `scripts/check_commander.py <file> --near` must show no `!!` lines.
-   `!!` lines are flags to fix or justify (the rule is moderation). Fun late combos are fine; fast infinite combos (pieces totalling 6 MV or less, or rated Ruthless/Banned by
-   Spellbook) are not. `--near`
-   shows combos one card away, for suggestions or to avoid half-building one.
-4. **Verify card text** against Scryfall (`scryfall.collection(names)`, `scryfall.oracle_text(card)`)
+3. **Check legality and combos.** `scripts/check_commander.py <file> --near` must show no `!!` lines:
+   fix them or justify them (the rule is moderation). Fun late combos are fine; fast infinite combos
+   (pieces totalling 6 MV or less, or rated Ruthless/Banned by Spellbook) are not. `--near` shows
+   combos one card away, for suggestions or to avoid half-building one.
+4. **Use canonical names and check legality while drafting**, not at the end. Double-faced, split and
+   adventure cards need the full `A // B` name (Archidekt can't find "Brazen Borrower"; the checker flags
+   it). Drafts have picked banned (Dockside Extortionist), Universes Beyond (Delighted Halfling) and
+   off-colour cards (Phyrexian Metamorph in RG). Red decks keep landing one card from a fast combo:
+   Dualcaster Mage with Twinflame / Heat Shimmer / Electroduplicate / Molten Duplication, Reiterate with
+   Jeska's Will, Rionya with Terror of the Peaks.
+5. **Verify card text** against Scryfall (`scryfall.collection(names)`, `scryfall.oracle_text(card)`)
    before writing anything about a card.
-5. A brand-new deck is a medium task: give Brian a short pitch (angle, nickname, key cards) before
-   building the full list. Tuning an existing deck: just do it and report the swaps.
+6. A brand-new deck is a medium task: give the player a short pitch (angle, nickname, key cards)
+   before building the full list, unless they already gave the direction (e.g. "build these seven").
+   Tuning an existing deck: just do it and report the swaps.
+
+**Several decks at once:** give each subagent one deck to draft and check (files only), then upload
+from one place, serially and in the background: new cards cost ~1 s each in Archidekt lookups, so a
+batch takes minutes, and parallel Scryfall checks from many agents hit 429s.
 
 ## Primer
-`<slug>.md` beside the list, in the format RULES.md describes (what/why fun, How it plays, How it wins,
-Key cards, Tips; ~300–500 words; `[[Card Name]]` links). Combo claims come from the checker's output
-only. Card counts you state (e.g. "94 permanents") must be computed, not estimated.
+`<slug>.md` beside the list, in the format RULES.md describes, written for any player reading it on
+Archidekt. Which combos to name comes from the checker's output only, but the primer states them as
+facts about the deck and never mentions the checker, sims or scripts. Card counts you state (e.g. "94
+permanents") must be computed, not estimated. Agents tend to run long: hold the 300–500 words.
 
 ## Archidekt
-Writes go to Brian's real account: upload or sync only when he asked for the deck on Archidekt (or
-confirm first), and check the folder id before creating anything.
-- New deck: `scripts/upload_decks.py --folder <id> decks/commander/<slug>.txt` (uses the `.md` primer,
-  and adds a `# source:` line linking the file to the new deck).
-  Folders: Commander `1914431` (played online), Paper `1914435`, Lists & Ideas `1914436` (other people's
-  lists and ideas), Archive `1914437`.
+Writes go to the player's real account: upload or sync only when they asked for the deck on Archidekt
+(or confirm first).
+- New deck: `scripts/upload_decks.py decks/commander/<slug>.txt` creates it in their decks folder
+  (`--folder <id>` for another), attaches the `.md` primer and adds a `# source:` line linking the file
+  to the new deck. Names already on the account are skipped.
 - Existing deck: `scripts/sync_deck.py <file> --dry-run`, then without `--dry-run`. It finds the deck from
   the file's `# source:` line, backs up first and verifies afterwards. It refuses if the deck changed on
   the site since your pull: pull again and redo your change rather than `--force`.
 - The primer is pushed from the `.md` beside the list only when it changed; `--no-primer` leaves it.
-- Never delete on Archidekt without asking; archive instead: `archidekt.move([deck_id], 1914437)`.
+- Never delete on Archidekt without asking; archive instead: `archidekt.archive([deck_id])`.
 
 ## Finishing
 The deck is done when it's on Archidekt; deck files aren't committed. Report the Archidekt link, the
-swaps and why, checker output, Game Changers used, and anything unverified. Changes to RULES.md,
-PLAYLOG.md or the tools go on a branch with a PR (Brian merges with merge commits).
+swaps and why, checker output, Game Changers used, and anything unverified. Changes to `RULES.md`, a
+profile in `players/` or the tools go on a branch with a PR.
 
 ## After games
-When Brian says how a game went, add an entry to `decks/PLAYLOG.md` and update its "enjoys" summary if
-a pattern is emerging. Offer tuning swaps if something flopped.
+When the player says how a game went, add an entry to the play log in `players/<player>.md` and update
+its "enjoys" summary if a pattern is emerging. Offer tuning swaps if something flopped.

@@ -11,9 +11,7 @@ DECKS = os.path.join(os.path.dirname(__file__), '..', 'decks')
 
 def primers():
     """Every deck primer in the local working copy (none in a fresh clone)."""
-    out = {p: pathlib.Path(p).read_text() for p in glob.glob(os.path.join(DECKS, '**', '*.md'), recursive=True)
-           if not p.endswith(('PLAYLOG.md', 'RULES.md'))}
-    return out
+    return {p: pathlib.Path(p).read_text() for p in glob.glob(os.path.join(DECKS, '**', '*.md'), recursive=True)}
 
 
 class FromDeltaTest(unittest.TestCase):

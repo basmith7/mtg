@@ -378,6 +378,11 @@ def update(deck_id, **fields):
     return call('PATCH', f'/api/decks/{deck_id}/update/', fields)
 
 
+def archive(deck_ids):
+    """Move decks to the player's archive folder (ARCHIDEKT_ARCHIVE_FOLDER). Archive rather than delete."""
+    return move(deck_ids, int(config.get('ARCHIDEKT_ARCHIVE_FOLDER')))
+
+
 def move(deck_ids, folder_id):
     return call('PATCH', '/api/massUpdate/',
                 {'items': [{'type': 'deck', 'id': i, 'patch': {'parentFolder': folder_id}} for i in deck_ids]})

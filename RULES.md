@@ -1,15 +1,10 @@
 # Commander deck rules
 
-How Brian wants Commander decks built. This is the default for every deck unless he says otherwise
-for one. He plays Commander **online** (MTGO/Arena-style clients or SpellTable), so price doesn't
-matter and any card is available. Paper decks are rare; agree rules for those one at a time.
-
-## Who he is as a player
-His decks lean toward table politics and weird interaction: forced combat and goad (Kardur, Thantis),
-stealing (Kotis, Don Andres, Tergrid), chaos (Yusri coin flips, Obosh odd costs, Xantcha), meld, and
-spellslinging. He tags commanders "Very Silly", "Hmmmm" and "Actually Good". **Fun first, winning
-second.** A good deck makes memorable turns, interacts with the whole table, and can still close a
-game. `decks/PLAYLOG.md` records how his decks actually play; it beats this paragraph when they differ.
+The playgroup's house rules for Commander decks: the default for every deck unless the player says
+otherwise for one. Each player's taste, extra preferences and play log live in
+`players/<MTG_PLAYER>.md`; read it too, and when it and these rules differ, the player wins.
+**Fun first, winning second.** A good deck makes memorable turns, interacts with the whole table,
+and can still close a game.
 
 ## Power: "bracket 3.75", everything in moderation
 A strong bracket 3 or light bracket 4. The rule is moderation, not a checklist: the deck should feel
@@ -27,15 +22,15 @@ guideposts, so break them when the deck's plan calls for it and say why.
 - **Avoid:** extra-turn chains and mass land destruction.
 
 ## Cards
-- **Universes Beyond** (Fallout, Warhammer, LotR, Doctor Who, Final Fantasy, Marvel, etc.): avoid
-  them, and only if a deck really needs one, ask Brian first. D&D sets (AFR, CLB, AFC) count as normal
-  Magic. The Wise Mothman deck is already approved for UB cards, especially Fallout rad-counter cards.
+- **Universes Beyond** (Fallout, Warhammer, LotR, Doctor Who, Final Fantasy, Marvel, etc.): follow
+  the player's profile; without a stated preference, ask first. D&D sets (AFR, CLB, AFC) count as
+  normal Magic.
 - Verify every card exists and does what you think. Rules text in the primer must match Scryfall
   oracle text (`scryfall.collection(names)`, `scryfall.oracle_text(card)`). Don't rely on memory.
 - Use the exact Scryfall card names. Double-faced and split cards take the full name with ` // `.
 
 ## Someone else's list
-When importing a deck (a netdeck, a video, a friend's list), ask Brian whether to keep it close to
+When importing a deck (a netdeck, a video, a friend's list), ask the player whether to keep it close to
 the original or tune it to these rules before changing cards. Credit the original author in the primer.
 
 ## Files
@@ -50,14 +45,20 @@ Commander: Karazikar, the Eye Tyrant
 ...
 14 Mountain
 ```
-The deck name follows "Commander – Theme or nickname (B3.75)". Make the nickname playful, like his
-other decks ("Kenrith – Big Booty", "Talrand – Counter Target Dan").
+Partner commanders (or a commander plus its Background) get a `Commander:` line each, and each is also
+listed as `1 Card Name`.
+
+The deck name follows "Commander – Theme or nickname (B3.75)". Make the nickname playful, like the
+player's other decks (e.g. "Kenrith – Big Booty", "Talrand – Counter Target Dan").
 
 `<slug>.md` is the primer, in light markdown: `## ` headings, `- ` bullets, `**bold**`, and `[[Card Name]]`
-links. Keep it about 300–500 words, in plain, direct English. Sections:
+links. Keep it about 300–500 words, in plain, direct English. It's public on Archidekt, so write for any
+player picking up the deck: state combos, odds and card counts as plain facts about the deck ("Etali
+usually lands by turn 5–6"). Never mention our tools in a primer (no "the checker", "goldfish sim" or
+script names); tooling and build notes go in your reply to the player. Sections:
 1. One or two lines on what the deck is and why it's fun.
 2. `## How it plays`: early, mid and late game.
-3. `## How it wins`: list the win routes. Call out any late-game combos honestly.
+3. `## How it wins`: list the win routes. Name any late-game combos and what they need.
 4. `## Key cards`: 6–10 bullets, each with what the card actually does, checked against oracle text.
 5. `## Tips`: table politics, sequencing, and what to mulligan for.
 
@@ -75,8 +76,8 @@ that is infinite or wins the game, say what it needs, and don't claim combos the
 `deck_stats.py` flags LOW/HIGH role counts against generic targets; judge them against the deck's plan.
 Also look at the land count (usually 35–37, fewer with heavy ramp) and the curve.
 
-While building, only write the two deck files: uploading to Archidekt and committing are separate
-steps (see `.claude/skills/commander-deck`), done when Brian has asked for them.
+While building, only write the two deck files: uploading to Archidekt is a separate step (see
+`.claude/skills/commander-deck`), done when the player has asked for it. Deck files are never committed.
 
 End your reply with the checker's output, your Game Changers and why you chose them, and anything you
 weren't sure about.

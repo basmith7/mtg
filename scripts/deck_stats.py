@@ -7,6 +7,10 @@
 Roles come from Scryfall oracle tags (`otag:`), one query per role restricted to the deck's cards;
 answers are cached per card in cache/deck_stats_roles.json. Tags are crowd-sourced and a bit noisy,
 so each role query also excludes lands and overlapping roles; read the card lists, not just counts.
+Known noise: ramp counts rituals and treasure makers, removal counts burn and pingers, and
+land-or-spell cards (Valakut Awakening) count as neither lands nor ramp, so LOW flags can be false.
+LOW/HIGH flags judge against generic targets; a deck's plan can rightly break them. The goldfish
+ignores colours and commander tax, so its on-curve odds run optimistic.
 Commander lists (a 'Commander:' line) are 99-card libraries; other lists are treated as 60-card.
 """
 import argparse
