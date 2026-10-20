@@ -12,7 +12,7 @@
 - **Death pings:** [[Goblin Bombardment]] sacrifices Devils to deal 1 damage each, and each Devil token also pings on death.
 - **Big burn:** [[Fireball]], [[Comet Storm]] and [[Banefire]], fuelled by [[Jeska's Will]].
 - **Fliers and Titans:** [[Terror of the Peaks]] and [[Inferno Titan]].
-- **Combos:** the checker lists none in this deck.
+- **Combos:** none. It wins through damage.
 
 ## Key cards
 - [[Temple Bell]]: each player draws a card. Tap it on your turn and every opponent draws off-turn for Zurzoth.

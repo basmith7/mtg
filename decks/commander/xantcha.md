@@ -10,7 +10,7 @@ Xantcha starts on an opponent's side of the table and has to attack every turn, 
 - **Drain:** [[Exsanguinate]], [[Choice of Damnations]] or [[Prisoner's Dilemma]] on a weakened table.
 - **Damage redirect:** [[Brash Taunter]] or [[Stuffy Doll]] with [[Blasphemous Act]] deals 13 to a player.
 - **Late-game combos** (three, all 8+ mana total; [[Demonic Tutor]] can find a piece):
-  - [[Fire Covenant]] + [[Brash Taunter]] or [[Stuffy Doll]]: pay X life and put all X damage on your indestructible creature; it deals X to an opponent. Needs more life than your target, so it ends a game rather than starting one. Spellbook rates the Doll version Ruthless, but it can't happen before you have 8 mana.
+  - [[Fire Covenant]] + [[Brash Taunter]] or [[Stuffy Doll]]: pay X life and put all X damage on your indestructible creature; it deals X to an opponent. Needs more life than your target, so it ends a game rather than starting one. It can't happen before you have 8 mana.
   - [[Blasphemous Act]] + [[Repercussion]]: every creature takes 13, so each player takes 13 per creature they control, you included. Cast it when your board is small and theirs isn't.
 
 ## Key cards

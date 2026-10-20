@@ -35,8 +35,8 @@ cards. Rename the header to "Commander – Nickname (B#)" and credit the origina
 
 ## Primer
 `<slug>.md` beside the list, in the format RULES.md describes (what/why fun, How it plays, How it wins,
-Key cards, Tips; ~300–500 words; `[[Card Name]]` links). Combo claims come from the checker's output
-only. Card counts you state (e.g. "94 permanents") must be computed, not estimated.
+Key cards, Tips; ~300–500 words; `[[Card Name]]` links), written for any player reading it on Archidekt.
+Combo claims come from the checker's output only, stated as facts about the deck. Card counts you state (e.g. "94 permanents") must be computed, not estimated.
 
 ## Archidekt
 Writes go to Brian's real account: upload or sync only when he asked for the deck on Archidekt (or

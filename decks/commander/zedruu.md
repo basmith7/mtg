@@ -2,14 +2,14 @@ Zedruu gives your stuff to the table and pays you for it: every upkeep you gain 
 
 ## How it plays
 - **Early:** rocks ([[Sol Ring]], three Signets, two Talismans, [[Thought Vessel]]) and cheap gifts. [[Humble Defector]] draws two cards and hands itself to an opponent, which counts for Zedruu straight away. [[Goblin Cadets]] gives itself away whenever it blocks.
-- **Mid:** cast Zedruu on turn 4 (about 90% by turn 4 in the goldfish sim). Pay {U}{R}{W} to hand a permanent to whoever needs a friend. Peace offerings ([[Propaganda]], [[Windborn Muse]], [[Pramikon, Sky Rampart]]) keep you alive while the gifts pile up.
+- **Mid:** cast Zedruu on turn 4. Pay {U}{R}{W} to hand a permanent to whoever needs a friend. Peace offerings ([[Propaganda]], [[Windborn Muse]], [[Pramikon, Sky Rampart]]) keep you alive while the gifts pile up.
 - **Late:** the table owns half your board, your hand is full and your life total is huge. Time to spend it.
 
 ## How it wins
 - **Life as a weapon:** [[Aetherflux Reservoir]] turns the life Zedruu gains into 50 damage. [[Alhammarret's Archive]] doubles both the life and the cards.
 - **Cursed parting gifts:** give an opponent [[Illusions of Grandeur]] (they lose 20 when it leaves) or [[Delusions of Mediocrity]] (10). They pay upkeep or take it.
 - **Draw-based:** [[Jace, Wielder of Mysteries]] wins when you draw from an empty library; [[Approach of the Second Sun]] wins on its second cast.
-- The checker lists no combos in the deck, so none of these is a combo. The Aetherflux and Approach lines are plain card text and need a lot of life or mana.
+- None of these is an instant win: Aetherflux and Approach need a lot of life or mana.
 
 ## Key cards
 - [[Zedruu the Greathearted]]: {U}{R}{W}: target opponent gains control of target permanent you control. At your upkeep, gain X life and draw X, where X is the permanents you own that opponents control.

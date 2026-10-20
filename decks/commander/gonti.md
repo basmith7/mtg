@@ -10,7 +10,7 @@ A heist deck. Small, sneaky creatures connect, and every hit lets you play a car
 - **Pump the team:** [[Overwhelming Stampede]] adds the greatest power among your creatures to each of your creatures and gives them trample.
 - **Poison:** [[Triumph of the Hordes]] gives your creatures +1/+1, trample and infect until end of turn. A wide board of thieves can reach 10 poison in one swing.
 - **Their own cards:** stolen threats and free spells from [[Villainous Wealth]] often end the game.
-- The checker lists 0 combos in the deck. There are no infinite combos, so the game ends through combat.
+- There are no infinite combos, so the game ends through combat.
 
 ## Key cards
 - [[Gonti, Canny Acquisitor]]: when your creatures deal combat damage to a player, exile that player's top card face down. You may play it and spend mana of any type. Spells you cast but don't own cost {1} less.

@@ -54,10 +54,12 @@ The deck name follows "Commander – Theme or nickname (B3.75)". Make the nickna
 other decks ("Kenrith – Big Booty", "Talrand – Counter Target Dan").
 
 `<slug>.md` is the primer, in light markdown: `## ` headings, `- ` bullets, `**bold**`, and `[[Card Name]]`
-links. Keep it about 300–500 words, in plain, direct English. Sections:
+links. Keep it about 300–500 words, in plain, direct English. It's public on Archidekt, so write for any
+player picking up the deck: state combos, odds and card counts as plain facts about the deck ("Etali
+usually lands by turn 5–6"), with the tooling and build notes kept in your reply to Brian. Sections:
 1. One or two lines on what the deck is and why it's fun.
 2. `## How it plays`: early, mid and late game.
-3. `## How it wins`: list the win routes. Call out any late-game combos honestly.
+3. `## How it wins`: list the win routes. Name any late-game combos and what they need.
 4. `## Key cards`: 6–10 bullets, each with what the card actually does, checked against oracle text.
 5. `## Tips`: table politics, sequencing, and what to mulligan for.
 

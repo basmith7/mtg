@@ -12,7 +12,7 @@ Maelstrom Wanderer is an 8-mana slot machine: cast it, flip two free spells, and
 - **Poison:** [[Etali, Primal Conqueror // Etali, Primal Sickness]] can transform late and give out poison counters.
 - **Late combos (not turn-2/3 wins):**
   - [[Hullbreaker Horror]] + [[Sol Ring]] makes infinite colourless mana (total mana value 8). Horror's cast trigger bounces Sol Ring; tap it in response, then recast it for {1} to net mana each loop.
-  - [[Old Gnawbone]] + [[Hellkite Charger]] makes infinite combat phases, damage and Treasure (total mana value 13). Each attack needs {5}{R}{R} for Charger's untap-and-extra-combat trigger. Wanderer gives Gnawbone haste, and the checker wants both unblockable, which flying usually covers.
+  - [[Old Gnawbone]] + [[Hellkite Charger]] makes infinite combat phases, damage and Treasure (total mana value 13). Each attack needs {5}{R}{R} for Charger's untap-and-extra-combat trigger. Wanderer gives Gnawbone haste, and the loop wants both unblockable, which flying usually covers.
 
 ## Key cards
 - **[[Maelstrom Wanderer]]:** creatures you control have haste; cascade, cascade.

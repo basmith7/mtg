@@ -5,12 +5,12 @@ Mono-red roulette. Q pulls one random spell out of your library, and from then o
 
 **Mid:** cast Q. It exiles cards from the top until it hits a nonland card, and that card gains "Exile a card from your hand: Create a copy of this card. You may cast the copy." You pay the copy's mana cost, and only on your turn. The ability lives on the exiled card, so it keeps working if Q dies. Make Q enter again for more jackpots: [[Helm of the Host]], [[Splinter Twin]], [[Molten Echoes]] (name "Q"), [[Mirror March]], [[Conjurer's Closet]], [[Heat Shimmer]], and [[Panharmonicon]] for two hits at once.
 
-**Late:** refill your hand with wheels, then cash it in. In goldfish testing, Q triggers about 4–5 times by turn 10 and casts about 6 copies. A typical big turn is 2–3 copies, and 1 game in 6 has a 5-copy turn. Mana and spare cards run out at about the same rate, so wheels, [[Seething Song]] and [[Brass's Bounty]] are the hits that keep a turn going.
+**Late:** refill your hand with wheels, then cash it in. Expect Q to trigger 4–5 times by turn 10 and cast about 6 copies. A typical big turn is 2–3 copies, and 1 game in 6 has a 5-copy turn. Mana and spare cards run out at about the same rate, so wheels, [[Seething Song]] and [[Brass's Bounty]] are the hits that keep a turn going.
 
 ## How it wins
 - **Burn by the handful:** copied [[Fireball]], [[Comet Storm]], [[Banefire]] or [[Lightning Bolt]], made bigger by [[Guttersnipe]], [[Torbran, Thane of Red Fell]] or [[Fiery Emancipation]].
 - **Token armies:** copies of [[Terror of the Peaks]], [[Inferno Titan]] or [[Siege-Gang Commander]].
-- **Backup combos.** The pieces also work as Q cards, but in goldfish testing (`scripts/sim_q.py`) a combo lands by turn 10 in only about 16% of games:
+- **Backup combos.** The pieces also work as Q cards, but Q picks them at random, so a combo assembles by turn 10 in only about 1 game in 6:
   - **Dualcaster:** cast [[Heat Shimmer]], [[Twinflame]] or [[Electroduplicate]], then flash in [[Dualcaster Mage]] to copy it onto itself. Each new Dualcaster copies the spell again, for infinite hasty tokens.
   - **Endless combat:** [[Combat Celebrant]] wearing [[Helm of the Host]], enchanted with [[Splinter Twin]], or copied by [[Fable of the Mirror-Breaker // Reflection of Kiki-Jiki]]'s Reflection. A fresh, unexerted copy each combat means another combat each time.
   - **Table nuke:** [[Blasphemous Act]] with [[Repercussion]] out deals each player 13 damage per creature they control, you included.

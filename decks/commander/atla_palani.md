@@ -8,7 +8,7 @@ Atla Palani makes 0/1 Eggs, and every time one dies you reveal cards until you h
 ## How it wins
 - **Big stuff:** The reveals and cheats ([[Elvish Piper]], [[Sneak Attack]], [[Natural Order]]) put fatties out early, and [[Terror of the Peaks]] or [[Warstorm Surge]] turn each arrival into damage.
 - **Combat and pings:** [[Craterhoof Behemoth]] and [[Mirror Entity]] make a wide board of Eggs lethal, and [[Goblin Bombardment]] turns each Egg into 1 damage plus a free creature.
-- **Combo (late, from the checker):** Atla + [[Mirror Entity]] + [[Worldspine Wurm]] is the one included combo: Mirror Entity for X=0 kills every creature you control but Atla, and each death triggers Atla. Spellbook rates it infinite (total mana value 18) but it needs a way to raise only Atla's toughness, which this deck has no dedicated card for. Treat it as a rare accident, not a plan.
+- **Combo (late):** Atla + [[Mirror Entity]] + [[Worldspine Wurm]]: Mirror Entity for X=0 kills every creature you control but Atla, and each death triggers Atla. It loops infinitely, but it needs a way to raise only Atla's toughness, which this deck has no dedicated card for. Treat it as a rare accident, not a plan.
 
 ## Key cards
 - [[Annie Joins Up]]: deals 5 damage to a creature or planeswalker, and triggered abilities of your legendary creatures trigger an additional time. Atla's trigger is one, so every Egg death reveals twice.

@@ -1,7 +1,7 @@
 A roulette casino with a dinosaur at the door. [[Etali, Primal Conqueror // Etali, Primal Sickness]] flips the top of every library and you cast the lot for free, so the table's own decks play against it. The whole deck is about getting Etali to enter more than once.
 
 ## How it plays
-- **Early:** 21 creatures and 11 rocks and dorks (Elvish Mystic, Birds, Sol Ring and friends) plus six land-fetch spells get you to seven mana. Etali is castable by turn 5 about 46% of the time in the goldfish sim, turn 7 about 77%.
+- **Early:** 21 creatures and 11 rocks and dorks (Elvish Mystic, Birds, Sol Ring and friends) plus six land-fetch spells get you to seven mana. Expect Etali around turn 5–7.
 - **Mid:** [[Possibility Storm]] and [[Etali, Primal Storm]] start the chaos before the big one lands, while [[Tireless Tracker]], [[Sylvan Library]] and [[Outpost Siege]] keep cards coming.
 - **Late:** Etali enters, everyone's best cards get cast on your behalf, then you copy him and do it again.
 
@@ -9,7 +9,7 @@ A roulette casino with a dinosaur at the door. [[Etali, Primal Conqueror // Etal
 - **Stolen board:** whatever the table is built around gets cast under your control. Hold up [[Return of the Wildspeaker]] or cast [[Craterhoof Behemoth]] once the board is wide.
 - **Dragon damage:** [[Terror of the Peaks]] pings for every creature that enters, including each Etali copy and every stolen creature.
 - **Insurrection:** [[Insurrection]] and [[Zealous Conscripts]] borrow the whole table's creatures for one swing.
-- **Late combo, honestly:** the checker lists one included combo: [[Orthion, Hero of Lavabrink]] + [[Terror of the Peaks]] (near-infinite damage, 9 mana value total, not rated FAST). Orthion copies Terror at sorcery speed and the damage triggers add up.
+- **Late combo:** [[Orthion, Hero of Lavabrink]] + [[Terror of the Peaks]] makes near-infinite damage. Orthion copies Terror at sorcery speed and the damage triggers add up.
 
 ## Key cards
 - [[Hellkite Courser]]: puts your commander onto the battlefield with haste, so Etali's trigger happens without casting him. He returns to the command zone at end step, so you can do it again.
@@ -28,4 +28,4 @@ A roulette casino with a dinosaur at the door. [[Etali, Primal Conqueror // Etal
 - Gamble, Natural Order and Eldritch Evolution all find Etali. Natural Order needs a green creature to sacrifice, so keep an Elf.
 - Keep hands with two lands plus a dork or rock. Do not mulligan for the commander; mulligan for mana.
 - Aim at the player who is ahead. Your own cast spells will handle the rest.
-- Game Changers (4 by the checker): Natural Order, Gamble, Jeska's Will, Ancient Tomb.
+- Game Changers (4): Natural Order, Gamble, Jeska's Will, Ancient Tomb.

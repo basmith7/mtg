@@ -2,14 +2,14 @@ Tivit runs a crooked election every time it enters or connects. Every vote pays 
 
 ## How it plays
 - **Early:** Make land drops and cast rocks ([[Sol Ring]], Signets, Talismans). Set up draw engines ([[Rhystic Study]], [[Esper Sentinel]]) and play cheap voters like [[Grudge Keeper]] and [[Tyrant's Choice]].
-- **Mid:** Tivit costs six, so expect it around turn 5 or 6 (the goldfish casts it by turn 4 about a third of the time, turn 5 about half, turn 6 about 70%). You vote twice, so each election gives you at least two tokens, and each opponent adds one more. [[Ballot Broker]] and [[Brago's Representative]] add more votes, which helps you win votes on [[Coercive Portal]], [[Magister of Worth]] and [[Council's Judgment]].
+- **Mid:** Tivit costs six, so expect it around turn 5 or 6. You vote twice, so each election gives you at least two tokens, and each opponent adds one more. [[Ballot Broker]] and [[Brago's Representative]] add more votes, which helps you win votes on [[Coercive Portal]], [[Magister of Worth]] and [[Council's Judgment]].
 - **Late:** Flicker Tivit with [[Ephemerate]], [[Thassa, Deep-Dwelling]], [[Conjurer's Closet]], [[Brago, King Eternal]] or [[Abuelo, Ancestral Echo]]. Turn the pile of tokens into cards, mana, or one of the wins below.
 
 ## How it wins
 - **Treasure pile:** [[Revel in Riches]] wins at your upkeep if you control ten or more Treasures. Each Tivit trigger gives roughly two to five tokens, and some of those are Clues, so it takes a few elections or an Academy Manufactor.
 - **Sacrifice drain:** [[Disciple of the Vault]] and [[Marionette Apprentice]] make opponents lose 1 life each time an artifact (Treasures and Clues count) goes to the graveyard. It's a slow drain that finishes a weakened table, not a quick kill.
 - **Air force:** Tivit, [[Restoration Angel]] and [[Teysa, Opulent Oligarch]]'s Spirits beat down in the air, with [[Grudge Keeper]] chipping in.
-- **Late-game combo (be upfront about it):** Tivit paired with [[Deadeye Navigator]] is the one combo the checker lists (infinite mana, total mana value 12, not fast). Navigator costs {4}{U}{U}. Each flicker costs {1}{U} and Tivit's trigger returns at least two tokens, but opponents choose their own votes, so it only reliably nets mana if you control the votes with [[Illusion of Choice]] (or they vote for bribery). Then finish with Revel in Riches, Disciple or Marionette Apprentice. [[Ballot Broker]] and [[Brago's Representative]] help but aren't required.
+- **Late-game combo:** Tivit paired with [[Deadeye Navigator]] makes infinite mana. Navigator costs {4}{U}{U}. Each flicker costs {1}{U} and Tivit's trigger returns at least two tokens, but opponents choose their own votes, so it only reliably nets mana if you control the votes with [[Illusion of Choice]] (or they vote for bribery). Then finish with Revel in Riches, Disciple or Marionette Apprentice. [[Ballot Broker]] and [[Brago's Representative]] help but aren't required.
 
 ## Key cards
 - [[Illusion of Choice]]: {U}, you choose how each player votes this turn, then draw a card. Cast it in response to Tivit's trigger.

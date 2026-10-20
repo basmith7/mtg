@@ -9,7 +9,7 @@ A mono-red-leaning Izzet slot machine. Every instant or sorcery you cast is a co
 - **Burn out:** Fireball and Comet Storm, copied by winning flips, plus Guttersnipe and [[Thermo-Alchemist]] pings.
 - **Luck:** [[Chance Encounter]] wins at ten luck counters, one per coin flip won, and with Krark on board that arrives faster than it sounds.
 - **Reservoir:** [[Aetherflux Reservoir]] turns a long chain of spells into 50 life and 50 damage.
-- **Combos:** the checker lists exactly one included combo, [[Brash Taunter]] + [[Aetherflux Reservoir]] (infinite damage), and it needs lifelink on Taunter and 51 life. The deck has no way to give lifelink, so treat it as a curiosity, not a plan. It is not FAST.
+- **Combos:** [[Brash Taunter]] + [[Aetherflux Reservoir]] is infinite damage, but it needs lifelink on Taunter and 51 life. The deck has no way to give lifelink, so treat it as a curiosity, not a plan.
 
 ## Key cards
 - [[Krark's Thumb]]: you flip two coins and ignore one, so Krark's flips and every other flip in the deck get better.

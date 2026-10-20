@@ -9,7 +9,7 @@ Jeleva is a flying Vampire Wizard who loots every library at the table, then let
 - **Combat plus free spells:** Jeleva flies, and every attack is a free spell from somebody's deck. [[Thief of Sanity]] and [[Etali, Primal Storm]] do the same tricks.
 - **Burn and drain:** [[Comet Storm]], [[Crackle with Power]], [[Torment of Hailfire]] and [[Guttersnipe]] close once the mana is there.
 - **Theft:** [[Insurrection]] hits for everyone's creatures at once; [[Bribery]] takes the best creature from an opponent's library.
-- No infinite combos are in the deck (the checker lists 0 included combos). Combos that are one card away exist, but none are built in.
+- No infinite combos are in the deck.
 
 ## Key cards
 - [[Jeleva, Nephalia's Scourge]]: ETB exiles the top X of each library; on attack, cast one exiled instant or sorcery free.

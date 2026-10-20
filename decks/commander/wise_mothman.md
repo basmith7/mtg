@@ -13,7 +13,7 @@ Rad counters sit on players, not permanents. At the start of each player's preco
 ## How it wins
 - **Fliers with counters:** Mothman and [[Screeching Scorchbeast]] get very big very fast.
 - **Mill:** rad counters plus Bruvac, [[Fraying Sanity]] and [[Phenax, God of Deception]]. Once your creatures are huge, Phenax lets each one mill a player for its toughness.
-- No infinite or game-winning combos in the deck (the combo checker lists none). Phenax with big creatures is the strongest finisher, but it needs a built-up board.
+- No infinite or game-winning combos in the deck. Phenax with big creatures is the strongest finisher, but it needs a built-up board.
 
 ## Key cards
 - [[The Wise Mothman]]: each player gets a rad counter when it enters or attacks. Whenever nonland cards are milled, put a +1/+1 counter on each of up to X target creatures, where X is how many were milled.

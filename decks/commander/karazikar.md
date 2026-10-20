@@ -13,7 +13,7 @@ A black-red goad deck that turns the whole table into a brawl and gets paid for 
 - Let the table wear itself down, then drain the survivors with [[Exsanguinate]] or [[Torment of Hailfire]].
 - [[Blood Artist]], [[Falkenrath Noble]], [[Syr Konrad, the Grim]] and [[Kardur, Doomscourge]] drain the table as creatures die in combat.
 - [[Insurrection]] takes everyone's creatures for a swing that ends the game. [[Mob Rule]] takes only creatures with power 4 or more, or only power 3 or less.
-- The checker finds no infinite or game-winning combos in the deck, so there is no combo finish.
+- There are no infinite or game-winning combos in the deck, so there is no combo finish.
 
 ## Key cards
 

@@ -3,7 +3,7 @@ Ruric Thar hits anyone who casts a noncreature spell for 6, so the whole table g
 Built on willy's (@unmagical.mtg) "54 Feral Hogs" list ([Moxfield](https://moxfield.com/decks/t9G16DLc5EO0uYOuDftBIQ)), cut down to fewer noncreature spells and topped with more big creatures.
 
 ## How it plays
-- **Early:** mana creatures. [[Llanowar Elves]], [[Birds of Paradise]], [[Paradise Druid]], [[Incubation Druid]], [[Wood Elves]] and [[Sakura-Tribe Elder]] get Ruric out early: the goldfish sim casts it by turn 5 in 60% of games. Only ten cards in the deck aren't creatures or lands, so Ruric rarely hurts you. Cast [[Sol Ring]] and [[Rhythm of the Wild]] before Ruric lands.
+- **Early:** mana creatures. [[Llanowar Elves]], [[Birds of Paradise]], [[Paradise Druid]], [[Incubation Druid]], [[Wood Elves]] and [[Sakura-Tribe Elder]] get Ruric out early, usually by turn 5. Only ten cards in the deck aren't creatures or lands, so Ruric rarely hurts you. Cast [[Sol Ring]] and [[Rhythm of the Wild]] before Ruric lands.
 - **Mid:** Ruric comes down and has to attack every combat. Vigilance keeps it home as a 6/6 reach blocker too. Back it up with engines: [[Beast Whisperer]] and [[Soul of the Harvest]] draw cards, [[Goreclaw, Terror of Qal Sisma]] cuts the cost of big creatures, and [[Garruk's Horde]] lets you cast creatures off the top of your library.
 - **Late:** big threats that are good the turn they land: [[Terror of the Peaks]], [[Inferno Titan]], [[Ghalta, Primal Hunger]], [[Elder Gargaroth]], [[Molten Primordial]], then a finisher.
 
