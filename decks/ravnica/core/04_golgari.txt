@@ -1,4 +1,5 @@
-# Golgari Swarm | BG
+# Golgari Swarm (Core) | BG
+# source: https://archidekt.com/decks/27636450
 4 Glowspore Shaman
 3 Kraul Harpooner
 3 Rhizome Lurcher

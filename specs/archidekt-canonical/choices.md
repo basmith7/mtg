@@ -36,3 +36,15 @@
   `# source:` URL (hard cutover of the old `<deck> <decklist>` order).
 - **`upload_decks.py` writes `# source:` into the uploaded file** so sync finds the new deck.
 - **The stamp is recorded only when the post-sync re-read matches**; a mismatch leaves the deck stale.
+
+## Slices 05 and 07
+- **The live Ravnica decks hold the power lists**, and `primers_core.py` held the power primers (named
+  for the file, not the version). Core primers were written fresh from each Core list (a subagent,
+  oracle text checked; one mana-cost slip fixed) because mechanically dropping lines that named
+  missing cards left empty sections.
+- **Core decks are named "<Name> (Core)"** in the header, so `sync` keeps that name.
+- **`upload_decks.py` skips a name that already exists** (idempotent re-runs) and resolves every card
+  before creating the deck (the other session's fix, adopted here).
+- **README sheds the script/flag roster:** each script's docstring is its usage. Price-cache note
+  moved into `check_decks.py`'s docstring.
+- **LICENSE holder "basmith7"** (the GitHub account), MIT, 2026.

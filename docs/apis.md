@@ -56,10 +56,12 @@ item `ARCHIDEKT_OP_ITEM`, which prompts.
 ### Reading
 - `GET /api/decks/{id}/` — full deck: `name`, `deckFormat`, `description`, `hasPrimer`, `parentFolder`,
   `categories[]` (with `includedInDeck`), `cards[]` (each: `quantity`, `categories[]`, `modifier`,
-  `card.id` = Archidekt card id, `card.uid` = Scryfall id, `card.oracleCard.name`). Public decks need no auth.
+  `card.id` = Archidekt card id, `card.uid` = Scryfall id, `card.oracleCard.name`, `deletedAt`), and
+  `createdAt` / `updatedAt` (ISO timestamps; `updatedAt` moves on any edit, which `sync` uses to spot site
+  edits since the last pull). Public decks need no auth.
 - `GET /api/decks/v3/?ownerUsername=<username>&pageSize=50&page=N` — list decks.
 - `GET /api/decks/folderTree/` — folder hierarchy. `GET /api/decks/folders/{id}/?pageSize=100` — folder
-  contents (`decks[]`, `subfolders`, `count`).
+  contents (`decks[]`, `subfolders`, `count`, `next`; pages with `&page=N`).
 - `GET /api/collection/<user id>/v2/?game=1&page=N&pageSize=100` — collection entries (`quantity`, `foil`,
   `card.uid`, `card.id`). Paginated by `totalPages`.
 - `GET /api/cards/v2/?exact=true&name=<name>` — card lookup → every printing with its Archidekt `id`.
@@ -88,7 +90,9 @@ item `ARCHIDEKT_OP_ITEM`, which prompts.
   Add, modify and remove can share a request, but the client sends them as separate calls.
 - **Rename / description / primer:** `PATCH /api/decks/{id}/update/` with `{"name"}` or
   `{"description": <Quill delta JSON string>, "hasPrimer": true}`. The update endpoint **ignores**
-  `parentFolder`.
+  `parentFolder`. Primers written on the site use more of Quill than `mtg/quill.py`'s markdown holds
+  (h1/h3/h4, italic, colour, background, code, links, ordered lists, indents, image embeds; seen in 14
+  of 62 Commander decks on 2026-10-20), so `sync` leaves an unchanged primer alone.
 - **Move decks or rename folders:** `PATCH /api/massUpdate/` with
   `{"items": [{"type": "deck"|"folder", "id": N, "patch": {"parentFolder": F}}]}` (also `{"name"}`,
   `{"private"}` for folders).

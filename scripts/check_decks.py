@@ -6,7 +6,8 @@
         --proxy-at 1 --lists out/ decks/ravnica/extra/*.txt
 
 Checks: 60 cards, max 4 copies of non-basics, colors within the header's colors, and (with --pool)
-that every card is in the card pool. Prices each card at its cheapest printing on Scryfall.
+that every card is in the card pool. Prices each card at its cheapest printing on Scryfall, cached in
+cache/prices.json (delete it to re-price).
 
 --owned  JSON {card name: qty} of spare cards; they're used before buying, allocated across decks
          in the order given so two decks never claim the same physical copy.

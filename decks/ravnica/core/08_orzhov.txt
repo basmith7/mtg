@@ -1,4 +1,5 @@
-# Orzhov Syndicate | WB
+# Orzhov Syndicate (Core) | WB
+# source: https://archidekt.com/decks/27636464
 4 Tithe Drinker
 4 Imperious Oligarch
 4 Ministrant of Obligation

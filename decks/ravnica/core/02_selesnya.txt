@@ -1,4 +1,5 @@
-# Selesnya Conclave | GW
+# Selesnya Conclave (Core) | GW
+# source: https://archidekt.com/decks/27636444
 4 Watchwolf
 3 Ledev Champion
 2 Vitu-Ghazi Guildmage

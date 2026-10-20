@@ -1,78 +1,47 @@
 # mtg
 
-Tools and notes for Brian's Magic: The Gathering stuff: Archidekt deck management, Moxfield reads,
-Scryfall card data and pricing, and deck projects.
+Python tools for building and tuning Magic: The Gathering decks, mostly Commander, around an
+[Archidekt](https://archidekt.com) account. The tools pull decks down, check legality, combos and
+mana, pull recommendations from EDHREC and Commander Spellbook, and push the changes back up. Standard
+library only.
 
-- **[docs/apis.md](docs/apis.md)** — how each site's API works (Archidekt and Moxfield are private,
-  reverse-engineered APIs). Start here.
-- **`mtg/`** — small Python clients, standard library only:
-  `archidekt.py` (login/refresh, decks, folders, tags, collection, card ids, writes, `sync`),
-  `moxfield.py` (public decks, shared collection), `scryfall.py` (search, cheapest price, set pools),
-  `edhrec.py` (EDHREC recs, themes, average decks; cached), `spellbook.py` (Commander Spellbook: combos
-  in a decklist), `quill.py` (markdown → Archidekt primer format), `decklist.py` (decklist files).
-- **`.claude/skills/commander-deck`** — the import/build/tune/primer/upload workflow (available to sessions started in this folder).
-- **`scripts/`**
-  - `build_pool.py [sets...]` — every card from some sets into `cache/pool.json` (default: Ravnica).
-  - `check_decks.py` — validate decklists (60 cards, 4-of, colors, in pool) and price them, with an
-    optional buy/proxy split and owned-card allocation.
-  - `check_commander.py` — validate Commander lists: 100 singleton cards, colour identity, legality,
-    Game Changer count (`--max-gc`, default 4) and no Universes Beyond (`--allow-ub` to permit). Also lists the
-    combos the deck contains via Commander Spellbook (fast infinite combos — pieces totalling 6 mana value or
-    less, or rated Ruthless/Banned — are `!!` problems; `--near` adds combos missing one card, `--no-combos` skips
-    the network call).
-  - `edhrec_recs.py "Commander" [--theme X] [--deck file]` — EDHREC recommendations by category with
-    inclusion% and synergy; with `--deck`, what you're missing and cut candidates.
-  - `import_deck.py <url|file>` — turn a Moxfield / Archidekt / MTGGoldfish / plain-text / Instagram link into
-    a deck.txt (`-o` to write, `--name` to rename). Instagram needs yt-dlp in a repo-local venv:
-    `python3 -m venv .venv && .venv/bin/pip install yt-dlp`.
-  - `deck_stats.py` — numbers for a decklist: role counts from Scryfall oracle tags (ramp, draw, removal,
-    counters, wipes, tutors, protection, recursion) against targets, coloured sources vs pip demand,
-    land count, curve and types, and a 10k-game goldfish (odds of casting the commander on curve, ramp
-    by turn 2). Targets live in dicts at the top of the script; role tags are noisy, so read the lists.
-    `scripts/deck_stats.py decks/commander/<slug>.txt [--games N] [--seed N]`
-  - `upload_decks.py` — create decks on Archidekt in a folder, file cards by type (commanders under
-    Commander), attach primers (`--primers` file, or a `deck.md` beside `deck.txt`).
-  - `sync_deck.py <deck id or URL> deck.txt` — make an Archidekt deck match a decklist: removes, adds and
-    adjusts quantities (Maybeboard, Sideboard and not-in-deck categories untouched, existing categories kept),
-    renames the deck to the file's `#` header, updates the primer from a `deck.md` beside it (`--primer`,
-    `--no-primer`), then re-reads and verifies. New card ids are resolved before any write.
-    `--dry-run` prints the diff only; `--no-rename` keeps the name. Backs up to `~/.cache/mtg-backups/`.
-- **`decks/PLAYLOG.md`** — how decks actually played and what Brian enjoys; read before tuning a deck.
-- **`decks/`** — deck projects. `decks/ravnica/`: the 22 Ravnica-sets-only decks from 2026-10-03
-  (`power/` = the 10 guild decks, `extra/` = 12 themed decks, `core/` = cheaper beginner versions of the
-  guild decks), their primers, `BUY_ALL.txt` / `PROXY_ALL.txt`, and `spare_cards.json` (owned cards not
-  in a paper deck at the time).
+**Use at your own risk.** The Archidekt and Moxfield clients use private, reverse-engineered APIs (see
+[docs/apis.md](docs/apis.md)). Those APIs can change without notice, and both sites rate-limit
+quickly, so keep requests slow.
 
-`cache/` (git-ignored) holds the card pool, a price cache and Archidekt card ids. Delete `prices.json` to
-re-price. The Archidekt login lives outside the repo in `~/.config/mtg/archidekt-session.json`.
+## Setup
 
-## Quick start
+Copy [.env.example](.env.example) to `.env` (gitignored) and fill in your own Archidekt account.
+Linked git worktrees read the main checkout's `.env`. Card data comes from Scryfall and needs no
+account.
 
-```sh
-scripts/build_pool.py                       # once, or with other set codes
-scripts/check_decks.py --pool cache/pool.json decks/ravnica/power/*.txt
-scripts/check_decks.py --pool cache/pool.json --owned decks/ravnica/spare_cards.json \
-    --proxy-at 1 --lists out/ decks/ravnica/power/*.txt
-scripts/upload_decks.py --folder <archidekt folder id> --primers decks/ravnica/primers_core.py deck.txt
-```
+## How decks are kept
 
-```python
-from mtg import archidekt, moxfield, scryfall
-archidekt.folder_tree()
-moxfield.public_decks()
-scryfall.cheapest_usd('Lightning Helix')
-```
+Archidekt is where the decks live; this repo holds the tools. `decks/` is a local, gitignored working
+copy:
 
-## Decklist format
+1. **Pull** a deck, or a whole folder, with `scripts/pull_deck.py`. Each deck becomes a decklist
+   `.txt` with its primer `.md` beside it. The `# source:` line in the list links it back to its deck.
+2. **Tune** it locally with the checkers in `scripts/`.
+3. **Push** it with `scripts/sync_deck.py`, or create a new deck with `scripts/upload_decks.py`.
+   Sync backs up first, and it refuses to overwrite a deck that changed on the site since it was last
+   pulled.
 
-```
-# Boros Legion | RW
-4 Legion Warboss
-4 Sacred Foundry
-8 Mountain
-```
+`scripts/verify_decks.py` compares local lists with the site, card for card.
 
-The header's color letters (WUBRG) drive the color check. Commander lists add a
-`Commander: Card Name` line and list the commander as `1 Card Name` too, so they total 100;
-`decks/commander/` holds them. Later `#` lines (such as `# source: <url>`, which `import_deck.py` adds) are
-comments. `decks/commander/` with `RULES.md`: Brian's deck-building rules (the default for every deck).
+What stays in git besides code: [decks/commander/RULES.md](decks/commander/RULES.md) (deck-building
+rules) and [decks/PLAYLOG.md](decks/PLAYLOG.md) (how decks actually played).
+
+## Layout
+
+- **`mtg/`**: clients and formats. `archidekt`, `moxfield`, `scryfall`, `edhrec` and `spellbook`
+  wrap one site each. `decklist` owns the decklist text format, `quill` owns primer markdown ↔
+  Archidekt's rich text, and `config` reads account settings.
+- **`scripts/`**: command-line tools. Each one's docstring is its usage (`--help`).
+- **`docs/apis.md`**: what we know about each site's API. Read it before changing a client.
+- **`.claude/skills/commander-deck`**: the agent workflow for building, tuning and uploading decks.
+- **`tests/`**: offline tests. Run them with `python3 -m unittest discover tests`.
+
+## License
+
+[MIT](LICENSE).

@@ -6,11 +6,13 @@ description: Use when Brian wants a Magic deck built, tuned, imported or put on 
 # Commander deck workflow
 
 Read `AGENTS.md`, `decks/commander/RULES.md` (power target, card rules, primer format) and `decks/PLAYLOG.md`
-(what he actually enjoys) first. Run everything from the repo root. Brian plays Commander online,
-so price doesn't matter; paper decks are rare and get their own rules. Universes Beyond cards: ask first.
+(what he actually enjoys) first. Run everything from the repo root. Decks live on Archidekt;
+`decks/` is a gitignored working copy, so pull before touching an existing deck:
+`scripts/pull_deck.py <id|url>` (or `--folder 1914431` for every Commander deck).
+Brian plays Commander online, so price doesn't matter; paper decks are rare and get their own rules. Universes Beyond cards: ask first.
 
 ## Importing a deck from a link
-`scripts/import_deck.py <url> -o decks/commander/<slug>.txt` handles Moxfield, Archidekt, MTGGoldfish,
+Someone else's deck: `scripts/import_deck.py <url> -o decks/commander/<slug>.txt` handles Moxfield, Archidekt, MTGGoldfish,
 plain-text lists and Instagram reels (caption → link-in-bio → Moxfield/Archidekt profile). Instagram
 needs the repo `.venv` with yt-dlp; the script prints the one-line setup if it's missing. If it lists
 candidates instead of picking one, show Brian the candidates rather than guessing.
@@ -41,17 +43,20 @@ only. Card counts you state (e.g. "94 permanents") must be computed, not estimat
 ## Archidekt
 Writes go to Brian's real account: upload or sync only when he asked for the deck on Archidekt (or
 confirm first), and check the folder id before creating anything.
-- New deck: `scripts/upload_decks.py --folder <id> decks/commander/<slug>.txt` (uses the `.md` primer).
+- New deck: `scripts/upload_decks.py --folder <id> decks/commander/<slug>.txt` (uses the `.md` primer,
+  and adds a `# source:` line linking the file to the new deck).
   Folders: Commander `1914431` (played online), Paper `1914435`, Lists & Ideas `1914436` (other people's
   lists and ideas), Archive `1914437`.
-- Existing deck: `scripts/sync_deck.py <id or url> <file> --dry-run`, then without `--dry-run`. It backs
-  up first and verifies afterwards.
-- `sync_deck.py` overwrites the primer from the `.md` beside the list; pass `--no-primer` to leave it.
+- Existing deck: `scripts/sync_deck.py <file> --dry-run`, then without `--dry-run`. It finds the deck from
+  the file's `# source:` line, backs up first and verifies afterwards. It refuses if the deck changed on
+  the site since your pull: pull again and redo your change rather than `--force`.
+- The primer is pushed from the `.md` beside the list only when it changed; `--no-primer` leaves it.
 - Never delete on Archidekt without asking; archive instead: `archidekt.move([deck_id], 1914437)`.
 
 ## Finishing
-Commit the deck files on a branch and open a PR (Brian merges with merge commits). Report the Archidekt
-link, the swaps and why, checker output, Game Changers used, and anything unverified.
+The deck is done when it's on Archidekt; deck files aren't committed. Report the Archidekt link, the
+swaps and why, checker output, Game Changers used, and anything unverified. Changes to RULES.md,
+PLAYLOG.md or the tools go on a branch with a PR (Brian merges with merge commits).
 
 ## After games
 When Brian says how a game went, add an entry to `decks/PLAYLOG.md` and update its "enjoys" summary if

@@ -13,8 +13,7 @@
   New deck: draft locally, upload. Finishing: sync to Archidekt (guarded), report the link; commit
   only code/docs/PLAYLOG/RULES changes. Remove "commit the deck files on a branch and open a PR".
 - `docs/apis.md`: pull, the timestamp field, `.env` keys.
-- Run `write-docs` over README; scrub the personal ids quoted in this spec (or decide they stay —
-  they're in history anyway).
+- Run `write-docs` over README.
 
 **Verify:** `git grep` for the ids → none; README links resolve.
 

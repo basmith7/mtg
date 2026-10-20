@@ -1,4 +1,5 @@
-# Gruul Rubblebelt Riot | RG
+# Gruul Rubblebelt Riot (Core) | RG
+# source: https://archidekt.com/decks/27636487
 4 Zhur-Taa Goblin
 4 Burning-Tree Emissary
 2 Gruul Spellbreaker

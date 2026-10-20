@@ -1,4 +1,5 @@
-# Izzet Spellstorm | UR
+# Izzet Spellstorm (Core) | UR
+# source: https://archidekt.com/decks/27636447
 4 Blistercoil Weird
 4 Goblin Electromancer
 3 Wee Dragonauts

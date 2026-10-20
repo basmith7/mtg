@@ -1,4 +1,5 @@
-# Boros Legion | RW
+# Boros Legion (Core) | RW
+# source: https://archidekt.com/decks/27636433
 4 Goblin Banneret
 4 Boros Challenger
 4 Sunhome Stalwart

@@ -1,4 +1,5 @@
-# Azorius Law & Order | WU
+# Azorius Law & Order (Core) | WU
+# source: https://archidekt.com/decks/27636458
 4 Azorius Arrester
 4 Lyev Skyknight
 3 Skymark Roc

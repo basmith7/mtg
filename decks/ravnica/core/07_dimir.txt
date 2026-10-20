@@ -1,4 +1,5 @@
-# Dimir Spies & Secrets | UB
+# Dimir Spies & Secrets (Core) | UB
+# source: https://archidekt.com/decks/27636461
 4 Dimir Spybug
 4 Nightveil Sprite
 3 Darkblade Agent

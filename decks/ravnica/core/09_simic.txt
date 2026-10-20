@@ -1,4 +1,5 @@
-# Simic Combine Labs | GU
+# Simic Combine Labs (Core) | GU
+# source: https://archidekt.com/decks/27636483
 4 Experiment One
 4 Cloudfin Raptor
 4 Shambleshark

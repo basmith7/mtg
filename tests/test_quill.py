@@ -2,8 +2,6 @@ import glob
 import json
 import os
 import pathlib
-import runpy
-import sys
 import unittest
 
 from mtg import quill
@@ -12,15 +10,9 @@ DECKS = os.path.join(os.path.dirname(__file__), '..', 'decks')
 
 
 def primers():
-    """Every primer in the working copy: deck .md files and the Ravnica PRIMERS dicts."""
+    """Every deck primer in the local working copy (none in a fresh clone)."""
     out = {p: pathlib.Path(p).read_text() for p in glob.glob(os.path.join(DECKS, '**', '*.md'), recursive=True)
            if not p.endswith(('PLAYLOG.md', 'RULES.md'))}
-    for p in glob.glob(os.path.join(DECKS, 'ravnica', 'primers_*.py')):
-        sys.path.insert(0, os.path.dirname(p))  # primers_extra imports primers_core
-        try:
-            out.update({f'{p}:{k}': v for k, v in runpy.run_path(p)['PRIMERS'].items()})
-        finally:
-            sys.path.pop(0)
     return out
 
 

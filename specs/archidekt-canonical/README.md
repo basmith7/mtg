@@ -2,8 +2,8 @@
 
 ## Next Agent Prompt
 
-_Last updated 2026-10-20._ Status: 01–04 done; 00's code done (gate waits on the roulette
-session). Live Ravnica decks are the **power** versions (verified). Next: slice 00's gate, then 05.
+_Last updated 2026-10-20._ Status: 01–05 and 07 done; 00's code done. Next: slice 00's gate (the
+roulette session must finish and merge), then 06 cutover, then 08.
 
 You are implementing this spec in the worktree `~/Projects/mtg-public` (branch
 `chore/public-archidekt`, from master). The main checkout `~/Projects/mtg` is shared with another
@@ -16,9 +16,9 @@ pickup point.
 - [x] 02 Decklist + primer round-trip, offline — [slices/02-roundtrip.md](slices/02-roundtrip.md)
 - [x] 03 `pull_deck.py` (one deck or a whole folder) — [slices/03-pull.md](slices/03-pull.md)
 - [x] 04 Stale-push guard on `sync` — [slices/04-stale-guard.md](slices/04-stale-guard.md)
-- [ ] 05 Ravnica: primers to `.md`, upload Core decks — [slices/05-ravnica.md](slices/05-ravnica.md)
+- [x] 05 Ravnica: primers to `.md`, upload Core decks — [slices/05-ravnica.md](slices/05-ravnica.md)
 - [ ] 06 Audit, backup, cutover (gitignore + untrack) — [slices/06-cutover.md](slices/06-cutover.md)
-- [ ] 07 Docs, LICENSE, skill workflow — [slices/07-docs.md](slices/07-docs.md)
+- [x] 07 Docs, LICENSE, skill workflow — [slices/07-docs.md](slices/07-docs.md)
 - [ ] 08 Delete merged branches; flip public (gated) — [slices/08-publish.md](slices/08-publish.md)
 
 Warnings: never print or `cat` `.env`; never `git push --all`/`--mirror` (local `refs/t3/*`

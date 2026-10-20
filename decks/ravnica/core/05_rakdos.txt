@@ -1,4 +1,5 @@
-# Rakdos Carnival | BR
+# Rakdos Carnival (Core) | BR
+# source: https://archidekt.com/decks/27636453
 4 Rakdos Cackler
 4 Spike Jester
 2 Rix Maadi Reveler
