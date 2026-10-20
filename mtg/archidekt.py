@@ -1,27 +1,23 @@
 """Archidekt client (private API; see docs/apis.md).
 
-Logs in once with ARCHIDEKT_PASSWORD from the repo's gitignored .env (falling back to 1Password, which
-prompts Brian), caches the JWT in ~/.config/mtg/archidekt-session.json, and renews it with the refresh token.
+Logs in once with ARCHIDEKT_USERNAME and ARCHIDEKT_PASSWORD from mtg.config (the password falls back to
+the 1Password item ARCHIDEKT_OP_ITEM, which prompts), caches the JWT in ~/.config/mtg/archidekt-session.json,
+and renews it with the refresh token.
 """
 import datetime
 import json
 import os
+import re
 import subprocess
-import time
 import urllib.error
-import urllib.parse
+from collections import Counter
 
-from . import decklist, http, quill, scryfall
+from . import config, decklist, http, quill
 
 BASE = 'https://archidekt.com'
-USERNAME = 'basmith7'
-USER_ID = 309724
-OP_ITEM = '727iygg5qogmtfsx7mfphyubbi'
 SESSION = os.path.expanduser('~/.config/mtg/archidekt-session.json')
-ENV_FILE = os.path.join(os.path.dirname(__file__), '..', '.env')
 TYPES = ['Land', 'Creature', 'Planeswalker', 'Battle', 'Artifact', 'Enchantment', 'Instant', 'Sorcery']
-FORMATS = {'standard': 1, 'modern': 2, 'commander': 3, 'legacy': 4, 'vintage': 5, 'pauper': 6, 'custom': 7,
-           'pioneer': 15, 'historic': 16, 'brawl': 13, 'oathbreaker': 14, 'premodern': 22}
+FORMATS = {'commander': 3, 'custom': 7}  # Archidekt's deckFormat ids
 
 
 def _save(session):
@@ -32,23 +28,20 @@ def _save(session):
 
 
 def _password():
-    """ARCHIDEKT_PASSWORD from the environment or .env, else 1Password. Never print it."""
-    pw = os.environ.get('ARCHIDEKT_PASSWORD')
-    if not pw and os.path.exists(ENV_FILE):
-        for line in open(ENV_FILE):
-            key, _, value = line.strip().partition('=')
-            if key == 'ARCHIDEKT_PASSWORD':
-                pw = value.strip().strip('"\'')
+    """ARCHIDEKT_PASSWORD from mtg.config, else the 1Password item ARCHIDEKT_OP_ITEM. Never print it."""
+    pw = config.get('ARCHIDEKT_PASSWORD', required=False)
     if pw:
         return pw
-    return subprocess.run(['op', 'item', 'get', OP_ITEM, '--fields', 'password', '--reveal'],
+    item = config.get('ARCHIDEKT_OP_ITEM')
+    return subprocess.run(['op', 'item', 'get', item, '--fields', 'password', '--reveal'],
                           capture_output=True, text=True, check=True).stdout.strip()
 
 
 def login():
     """Full login; never prints the password."""
     pw = _password()
-    r = http.request('POST', f'{BASE}/api/rest-auth/login/', {'username': USERNAME, 'password': pw})
+    r = http.request('POST', f'{BASE}/api/rest-auth/login/',
+                     {'username': config.get('ARCHIDEKT_USERNAME'), 'password': pw})
     _save({'access': r['access_token'], 'refresh': r.get('refresh_token')})
 
 
@@ -81,98 +74,69 @@ def call(method, path, body=None, auth=True):
 
 # ---- reading -------------------------------------------------------------------------------
 
+def deck_id_of(ref):
+    """A deck id from an id or an archidekt.com/decks/<id> URL (None if it's neither)."""
+    ref = str(ref)
+    if ref.isdigit():
+        return int(ref)
+    m = re.search(r'archidekt\.com/decks/(\d+)', ref)
+    return int(m.group(1)) if m else None
+
+
+def url(deck_id):
+    return f'{BASE}/decks/{deck_id}'
+
+
 def deck(deck_id):
     return call('GET', f'/api/decks/{deck_id}/')
 
 
-def folder_tree():
-    return call('GET', '/api/decks/folderTree/')
-
-
 def folder(folder_id):
-    return call('GET', f'/api/decks/folders/{folder_id}/?pageSize=100')
+    """The folder JSON, with every page of its 'decks' merged in."""
+    f, page = call('GET', f'/api/decks/folders/{folder_id}/?pageSize=100'), 1
+    while f.get('next'):
+        page += 1
+        f['decks'] += call('GET', f'/api/decks/folders/{folder_id}/?pageSize=100&page={page}')['decks']
+        f['next'] = None if len(f['decks']) >= f['count'] else f['next']
+    return f
 
 
 def my_decks():
-    out, page = [], 1
+    out, page, user = [], 1, config.get('ARCHIDEKT_USERNAME')
     while True:
-        r = call('GET', f'/api/decks/v3/?ownerUsername={USERNAME}&pageSize=50&page={page}')
+        r = call('GET', f'/api/decks/v3/?ownerUsername={user}&pageSize=50&page={page}')
         out += r['results']
         if not r.get('next'):
             return out
         page += 1
 
 
-def collection():
-    out, page = [], 1
-    while True:
-        r = call('GET', f'/api/collection/{USER_ID}/v2/?game=1&page={page}&pageSize=100')
-        out += r['results']
-        if page >= r['totalPages']:
-            return out
-        page += 1
-        time.sleep(0.6)
-
-
-def search_tags(text):
-    return call('GET', '/api/decks/tags/v2/?' + urllib.parse.urlencode({'q': text}), auth=False)
-
-
-# ---- categories ----------------------------------------------------------------------------
-
-_POOL = os.path.join(os.path.dirname(__file__), '..', 'cache', 'pool.json')
-_TYPE_LINES = None
-
-
-def category(card):
-    """Type category for a card name (cache/pool.json type lines, else Scryfall)."""
-    global _TYPE_LINES
-    if _TYPE_LINES is None:
-        _TYPE_LINES = {c['name']: c['type_line'] for c in json.load(open(_POOL))} if os.path.exists(_POOL) else {}
-    tl = _TYPE_LINES.get(card) or scryfall.named(card)['type_line']
-    return next((t for t in TYPES if t in tl.split('//')[0]), 'Other')
-
-
 # ---- card ids ------------------------------------------------------------------------------
 
-_ID_CACHE = os.path.join(os.path.dirname(__file__), '..', 'cache', 'archidekt_card_ids.json')
-_SKIP_SETS = {'plst', 'sld', 'pmei', 'prm'}
+def resolve(names):
+    """{name: (Archidekt card id, type category)} for card names, in one request.
 
-
-def card_id(name):
-    """Archidekt card id for a card name (cached; the lookup endpoint rate-limits hard)."""
-    cache = json.load(open(_ID_CACHE)) if os.path.exists(_ID_CACHE) else {}
-    if name in cache:
-        return cache[name]
-    res = call('GET', '/api/cards/v2/?exact=true&name=' + urllib.parse.quote(name), auth=False)['results']
-    res = [c for c in res if c['oracleCard']['name'] == name] or res
-    if not res:
-        raise KeyError(f'Archidekt has no card named {name!r}')
-    cache[name] = next((c for c in res if c['edition']['editioncode'] not in _SKIP_SETS), res[0])['id']
-    os.makedirs(os.path.dirname(_ID_CACHE), exist_ok=True)
-    json.dump(cache, open(_ID_CACHE, 'w'))
-    time.sleep(1.1)
-    return cache[name]
+    Archidekt adds cards by its own id. This asks the parser behind the deck editor's "Import cards"
+    box (massDeckEdit), which takes a pasted list and returns each card with the printing the site
+    itself picks; it accepts front-face names. Raises KeyError listing every card it can't find.
+    """
+    names = list(dict.fromkeys(names))
+    if not names:
+        return {}
+    r = call('POST', '/api/cards/massDeckEdit/', {'parser': 'archidekt', 'current': '',
+                                                  'edit': ''.join(f'1 {n}\n' for n in names)})
+    if r['syntaxErrors'] or r['cardErrors']:
+        raise KeyError('; '.join(r['syntaxErrors'] + r['cardErrors']))
+    found = {e['name']: e['card'] for e in r['toAdd']}
+    return {n: (found[n]['id'], next((t for t in TYPES if t in found[n]['oracleCard']['types']), 'Other'))
+            for n in names}
 
 
 # ---- writing -------------------------------------------------------------------------------
 
-def create_folder(name, parent, private=False):
-    call('POST', '/api/decks/folders/', {'name': name, 'private': private, 'parentFolder': parent})
-    found = []
-
-    def walk(node):
-        if node['name'] == name:
-            found.append(node['id'])
-        for child in node.get('children') or []:
-            walk(child)
-    walk(folder_tree())
-    return found[-1]
-
-
 def create_deck(name, fmt='custom', folder_id=None):
     d = call('POST', '/api/decks/v2/', {
-        'name': name, 'deckFormat': FORMATS.get(fmt, fmt), 'description': '', 'private': False,
+        'name': name, 'deckFormat': FORMATS[fmt], 'description': '', 'private': False,
         'unlisted': False, 'theorycrafted': False, 'parentFolder': folder_id,
         'extras': {'commanders': [], 'forceCardsToSingleton': False, 'game': None, 'cardPackage': None},
         'cards': []})
@@ -187,7 +151,7 @@ def add_cards(deck_id, cards):
              'modifications': {'quantity': q, 'modifier': 'Foil' if foil else 'Normal', 'customCmc': None,
                                'companion': False, 'flippedDefault': False, 'label': ',#656565'}}
             for i, (cid, q, cat, foil) in enumerate(cards)]
-    return call('PATCH', f'/api/decks/{deck_id}/modifyCards/v2/', {'cards': adds})
+    return call('PATCH', f'/api/decks/{deck_id}/modifyCards/v2/', {'cards': adds}) if adds else {}
 
 
 def _entry_mods(e, quantity=None):
@@ -218,30 +182,55 @@ def modify_cards(deck_id, changes):
 SIDE = {'Maybeboard', 'Sideboard'}
 
 
-def _main(d):
-    """{card name: [entries]} for the deck's main entries: Maybeboard, Sideboard and any category
-    marked not included in the deck are left out (and so never touched by sync)."""
-    side = SIDE | {c['name'] for c in d.get('categories', []) if not c.get('includedInDeck', True)}
+def main_cards(d):
+    """{card name: [entries]} for a deck JSON's main entries. Maybeboard, Sideboard, any category the
+    deck marks not included (Archidekt's own flag; 'Tokens' etc. can be real in-deck categories) and
+    deleted entries are left out, so sync never touches them. Category names compare case-insensitively."""
+    side = {c.lower() for c in SIDE} | {c['name'].lower() for c in d.get('categories', [])
+                                        if not c.get('includedInDeck', True)}
     out = {}
     for e in d['cards']:
-        if not side & set(e['categories']):
+        if not e.get('deletedAt') and not side & {c.lower() for c in e['categories']}:
             out.setdefault(e['card']['oracleCard']['name'], []).append(e)
     return out
 
 
-def sync(deck_id, decklist_path, primer_path=None, dry_run=False, rename=True):
-    """Make a deck's main list match a decklist file. Returns a summary dict.
+def export(d):
+    """A deck JSON as a decklist: {name, commanders, cards (Counter), primer (markdown), dropped
+    (primer formatting markdown can't hold, see quill.from_delta)}."""
+    main = main_cards(d)
+    primer, dropped = quill.from_delta(d.get('description') or '')
+    return {'name': d['name'],
+            'commanders': [c for c, es in main.items() if any('commander' in map(str.lower, e['categories']) for e in es)],
+            'cards': Counter({c: sum(e['quantity'] for e in es) for c, es in main.items()}),
+            'primer': primer, 'dropped': dropped}
+
+
+class Refused(Exception):
+    """sync would overwrite something on the site; nothing was written."""
+
+
+def sync(path, primer=True, dry_run=False, force=False):
+    """Make the deck on a decklist's '# source:' line match the file. Returns a summary dict.
 
     Existing cards keep their categories (only Commander membership is enforced); Maybeboard,
-    Sideboard and not-in-deck categories on the site are left alone. Renames only if the file has a
-    '# Name' header. Resolves every new card id before writing anything, and backs up the deck JSON.
+    Sideboard and not-in-deck categories on the site are left alone. Renames the deck to the file's
+    '# Name' header. With primer, the '.md' beside the file replaces the site primer if they differ.
+    Resolves every new card id before writing anything, and backs up the deck JSON.
+
+    Unless force, raises Refused before writing if the site deck changed since the version on the
+    file's '# updated:' line (or the file has none), or if a changed primer would flatten site
+    formatting markdown can't hold; a dry run reports both instead. After a push that matches, the
+    file's '# updated:' line gets the new version.
     """
+    deck_id = deck_id_of(decklist.meta(path, 'source') or '')
+    if not deck_id:
+        raise ValueError(f'{path} has no Archidekt # source: line')
     d = deck(deck_id)
-    name, _, want = decklist.parse(decklist_path)
-    rename = rename and open(decklist_path).readline().startswith('#')
-    cmdrs = decklist.commanders(decklist_path)
-    have = _main(d)
-    cat = lambda c: 'Commander' if c in cmdrs else category(c)
+    name, _, want = decklist.parse(path)
+    rename = open(path).readline().startswith('#') and name != d['name']
+    cmdrs = decklist.commanders(path)
+    have = main_cards(d)
     rm, mod, add = [], [], []
     for c, entries in have.items():
         if c not in want:
@@ -252,36 +241,52 @@ def sync(deck_id, decklist_path, primer_path=None, dry_run=False, rename=True):
             rm += entries
             entries = []
         if not entries:
-            add.append((c, q, cat(c)))
+            add.append((c, q))
             continue
         e = entries[0]
-        is_cmdr = 'Commander' in e['categories']
-        if e['quantity'] != q or is_cmdr != (c in cmdrs):
-            mod.append((e, q, [cat(c)] if is_cmdr != (c in cmdrs) else None))
-    summary = {'removed': sorted(e['card']['oracleCard']['name'] for e in rm),
-               'added': [f'{q} {c}' for c, q, _ in add],
+        if e['quantity'] != q or ('Commander' in e['categories']) != (c in cmdrs):
+            mod.append((e, c, q))
+    # Card ids and categories for what's added or moved; an unknown card fails here, before any write.
+    cards = resolve([c for c, _ in add] + [c for e, c, _ in mod if ('Commander' in e['categories']) != (c in cmdrs)])
+    cat = lambda c: 'Commander' if c in cmdrs else cards[c][1]
+    mod = [(e, q, [cat(c)] if c in cards else None) for e, c, q in mod]
+    site_md, dropped = quill.from_delta(d.get('description') or '')
+    md = os.path.splitext(path)[0] + '.md'
+    text = open(md).read() if primer and os.path.exists(md) else None
+    if text is not None and quill.to_delta(text) == quill.to_delta(site_md):
+        text = None
+    summary = {'url': url(deck_id),
+               'removed': sorted(e['card']['oracleCard']['name'] for e in rm),
+               'added': [f'{q} {c}' for c, q in add],
                'changed': [f"{e['card']['oracleCard']['name']}: {e['quantity']} -> {q}" if e['quantity'] != q
                            else f"{e['card']['oracleCard']['name']}: -> {k[0]}" for e, q, k in mod],
-               'renamed': name if rename and name != d['name'] else None,
-               'primer': bool(primer_path), 'dry_run': dry_run, 'match': None}
+               'renamed': name if rename else None, 'primer': text is not None, 'match': None,
+               'stale': decklist.meta(path, 'updated') != d['updatedAt'],
+               'primer_loses': dropped if text is not None else []}
     if dry_run:
         return summary
-    new = [(card_id(c), q, k, False) for c, q, k in add]  # fails here, before any write, on an unknown card
-    backups = os.path.expanduser('~/.cache/mtg-backups')
+    if not force and summary['stale']:
+        raise Refused(f"{url(deck_id)} changed on the site since this file was pulled or pushed: pull it "
+                      f"(scripts/pull.py {deck_id}) and redo the change, or force")
+    if not force and summary['primer_loses']:
+        raise Refused(f"the new primer would drop the site primer's {', '.join(dropped)} formatting; "
+                      f"skip the primer or force")
+    backups = os.path.join(config.CACHE, 'backups')
     os.makedirs(backups, exist_ok=True)
-    stamp = datetime.datetime.now().strftime('%Y%m%d-%H%M%S-%f')
-    json.dump(d, open(os.path.join(backups, f'archidekt-{deck_id}-{stamp}.json'), 'w'))
-    summary['backup'] = os.path.join(backups, f'archidekt-{deck_id}-{stamp}.json')
+    summary['backup'] = os.path.join(backups, f"{deck_id}-{datetime.datetime.now():%Y%m%d-%H%M%S-%f}.json")
+    json.dump(d, open(summary['backup'], 'w'))
     remove_cards(deck_id, rm)
     modify_cards(deck_id, mod)
-    if new:
-        add_cards(deck_id, new)
-    if summary['renamed']:
+    add_cards(deck_id, [(cards[c][0], q, cat(c), False) for c, q in add])
+    if rename:
         update(deck_id, name=name)
-    if primer_path:
-        update(deck_id, description=quill.to_delta(open(primer_path).read()), hasPrimer=True)
-    got = {c: sum(e['quantity'] for e in es) for c, es in _main(deck(deck_id)).items()}
+    if text is not None:
+        update(deck_id, description=quill.to_delta(text), hasPrimer=True)
+    after = deck(deck_id)
+    got = {c: sum(e['quantity'] for e in es) for c, es in main_cards(after).items()}
     summary['match'] = got == dict(want)
+    if summary['match']:
+        decklist.set_meta(path, 'updated', after['updatedAt'])
     return summary
 
 
@@ -290,10 +295,11 @@ def update(deck_id, **fields):
     return call('PATCH', f'/api/decks/{deck_id}/update/', fields)
 
 
+def archive(deck_ids):
+    """Move decks to the player's archive folder (ARCHIDEKT_ARCHIVE_FOLDER). Archive rather than delete."""
+    return move(deck_ids, int(config.get('ARCHIDEKT_ARCHIVE_FOLDER')))
+
+
 def move(deck_ids, folder_id):
     return call('PATCH', '/api/massUpdate/',
                 {'items': [{'type': 'deck', 'id': i, 'patch': {'parentFolder': folder_id}} for i in deck_ids]})
-
-
-def tag(deck_id, tag_id, position=0):
-    return call('POST', '/api/decks/tagRelations/', {'deck': deck_id, 'tag': tag_id, 'position': position})

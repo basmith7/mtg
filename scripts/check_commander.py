@@ -10,7 +10,7 @@ within the commanders', at most --max-gc Game Changers, and no Universes-Beyond-
 --allow-ub. Also prints the curve and land count. Exits 1 if any deck has problems.
 
 Then asks Commander Spellbook which combos the deck contains (network; --no-combos skips it).
-Combos are fine if they're fun and late (Brian's rule). A combo is FAST when its pieces total mana
+Combos are fine if they're fun and late (house rule, RULES.md). A combo is FAST when its pieces total mana
 value 6 or less, or Spellbook rates it Ruthless or Banned; a fast infinite combo is a problem (`!!`).
 --near also lists combos missing one card. Primers should take their combo claims from this output.
 """
@@ -85,6 +85,8 @@ def check(path, max_gc, allow_ub, combos=True, near=False):
         if not c:
             problems.append(f'not found on Scryfall: {card}')
             continue
+        if c['name'] != card:  # the site exports the full name, so a front-face name shows up as a change
+            problems.append(f'use the full name: {card} -> {c["name"]}')
         if q > 1 and 'Basic' not in c['type_line'] and 'any number of cards named' not in scryfall.oracle_text(c):
             problems.append(f'{q} copies: {card}')
         if c['legalities'].get('commander') != 'legal':

@@ -1,15 +1,15 @@
 # MTG APIs
 
-Everything here was worked out on 2026-10-03 while organizing Brian's Archidekt and building
-the Ravnica guild decks. **Only Scryfall has a documented public API.** Archidekt and Moxfield are
+Most of this was worked out in October 2026 while organizing an Archidekt account and building
+decks. **Only Scryfall has a documented public API.** Archidekt and Moxfield are
 the sites' own private APIs, found by reading their web bundles; they can change without notice.
 If an endpoint stops working, re-derive it (see "Finding endpoints" at the bottom).
 
 | Service | What we use it for | Auth | Stability |
 |---|---|---|---|
-| Scryfall | Card data, oracle text, prices, set searches | None | Public, documented |
-| Archidekt | Brian's decks, folders, tags, primers, collection | JWT (login) | Private, undocumented |
-| Moxfield | Reading Brian's public decks and shared collection | None for public data; login blocked | Private, undocumented |
+| Scryfall | Card data, oracle text, legality, search | None | Public, documented |
+| Archidekt | Your decks (the canonical copy), folders, primers | JWT (login) | Private, undocumented |
+| Moxfield | Reading public decks | None for public data; login blocked | Private, undocumented |
 | Commander Spellbook | Combos a decklist contains or is one card from | None | Public, OpenAPI schema |
 | EDHREC | Card inclusion % and synergy per commander, themes, average decks | None | Private JSON, undocumented |
 | MTGGoldfish | Reading decklists out of articles | None | Scraping |
@@ -22,16 +22,16 @@ Python clients for all of these live in `mtg/` (see the README).
 
 Docs: <https://scryfall.com/docs/api>. Send `User-Agent` **and** `Accept: application/json`
 (requests without `Accept` get HTTP 400). Keep to ~10 requests/sec; on HTTP 429 back off and retry.
+The limit is per machine, so several agents running checkers at once hit 429s.
 
 - `GET /cards/search?q=<query>&unique=cards|prints&order=usd&dir=asc` — full Scryfall search syntax.
   Paginated: follow `next_page` until absent.
-  - Every card from a set list: `q=(e:rav or e:gtc or ...) -t:token`, `unique=cards`.
-  - Cheapest printing of a card: `q=!"Card Name" game:paper`, `unique=prints`, `order=usd`, `dir=asc`,
-    then take the lowest `prices.usd` (fall back to `prices.usd_foil`).
 - `GET /cards/named?exact=<name>` — one card. `fuzzy=` also works.
 - Useful card fields: `name`, `mana_cost`, `type_line`, `oracle_text` (or `card_faces[].oracle_text` for
   split/DFC cards), `color_identity`, `rarity`, `legalities`, `prices.usd`, `id` (Scryfall UUID).
-- Prices are TCGplayer market prices, updated daily. Shipping is not included.
+- `POST /cards/collection` (75 names a request) accepts a double-faced card's front-face name, and
+  `scryfall.collection()` returns such cards under both the full and the front name, so looping over its
+  values gives duplicates. Cards not yet released aren't there (EDHREC has no page for them either).
 
 **The Scryfall UUID is the join key across sites:** Moxfield exposes it as `card.scryfall_id`,
 Archidekt as `card.uid`.
@@ -40,13 +40,14 @@ Archidekt as `card.uid`.
 
 ## Archidekt — `https://archidekt.com`
 
-Brian's account: username `basmith7`, user id `309724`. The client reads the password from
-`ARCHIDEKT_PASSWORD` in the repo's `.env` (gitignored, mode 600). If that's missing it falls back to
-1Password item `727iygg5qogmtfsx7mfphyubbi` ("archidekt.com"), which prompts Brian.
+Account settings come from `mtg/config.py`: the environment, else the gitignored `.env` in the main
+checkout (keys in `.env.example`): `ARCHIDEKT_USERNAME` and `ARCHIDEKT_PASSWORD`. Without a password the client reads it from the 1Password
+item `ARCHIDEKT_OP_ITEM`, which prompts.
 
 ### Auth
 - `POST /api/rest-auth/login/` `{"username", "password"}` → `access_token`, `refresh_token`.
-  Send `Authorization: JWT <access_token>` on every call.
+  Send `Authorization: JWT <access_token>` on every call. `archidekt.login()` returns nothing on
+  success; an authenticated call (`scripts/whoami.py`) is the check.
 - `POST /api/rest-auth/token/refresh/` `{"refresh": <refresh_token>}` → new `access`. Use this when a
   call returns 401 — don't log in again needlessly (the client does this).
 - The client caches tokens in `~/.config/mtg/archidekt-session.json` (mode 600, outside the repo).
@@ -55,15 +56,26 @@ Brian's account: username `basmith7`, user id `309724`. The client reads the pas
 ### Reading
 - `GET /api/decks/{id}/` — full deck: `name`, `deckFormat`, `description`, `hasPrimer`, `parentFolder`,
   `categories[]` (with `includedInDeck`), `cards[]` (each: `quantity`, `categories[]`, `modifier`,
-  `card.id` = Archidekt card id, `card.uid` = Scryfall id, `card.oracleCard.name`). Public decks need no auth.
-- `GET /api/decks/v3/?ownerUsername=basmith7&pageSize=50&page=N` — list decks.
+  `card.id` = Archidekt card id, `card.uid` = Scryfall id, `card.oracleCard.name`, `deletedAt`), and
+  `createdAt` / `updatedAt` (ISO timestamps; `updatedAt` moves on any edit, which `sync` uses to spot site
+  edits since the last pull). Public decks need no auth.
+- `GET /api/decks/v3/?ownerUsername=<username>&pageSize=50&page=N` — list decks.
 - `GET /api/decks/folderTree/` — folder hierarchy. `GET /api/decks/folders/{id}/?pageSize=100` — folder
-  contents (`decks[]`, `subfolders`, `count`).
-- `GET /api/collection/309724/v2/?game=1&page=N&pageSize=100` — collection entries (`quantity`, `foil`,
+  contents (`decks[]`, `subfolders`, `count`, `next`; pages with `&page=N`). `pageSize=100` isn't honoured
+  (60 a page), so follow `next`; `archidekt.folder()` does.
+- `GET /api/collection/<user id>/v2/?game=1&page=N&pageSize=100` — collection entries (`quantity`, `foil`,
   `card.uid`, `card.id`). Paginated by `totalPages`.
-- `GET /api/cards/v2/?exact=true&name=<name>` — card lookup → every printing with its Archidekt `id`.
-  **Rate-limited hard (HTTP 429):** keep ~1 request/sec and back off. Cache name→id. (Filtering by `uid`
-  is ignored by this endpoint.)
+- **Card ids.** Adding a card to a deck needs Archidekt's own card id.
+  - `POST /api/cards/massDeckEdit/` `{"parser": "archidekt", "current": <deck text>, "edit": <new text>}`:
+    the parser behind the deck editor's "Import cards" box (found 2026-10-20 in the deck page bundle).
+    It diffs two pasted lists and returns `toAdd` / `toRemove` (each with the full `card`, the printing
+    the site picks), `categories` from `# Category` lines, `syntaxErrors` and `cardErrors`. It only
+    parses; the page then saves through `modifyCards/v2`. Accepts `2x`, `(SET) 123`, front-face names.
+    A 100-card list resolves in one ~1 s request. `archidekt.resolve(names)` uses it with `current: ""`.
+  - `GET /api/cards/v2/?uids=<scryfall id>,...` — bulk lookup by Scryfall id, 60 a page (follow `next`).
+    `name=` with a comma-joined list returns nothing.
+  - `GET /api/cards/v2/?exact=true&name=<name>` — one name, every printing. **Rate-limited hard (HTTP
+    429)**, ~1 request/sec, and needs the full `A // B` name for double-faced cards. No longer used.
 - `GET /api/decks/tags/v2/?q=<text>` — search the fixed list of deck tags (id + name).
 
 ### Writing
@@ -87,7 +99,9 @@ Brian's account: username `basmith7`, user id `309724`. The client reads the pas
   Add, modify and remove can share a request, but the client sends them as separate calls.
 - **Rename / description / primer:** `PATCH /api/decks/{id}/update/` with `{"name"}` or
   `{"description": <Quill delta JSON string>, "hasPrimer": true}`. The update endpoint **ignores**
-  `parentFolder`.
+  `parentFolder`. Primers written on the site use more of Quill than `mtg/quill.py`'s markdown holds
+  (h1/h3/h4, italic, colour, background, code, links, ordered lists, indents, image embeds; seen in 14
+  of 62 Commander decks on 2026-10-20), so `sync` leaves an unchanged primer alone.
 - **Move decks or rename folders:** `PATCH /api/massUpdate/` with
   `{"items": [{"type": "deck"|"folder", "id": N, "patch": {"parentFolder": F}}]}` (also `{"name"}`,
   `{"private"}` for folders).
@@ -111,25 +125,23 @@ Descriptions are **Quill delta** JSON stored as a string: `{"ops": [{"insert": "
 14 Oathbreaker, 15 Pioneer, 16 Historic, 17 Pauper EDH, 18 Alchemy, 19 Explorer, 20 Historic Brawl,
 21 Gladiator, 22 Premodern, 23 PreDH, 24 Timeless, 25 Canlander, 26 Competitive Brawl.
 
-### Brian's folders (2026-10-03)
-Home `440408` → Commander `1914431` (played online), Paper `1914435` → Ravnica Guilds `1914718`,
-Lists & Ideas `1914436`, Archive `1914437` (private). Deck names follow
-"Commander – Theme or nickname (B#)".
+### Folders
+Each player's folder ids live in their `.env` (`ARCHIDEKT_*_FOLDER`, see `.env.example`); the folder id
+is the number in its URL. `scripts/whoami.py` prints their names.
 
 ---
 
 ## Moxfield — `https://api2.moxfield.com`
 
-Brian's username: `basmith7` (1Password item `h7ki37e64em43rpjrxa3ltljna`). **Scripted login is
-blocked** (`POST /v1/account/token` returns a bare 400, likely a captcha), so we only read public data.
+**Scripted login is blocked** (`POST /v1/account/token` returns a bare 400, likely a captcha), so we only read public data.
 The `v3` deck endpoint sits behind Cloudflare; `v2` works with a normal browser `User-Agent`.
 
 - `GET /v2/decks/all/{publicId}` — a deck. Boards: `commanders`, `mainboard`, `sideboard`, `maybeboard`,
   each `{name: {quantity, card: {name, scryfall_id, type_line, ...}}}`.
-- `GET /v2/decks/search?authorUserNames=basmith7&pageSize=100` — Brian's **public** decks.
-- `GET /v1/users/basmith7` — profile (shows `collectionVisibility`).
+- `GET /v2/decks/search?authorUserNames=<username>&pageSize=100` — a user's **public** decks.
+- `GET /v1/users/<username>` — profile (shows `collectionVisibility`).
 - `GET /v1/collections/search/{collectionId}?pageNumber=N&pageSize=100&sortType=cardName&sortDirection=ascending`
-  — a collection shared by link. Brian's: `cujOu-wx10SVgh_nMlHdXg`. Entries have `quantity`, `isFoil`,
+  — a collection shared by link. Entries have `quantity`, `isFoil`,
   `card.scryfall_id`. Paginated by `totalPages`.
 
 The third-party `moxfield-api` npm package only wraps the public deck/search/card endpoints; it adds
@@ -155,13 +167,13 @@ Public, no auth. OpenAPI schema (Swagger) at `/schema/`; client is `mtg/spellboo
   ones (`S` standalone); the client shows non-helper results. Feature names beginning "Infinite" are how
   `check_commander.py` spots infinite combos.
 - `bracketTag`: C Core, E Exhibition, O Oddball, P Powerful, S Spicy, R Ruthless, B Banned (Spellbook's
-  own tiers, not the same as Brian's "B3.75"). No mana values come back; the checker gets them from Scryfall.
+  own tiers, not the same as the house "B3.75"). No mana values come back; the checker gets them from Scryfall.
 - Combo names in `uses` are sometimes a face name only; `uses` can also list a combo's commander.
 - Cheap to call (one request per deck, ~1 s); no rate limit hit so far.
 ## EDHREC — `https://json.edhrec.com/pages`
 
 No auth, no documentation; these are the JSON files the edhrec.com site loads (found 2026-10-09).
-Browser `User-Agent` works; the client keeps ~1 request/sec and caches responses 7 days in `cache/edhrec/`.
+Browser `User-Agent` works; the client keeps ~1 request/sec and caches responses 7 days in `~/.cache/mtg/edhrec/`.
 Slugs: lowercase ASCII, accents stripped, apostrophes dropped, other punctuation to `-`
 (`Ruric Thar, the Unbowed` -> `ruric-thar-the-unbowed`; `Fire // Ice` front face only for commanders).
 

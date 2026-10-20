@@ -60,19 +60,8 @@ def from_moxfield(public_id, url=''):
 
 
 def from_archidekt(deck_id, url=''):
-    d = archidekt.call('GET', f'/api/decks/{deck_id}/', auth=False)
-    # Archidekt's own flag says which categories count; 'Tokens' etc. can be real in-deck categories
-    out = {c['name'] for c in d['categories'] if not c.get('includedInDeck', True)} | archidekt.SIDE
-    cmdrs, cards = [], Counter()
-    for c in d['cards']:
-        cats = {x.lower() for x in c['categories']}
-        if cats & {x.lower() for x in out} or c.get('deletedAt'):
-            continue
-        name = c['card']['oracleCard']['name']
-        cards[name] += c['quantity']
-        if 'commander' in cats:
-            cmdrs.append(name)
-    return Deck(d['name'], cmdrs, cards, url or f'https://archidekt.com/decks/{deck_id}')
+    e = archidekt.export(archidekt.call('GET', f'/api/decks/{deck_id}/', auth=False))
+    return Deck(e['name'], e['commanders'], e['cards'], url or archidekt.url(deck_id))
 
 
 def from_goldfish(deck_id, url=''):
@@ -226,7 +215,7 @@ def from_instagram(url, bio_link=None):
     for user in sorted(arc):
         r = archidekt.call('GET', f'/api/decks/v3/?ownerUsername={urllib.parse.quote(user)}&pageSize=50', auth=False)
         decks = sorted(r['results'], key=lambda d: d.get('updatedAt', ''), reverse=True)
-        cands += [(_score(d['name'], caption), -i, d['name'], f'https://archidekt.com/decks/{d["id"]}')
+        cands += [(_score(d['name'], caption), -i, d['name'], archidekt.url(d['id']))
                   for i, d in enumerate(decks)]
     cands.sort(reverse=True)
     best = [c for c in cands if c[0] >= 0.8]
