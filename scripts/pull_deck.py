@@ -38,6 +38,7 @@ def local_path(deck_id, name, commander):
 def pull(deck_id, path=None):
     d = archidekt.deck(deck_id)
     e = archidekt.export(d)
+    archidekt.mark_seen(d)
     commander = bool(e['commanders'])
     path = path or local_path(deck_id, e['name'], commander)
     colors = scryfall.color_identity(e['commanders'] or e['cards'])

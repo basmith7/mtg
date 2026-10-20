@@ -2,8 +2,8 @@
 
 ## Next Agent Prompt
 
-_Last updated 2026-10-20._ Status: 01, 02, 03 done; 00's code done (gate waits on the roulette
-session). Live Ravnica decks are the **power** versions (verified). Next: slice 04.
+_Last updated 2026-10-20._ Status: 01–04 done; 00's code done (gate waits on the roulette
+session). Live Ravnica decks are the **power** versions (verified). Next: slice 00's gate, then 05.
 
 You are implementing this spec in the worktree `~/Projects/mtg-public` (branch
 `chore/public-archidekt`, from master). The main checkout `~/Projects/mtg` is shared with another
@@ -15,7 +15,7 @@ pickup point.
 - [x] 01 Config seam: account details out of code — [slices/01-config.md](slices/01-config.md)
 - [x] 02 Decklist + primer round-trip, offline — [slices/02-roundtrip.md](slices/02-roundtrip.md)
 - [x] 03 `pull_deck.py` (one deck or a whole folder) — [slices/03-pull.md](slices/03-pull.md)
-- [ ] 04 Stale-push guard on `sync` — [slices/04-stale-guard.md](slices/04-stale-guard.md)
+- [x] 04 Stale-push guard on `sync` — [slices/04-stale-guard.md](slices/04-stale-guard.md)
 - [ ] 05 Ravnica: primers to `.md`, upload Core decks — [slices/05-ravnica.md](slices/05-ravnica.md)
 - [ ] 06 Audit, backup, cutover (gitignore + untrack) — [slices/06-cutover.md](slices/06-cutover.md)
 - [ ] 07 Docs, LICENSE, skill workflow — [slices/07-docs.md](slices/07-docs.md)
@@ -77,8 +77,6 @@ Splits resolved:
 
 ## Known unknowns
 
-- 14 of 62 Commander primers carry formatting markdown can't hold (h3/h4, italic, colour, code,
-  ordered lists, embeds). Slice 04 must keep `sync` from rewriting an unchanged primer.
 - The Archidekt field that marks last modification (`updatedAt`?) — slice 04 checks real JSON.
 
 ## Tests

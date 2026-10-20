@@ -26,3 +26,13 @@
 - **Pull removes a stale `.md`** when the site deck has no primer (Archidekt is canonical).
 - **`archidekt.folder` pages** through `next`; the Commander folder already holds 62 decks.
 - **`archidekt.deck_id(ref)` / `url(id)`** replace three hand-built URL strings and `sync_deck.py`'s regex.
+
+## Slice 04
+- **Seen-stamps live in `~/.cache/mtg/archidekt-seen.json`**, not repo `cache/`: per machine, so a
+  pull in the main checkout covers a sync from a worktree.
+- **No stamp counts as stale.** The first sync of any deck after this lands needs a pull (or `--force`).
+- **Dry runs never refuse;** they report `stale` and `primer_loses` as warnings.
+- **`sync_deck.py` takes the decklist first and the deck as `--deck`**, defaulting to the file's
+  `# source:` URL (hard cutover of the old `<deck> <decklist>` order).
+- **`upload_decks.py` writes `# source:` into the uploaded file** so sync finds the new deck.
+- **The stamp is recorded only when the post-sync re-read matches**; a mismatch leaves the deck stale.

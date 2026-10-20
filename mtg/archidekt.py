@@ -18,6 +18,7 @@ from . import config, decklist, http, quill, scryfall
 
 BASE = 'https://archidekt.com'
 SESSION = os.path.expanduser('~/.config/mtg/archidekt-session.json')
+SEEN = os.path.expanduser('~/.cache/mtg/archidekt-seen.json')  # {deck id: updatedAt we last pulled or pushed}
 TYPES = ['Land', 'Creature', 'Planeswalker', 'Battle', 'Artifact', 'Enchantment', 'Instant', 'Sorcery']
 FORMATS = {'standard': 1, 'modern': 2, 'commander': 3, 'legacy': 4, 'vintage': 5, 'pauper': 6, 'custom': 7,
            'pioneer': 15, 'historic': 16, 'brawl': 13, 'oathbreaker': 14, 'premodern': 22}
@@ -278,12 +279,36 @@ def compare(decklist_path, d):
             'primer': primer}
 
 
-def sync(deck_id, decklist_path, primer_path=None, dry_run=False, rename=True):
+def mark_seen(d):
+    """Record the deck's updatedAt: the local copy now matches this version of the site deck."""
+    seen = json.load(open(SEEN)) if os.path.exists(SEEN) else {}
+    seen[str(d['id'])] = d['updatedAt']
+    os.makedirs(os.path.dirname(SEEN), exist_ok=True)
+    with open(SEEN, 'w') as f:
+        json.dump(seen, f)
+
+
+def is_stale(d):
+    """True if the site deck changed since we last pulled or pushed it (or we never did)."""
+    seen = json.load(open(SEEN)) if os.path.exists(SEEN) else {}
+    return seen.get(str(d['id'])) != d['updatedAt']
+
+
+class Refused(Exception):
+    """sync would overwrite something on the site; nothing was written."""
+
+
+def sync(deck_id, decklist_path, primer_path=None, dry_run=False, rename=True, force=False):
     """Make a deck's main list match a decklist file. Returns a summary dict.
 
     Existing cards keep their categories (only Commander membership is enforced); Maybeboard,
     Sideboard and not-in-deck categories on the site are left alone. Renames only if the file has a
-    '# Name' header. Resolves every new card id before writing anything, and backs up the deck JSON.
+    '# Name' header. The primer is written only if it differs from the site's. Resolves every new card
+    id before writing anything, and backs up the deck JSON.
+
+    Unless force, raises Refused before writing if the site deck changed since it was last pulled or
+    pushed (is_stale), or if a changed primer would flatten site formatting markdown can't hold.
+    A dry run reports both in the summary instead.
     """
     d = deck(deck_id)
     name, _, want = decklist.parse(decklist_path)
@@ -307,14 +332,25 @@ def sync(deck_id, decklist_path, primer_path=None, dry_run=False, rename=True):
         is_cmdr = 'Commander' in e['categories']
         if e['quantity'] != q or is_cmdr != (c in cmdrs):
             mod.append((e, q, [cat(c)] if is_cmdr != (c in cmdrs) else None))
+    site_md, dropped = quill.from_delta(d.get('description') or '')
+    primer = open(primer_path).read() if primer_path else None
+    if primer is not None and quill.to_delta(primer) == quill.to_delta(site_md):
+        primer = None
     summary = {'removed': sorted(e['card']['oracleCard']['name'] for e in rm),
                'added': [f'{q} {c}' for c, q, _ in add],
                'changed': [f"{e['card']['oracleCard']['name']}: {e['quantity']} -> {q}" if e['quantity'] != q
                            else f"{e['card']['oracleCard']['name']}: -> {k[0]}" for e, q, k in mod],
                'renamed': name if rename and name != d['name'] else None,
-               'primer': bool(primer_path), 'dry_run': dry_run, 'match': None}
+               'primer': primer is not None, 'dry_run': dry_run, 'match': None,
+               'stale': is_stale(d), 'primer_loses': dropped if primer is not None else []}
     if dry_run:
         return summary
+    if not force and summary['stale']:
+        raise Refused(f"{url(deck_id)} changed on the site since it was last pulled or pushed: pull it first "
+                      f"(scripts/pull_deck.py {deck_id}), or force")
+    if not force and summary['primer_loses']:
+        raise Refused(f"the new primer would drop the site primer's {', '.join(dropped)} formatting; "
+                      f"skip the primer or force")
     new = [(card_id(c), q, k, False) for c, q, k in add]  # fails here, before any write, on an unknown card
     backups = os.path.expanduser('~/.cache/mtg-backups')
     os.makedirs(backups, exist_ok=True)
@@ -327,10 +363,13 @@ def sync(deck_id, decklist_path, primer_path=None, dry_run=False, rename=True):
         add_cards(deck_id, new)
     if summary['renamed']:
         update(deck_id, name=name)
-    if primer_path:
-        update(deck_id, description=quill.to_delta(open(primer_path).read()), hasPrimer=True)
-    got = {c: sum(e['quantity'] for e in es) for c, es in main_cards(deck(deck_id)).items()}
+    if primer is not None:
+        update(deck_id, description=quill.to_delta(primer), hasPrimer=True)
+    after = deck(deck_id)
+    got = {c: sum(e['quantity'] for e in es) for c, es in main_cards(after).items()}
     summary['match'] = got == dict(want)
+    if summary['match']:
+        mark_seen(after)
     return summary
 
 

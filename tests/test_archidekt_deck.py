@@ -8,8 +8,8 @@ from mtg import archidekt, decklist, quill
 
 
 def entry(name, qty=1, cats=('Creature',), deleted=False):
-    return {'quantity': qty, 'categories': list(cats), 'deletedAt': '2026-01-01' if deleted else None,
-            'card': {'oracleCard': {'name': name}}}
+    return {'id': abs(hash(name)) % 10**6, 'quantity': qty, 'categories': list(cats), 'modifier': 'Normal',
+            'deletedAt': '2026-01-01' if deleted else None, 'card': {'id': 1, 'oracleCard': {'name': name}}}
 
 
 DECK = {

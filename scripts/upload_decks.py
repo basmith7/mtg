@@ -45,8 +45,13 @@ def main():
         if primer:
             archidekt.update(did, description=quill.to_delta(primer), hasPrimer=True)
         got = archidekt.deck(did)
+        archidekt.mark_seen(got)
+        if not decklist.source(path):  # link the file to its new deck for sync_deck.py
+            head, *rest = open(path).read().split('\n', 1)
+            with open(path, 'w') as f:
+                f.write('\n'.join([head, f'# source: {archidekt.url(did)}', *rest]))
         print(f'{did} {name}: {sum(c["quantity"] for c in got["cards"])} cards, primer={got["hasPrimer"]}  '
-              archidekt.url(did))
+              f'{archidekt.url(did)}')
 
 
 if __name__ == '__main__':
