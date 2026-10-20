@@ -37,9 +37,11 @@ def main():
     for path in a.decks:
         name, _, cards = decklist.parse(path)
         cmdrs = decklist.commanders(path)
+        # Resolve every card first so a bad name fails before an empty deck is created.
+        entries = [(archidekt.card_id(c), q, 'Commander' if c in cmdrs else archidekt.category(c), False)
+                   for c, q in cards.items()]
         did = archidekt.create_deck(name, a.format or ('commander' if cmdrs else 'custom'), a.folder)
-        archidekt.add_cards(did, [(archidekt.card_id(c), q, 'Commander' if c in cmdrs else archidekt.category(c), False)
-                                  for c, q in cards.items()])
+        archidekt.add_cards(did, entries)
         md = os.path.splitext(path)[0] + '.md'
         primer = primers.get(os.path.basename(path)) or (open(md).read() if os.path.exists(md) else None)
         if primer:
