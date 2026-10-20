@@ -10,8 +10,11 @@ was pulled or last pushed.
 than the stored one; a deck with no stored stamp is treated as stale (pull first).
 `sync_deck.py --force` overrides. `upload_decks.py` records the stamp of decks it creates.
 
-Decide: whether `sync_deck.py` takes the id from the `# archidekt: <id>` header (slice 03) when no
-id is given. Recommended yes; one less thing to get wrong.
+Also: `sync` writes the primer only when it differs from the site's (compare `to_delta` of both
+after `from_delta`); 14 site primers carry formatting markdown can't hold and must not be flattened
+by an unchanged push. When the primer did change and the site's has dropped formatting, refuse unless
+`--force`, naming what would be lost. `sync_deck.py` takes the deck from the file's `# source:` URL
+when no id is given.
 
 **Verify:** `tests/test_sync_guard.py` with `archidekt.call` faked: stale → raises, nothing
 written; fresh → proceeds; `force` → proceeds. Live: pull a deck, `sync --dry-run` passes the guard.

@@ -7,10 +7,12 @@ and renews it with the refresh token.
 import datetime
 import json
 import os
+import re
 import subprocess
 import time
 import urllib.error
 import urllib.parse
+from collections import Counter
 
 from . import config, decklist, http, quill, scryfall
 
@@ -75,6 +77,19 @@ def call(method, path, body=None, auth=True):
 
 # ---- reading -------------------------------------------------------------------------------
 
+def deck_id(ref):
+    """A deck id from an id or an archidekt.com/decks/<id> URL (None if it's neither)."""
+    ref = str(ref)
+    if ref.isdigit():
+        return int(ref)
+    m = re.search(r'archidekt\.com/decks/(\d+)', ref)
+    return int(m.group(1)) if m else None
+
+
+def url(deck_id):
+    return f'{BASE}/decks/{deck_id}'
+
+
 def deck(deck_id):
     return call('GET', f'/api/decks/{deck_id}/')
 
@@ -84,7 +99,13 @@ def folder_tree():
 
 
 def folder(folder_id):
-    return call('GET', f'/api/decks/folders/{folder_id}/?pageSize=100')
+    """The folder JSON, with every page of its 'decks' merged in."""
+    f, page = call('GET', f'/api/decks/folders/{folder_id}/?pageSize=100'), 1
+    while f.get('next'):
+        page += 1
+        f['decks'] += call('GET', f'/api/decks/folders/{folder_id}/?pageSize=100&page={page}')['decks']
+        f['next'] = None if len(f['decks']) >= f['count'] else f['next']
+    return f
 
 
 def my_decks():
@@ -212,15 +233,49 @@ def modify_cards(deck_id, changes):
 SIDE = {'Maybeboard', 'Sideboard'}
 
 
-def _main(d):
-    """{card name: [entries]} for the deck's main entries: Maybeboard, Sideboard and any category
-    marked not included in the deck are left out (and so never touched by sync)."""
-    side = SIDE | {c['name'] for c in d.get('categories', []) if not c.get('includedInDeck', True)}
+def main_cards(d):
+    """{card name: [entries]} for a deck JSON's main entries. Maybeboard, Sideboard, any category the
+    deck marks not included (Archidekt's own flag; 'Tokens' etc. can be real in-deck categories) and
+    deleted entries are left out, so sync never touches them. Category names compare case-insensitively."""
+    side = {c.lower() for c in SIDE} | {c['name'].lower() for c in d.get('categories', [])
+                                        if not c.get('includedInDeck', True)}
     out = {}
     for e in d['cards']:
-        if not side & set(e['categories']):
+        if not e.get('deletedAt') and not side & {c.lower() for c in e['categories']}:
             out.setdefault(e['card']['oracleCard']['name'], []).append(e)
     return out
+
+
+def export(d):
+    """A deck JSON as a decklist: {name, commanders, cards (Counter), primer (markdown), dropped
+    (primer formatting markdown can't hold, see quill.from_delta)}."""
+    main = main_cards(d)
+    primer, dropped = quill.from_delta(d.get('description') or '')
+    return {'name': d['name'],
+            'commanders': [c for c, es in main.items() if any('commander' in map(str.lower, e['categories']) for e in es)],
+            'cards': Counter({c: sum(e['quantity'] for e in es) for c, es in main.items()}),
+            'primer': primer, 'dropped': dropped}
+
+
+def compare(decklist_path, d):
+    """How a decklist file (and the .md primer beside it) differs from a deck JSON."""
+    _, _, want = decklist.parse(decklist_path)
+    site = export(d)
+    have = site['cards']
+    md = os.path.splitext(decklist_path)[0] + '.md'
+    local = open(md).read() if os.path.exists(md) else ''
+    if not local and not site['primer']:
+        primer = 'none'
+    elif not site['primer'] or not local:
+        primer = 'site only' if site['primer'] else 'local only'
+    else:
+        primer = 'same' if quill.to_delta(local) == quill.to_delta(site['primer']) else 'differs'
+    return {'missing_on_site': sorted(want.keys() - have.keys()),
+            'extra_on_site': sorted(have.keys() - want.keys()),
+            'qty_diffs': sorted(f'{c}: {want[c]} here, {have[c]} on site' for c in want.keys() & have.keys()
+                                if want[c] != have[c]),
+            'commanders_match': sorted(decklist.commanders(decklist_path)) == sorted(site['commanders']),
+            'primer': primer}
 
 
 def sync(deck_id, decklist_path, primer_path=None, dry_run=False, rename=True):
@@ -234,7 +289,7 @@ def sync(deck_id, decklist_path, primer_path=None, dry_run=False, rename=True):
     name, _, want = decklist.parse(decklist_path)
     rename = rename and open(decklist_path).readline().startswith('#')
     cmdrs = decklist.commanders(decklist_path)
-    have = _main(d)
+    have = main_cards(d)
     cat = lambda c: 'Commander' if c in cmdrs else category(c)
     rm, mod, add = [], [], []
     for c, entries in have.items():
@@ -274,7 +329,7 @@ def sync(deck_id, decklist_path, primer_path=None, dry_run=False, rename=True):
         update(deck_id, name=name)
     if primer_path:
         update(deck_id, description=quill.to_delta(open(primer_path).read()), hasPrimer=True)
-    got = {c: sum(e['quantity'] for e in es) for c, es in _main(deck(deck_id)).items()}
+    got = {c: sum(e['quantity'] for e in es) for c, es in main_cards(deck(deck_id)).items()}
     summary['match'] = got == dict(want)
     return summary
 

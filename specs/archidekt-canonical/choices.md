@@ -13,3 +13,16 @@
   line break); verified stable after that on deck 25855165.
 - **Tests read the local working copy's primers when present** (32 today); after the cutover a fresh
   clone tests only the built-in sample.
+
+## Slices 00 (code) and 03
+- **One owner for deck JSON → decklist:** `archidekt.main_cards` / `export` replace both `_main` and
+  `importdeck.from_archidekt`'s own filter. The merged filter skips deleted entries and compares
+  category names case-insensitively, as `from_archidekt` did; `sync` now ignores deleted entries too.
+- **Deck link in the file:** the existing `# source: <archidekt url>` line, not a new `# archidekt:` line.
+  `pull_deck.py` writes it; `verify_decks.py` (and slice 04's `sync_deck.py`) read it.
+- **Pull target without `-o`:** the local file whose source URL, then `# Name` header, matches; else
+  `decks/commander/<commander>.txt` (name before " – ") or `decks/<name>.txt`. Pull sorts cards
+  alphabetically, so a hand-ordered list loses its order on first pull.
+- **Pull removes a stale `.md`** when the site deck has no primer (Archidekt is canonical).
+- **`archidekt.folder` pages** through `next`; the Commander folder already holds 62 decks.
+- **`archidekt.deck_id(ref)` / `url(id)`** replace three hand-built URL strings and `sync_deck.py`'s regex.

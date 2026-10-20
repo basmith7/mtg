@@ -9,7 +9,6 @@ The deck JSON is backed up to ~/.cache/mtg-backups/ before any write.
 """
 import argparse
 import os
-import re
 import sys
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
@@ -25,7 +24,7 @@ def main():
     ap.add_argument('--dry-run', action='store_true')
     ap.add_argument('--no-rename', action='store_true')
     a = ap.parse_args()
-    deck_id = int(a.deck) if a.deck.isdigit() else int(re.search(r'/decks/(\d+)', a.deck).group(1))
+    deck_id = archidekt.deck_id(a.deck)
     md = os.path.splitext(a.decklist)[0] + '.md'
     primer = None if a.no_primer else a.primer or (md if os.path.exists(md) else None)
     s = archidekt.sync(deck_id, a.decklist, primer, a.dry_run, not a.no_rename)

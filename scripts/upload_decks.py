@@ -46,7 +46,7 @@ def main():
             archidekt.update(did, description=quill.to_delta(primer), hasPrimer=True)
         got = archidekt.deck(did)
         print(f'{did} {name}: {sum(c["quantity"] for c in got["cards"])} cards, primer={got["hasPrimer"]}  '
-              f'https://archidekt.com/decks/{did}')
+              archidekt.url(did))
 
 
 if __name__ == '__main__':

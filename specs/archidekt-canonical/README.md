@@ -2,7 +2,8 @@
 
 ## Next Agent Prompt
 
-_Last updated 2026-10-20._ Status: plan written, no slice started.
+_Last updated 2026-10-20._ Status: 01, 02, 03 done; 00's code done (gate waits on the roulette
+session). Live Ravnica decks are the **power** versions (verified). Next: slice 04.
 
 You are implementing this spec in the worktree `~/Projects/mtg-public` (branch
 `chore/public-archidekt`, from master). The main checkout `~/Projects/mtg` is shared with another
@@ -11,9 +12,9 @@ Start at slice 00. Before ending a pass, tick the TODO below and rewrite this se
 pickup point.
 
 - [ ] 00 Gate: roulette batch merged, `verify_decks.py` shows every local deck on Archidekt — [slices/00-gate-verify.md](slices/00-gate-verify.md)
-- [ ] 01 Config seam: account details out of code — [slices/01-config.md](slices/01-config.md)
-- [ ] 02 Decklist + primer round-trip, offline — [slices/02-roundtrip.md](slices/02-roundtrip.md)
-- [ ] 03 `pull_deck.py` (one deck or a whole folder) — [slices/03-pull.md](slices/03-pull.md)
+- [x] 01 Config seam: account details out of code — [slices/01-config.md](slices/01-config.md)
+- [x] 02 Decklist + primer round-trip, offline — [slices/02-roundtrip.md](slices/02-roundtrip.md)
+- [x] 03 `pull_deck.py` (one deck or a whole folder) — [slices/03-pull.md](slices/03-pull.md)
 - [ ] 04 Stale-push guard on `sync` — [slices/04-stale-guard.md](slices/04-stale-guard.md)
 - [ ] 05 Ravnica: primers to `.md`, upload Core decks — [slices/05-ravnica.md](slices/05-ravnica.md)
 - [ ] 06 Audit, backup, cutover (gitignore + untrack) — [slices/06-cutover.md](slices/06-cutover.md)
@@ -76,8 +77,8 @@ Splits resolved:
 
 ## Known unknowns
 
-- Which Ravnica version (core or power) the live 1914718 decks hold — slice 00 answers it.
-- The Quill ops Brian's site-edited primers actually use — slice 03 reports them.
+- 14 of 62 Commander primers carry formatting markdown can't hold (h3/h4, italic, colour, code,
+  ordered lists, embeds). Slice 04 must keep `sync` from rewriting an unchanged primer.
 - The Archidekt field that marks last modification (`updatedAt`?) — slice 04 checks real JSON.
 
 ## Tests

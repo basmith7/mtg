@@ -36,6 +36,13 @@ def commanders(path):
     return [line.split(':', 1)[1].strip() for line in map(str.strip, open(path)) if line.lower().startswith('commander:')]
 
 
+def source(path):
+    """The URL on the file's '# source: <url>' line, if any."""
+    for line in map(str.strip, open(path)):
+        if line.lower().startswith('# source:'):
+            return line.split(':', 1)[1].strip()
+
+
 def render(name, colors, commanders, cards, source=None):
     """The decklist text for parse() to read back: header, optional source, Commander lines, cards."""
     lines = [f'# {name} | {colors}']
