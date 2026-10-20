@@ -25,6 +25,7 @@ Mono-red roulette. Q pulls one random spell out of your library, and from then o
 - [[Combat Celebrant]]: exert it as it attacks to untap your other creatures and get another combat phase.
 
 ## Tips
+- **Rules, until Q's own rulings exist** (based on [[Garth One-Eye]], [[Spellweaver Helix]] and [[Isochron Scepter]], which use the same wording): you cast the copy while the ability resolves, so sorceries and creatures can be cast in combat or in response, as long as it's your turn. The copy is created and cast in exile, so it counts as "cast from exile". You pay full costs, so you choose X and kicker. Permanent copies become tokens. A copy you don't cast disappears, and the card you exiled stays gone.
 - Steal hits are table events: a few copies of [[Act of Treason]] borrow everyone's best creature, and copied [[Mob Rule]] can take both the big and the small creatures in one turn.
 - Exile lands from hand first.
 - Q only copies on your turn, so copied removal is proactive.
