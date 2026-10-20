@@ -1,5 +1,7 @@
 # Agent notes
 
+Read `ARCHITECTURE.md` first to orient: the codemap, the deck flow and the invariants.
+
 - Read `docs/apis.md` before touching Archidekt or Moxfield. Both are private APIs; prefer the
   clients in `mtg/` over raw requests, and update the doc when you learn something new about them.
 - **Several players share this repo**, each with their own Archidekt account. `scripts/whoami.py` says
