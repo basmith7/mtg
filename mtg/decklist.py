@@ -34,3 +34,13 @@ def parse(path):
 def commanders(path):
     """Names from the file's 'Commander: Card Name' lines."""
     return [line.split(':', 1)[1].strip() for line in map(str.strip, open(path)) if line.lower().startswith('commander:')]
+
+
+def render(name, colors, commanders, cards, source=None):
+    """The decklist text for parse() to read back: header, optional source, Commander lines, cards."""
+    lines = [f'# {name} | {colors}']
+    if source:
+        lines.append(f'# source: {source}')
+    lines += [f'Commander: {c}' for c in commanders]
+    lines += [f'{q} {c}' for c, q in sorted(cards.items())]
+    return '\n'.join(lines) + '\n'

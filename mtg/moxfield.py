@@ -1,22 +1,23 @@
 """Moxfield, read-only (scripted login is blocked). See docs/apis.md."""
 import time
 
-from . import http
+from . import config, http
 
 BASE = 'https://api2.moxfield.com'
-USERNAME = 'basmith7'
-COLLECTION_ID = 'cujOu-wx10SVgh_nMlHdXg'  # shared by link; readable without login
 
 
 def deck(public_id):
     return http.get(f'{BASE}/v2/decks/all/{public_id}')
 
 
-def public_decks(username=USERNAME):
+def public_decks(username=None):
+    username = username or config.get('MOXFIELD_USERNAME')
     return http.get(f'{BASE}/v2/decks/search?authorUserNames={username}&pageSize=100')['data']
 
 
-def collection(collection_id=COLLECTION_ID):
+def collection(collection_id=None):
+    """A collection shared by link (readable without login); default MOXFIELD_COLLECTION_ID."""
+    collection_id = collection_id or config.get('MOXFIELD_COLLECTION_ID')
     out, page = [], 1
     while True:
         r = http.get(f'{BASE}/v1/collections/search/{collection_id}?sortType=cardName&sortDirection=ascending'

@@ -82,3 +82,10 @@ def ub_only(names):
             chunk.append(term)
             size += len(term) + 4
     return [n for n in names if n not in has_normal and n.split(' // ')[0] not in has_normal]
+
+
+def color_identity(names):
+    """Combined colour identity of some cards, in WUBRG order (e.g. 'UR')."""
+    data = collection(names)
+    ident = set().union(*(data[c]['color_identity'] for c in names if c in data))
+    return ''.join(c for c in 'WUBRG' if c in ident)

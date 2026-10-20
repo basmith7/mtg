@@ -17,22 +17,7 @@ import os
 import sys
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
-from mtg import importdeck, scryfall
-
-
-def colors(deck):
-    data = scryfall.collection(deck.commanders or deck.cards)
-    ident = set().union(*(data[c]['color_identity'] for c in (deck.commanders or deck.cards) if c in data))
-    return ''.join(c for c in 'WUBRG' if c in ident)
-
-
-def render(deck, cols):
-    lines = [f'# {deck.name} | {cols}']
-    if deck.source:
-        lines.append(f'# source: {deck.source}')
-    lines += [f'Commander: {c}' for c in deck.commanders]
-    lines += [f'{q} {c}' for c, q in sorted(deck.cards.items())]
-    return '\n'.join(lines) + '\n'
+from mtg import decklist, importdeck, scryfall
 
 
 def main():
@@ -49,7 +34,7 @@ def main():
     if a.name:
         deck.name = a.name
     deck.name = deck.name.replace('|', '-').strip()  # '|' separates the colours in the header
-    cols = colors(deck)
+    cols = scryfall.color_identity(deck.commanders or deck.cards)
     total = sum(deck.cards.values())
     print(f'source: {deck.source}\ndeck: {deck.name} | {cols or "colourless"} | {total} cards, '
           f'{len(deck.cards)} unique | commanders: {", ".join(deck.commanders) or "none"}', file=sys.stderr)
@@ -57,7 +42,7 @@ def main():
         print('note:', n, file=sys.stderr)
     if deck.commanders and total != 100:
         print(f'warning: Commander list has {total} cards, not 100', file=sys.stderr)
-    text = render(deck, cols)
+    text = decklist.render(deck.name, cols, deck.commanders, deck.cards, deck.source)
     if a.out:
         with open(a.out, 'w') as f:
             f.write(text)

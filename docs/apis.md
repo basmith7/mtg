@@ -40,9 +40,10 @@ Archidekt as `card.uid`.
 
 ## Archidekt — `https://archidekt.com`
 
-Brian's account: username `basmith7`, user id `309724`. The client reads the password from
-`ARCHIDEKT_PASSWORD` in the repo's `.env` (gitignored, mode 600). If that's missing it falls back to
-1Password item `727iygg5qogmtfsx7mfphyubbi` ("archidekt.com"), which prompts Brian.
+Account settings come from `mtg/config.py`: the environment, else the gitignored `.env` in the main
+checkout (keys in `.env.example`): `ARCHIDEKT_USERNAME`, `ARCHIDEKT_USER_ID` (numeric, used by the
+collection endpoint) and `ARCHIDEKT_PASSWORD`. Without a password the client reads it from the 1Password
+item `ARCHIDEKT_OP_ITEM`, which prompts.
 
 ### Auth
 - `POST /api/rest-auth/login/` `{"username", "password"}` → `access_token`, `refresh_token`.
@@ -56,10 +57,10 @@ Brian's account: username `basmith7`, user id `309724`. The client reads the pas
 - `GET /api/decks/{id}/` — full deck: `name`, `deckFormat`, `description`, `hasPrimer`, `parentFolder`,
   `categories[]` (with `includedInDeck`), `cards[]` (each: `quantity`, `categories[]`, `modifier`,
   `card.id` = Archidekt card id, `card.uid` = Scryfall id, `card.oracleCard.name`). Public decks need no auth.
-- `GET /api/decks/v3/?ownerUsername=basmith7&pageSize=50&page=N` — list decks.
+- `GET /api/decks/v3/?ownerUsername=<username>&pageSize=50&page=N` — list decks.
 - `GET /api/decks/folderTree/` — folder hierarchy. `GET /api/decks/folders/{id}/?pageSize=100` — folder
   contents (`decks[]`, `subfolders`, `count`).
-- `GET /api/collection/309724/v2/?game=1&page=N&pageSize=100` — collection entries (`quantity`, `foil`,
+- `GET /api/collection/<user id>/v2/?game=1&page=N&pageSize=100` — collection entries (`quantity`, `foil`,
   `card.uid`, `card.id`). Paginated by `totalPages`.
 - `GET /api/cards/v2/?exact=true&name=<name>` — card lookup → every printing with its Archidekt `id`.
   **Rate-limited hard (HTTP 429):** keep ~1 request/sec and back off. Cache name→id. (Filtering by `uid`
@@ -120,16 +121,16 @@ Lists & Ideas `1914436`, Archive `1914437` (private). Deck names follow
 
 ## Moxfield — `https://api2.moxfield.com`
 
-Brian's username: `basmith7` (1Password item `h7ki37e64em43rpjrxa3ltljna`). **Scripted login is
+Username from `MOXFIELD_USERNAME`. **Scripted login is
 blocked** (`POST /v1/account/token` returns a bare 400, likely a captcha), so we only read public data.
 The `v3` deck endpoint sits behind Cloudflare; `v2` works with a normal browser `User-Agent`.
 
 - `GET /v2/decks/all/{publicId}` — a deck. Boards: `commanders`, `mainboard`, `sideboard`, `maybeboard`,
   each `{name: {quantity, card: {name, scryfall_id, type_line, ...}}}`.
-- `GET /v2/decks/search?authorUserNames=basmith7&pageSize=100` — Brian's **public** decks.
-- `GET /v1/users/basmith7` — profile (shows `collectionVisibility`).
+- `GET /v2/decks/search?authorUserNames=<username>&pageSize=100` — a user's **public** decks.
+- `GET /v1/users/<username>` — profile (shows `collectionVisibility`).
 - `GET /v1/collections/search/{collectionId}?pageNumber=N&pageSize=100&sortType=cardName&sortDirection=ascending`
-  — a collection shared by link. Brian's: `cujOu-wx10SVgh_nMlHdXg`. Entries have `quantity`, `isFoil`,
+  — a collection shared by link. Ours: `MOXFIELD_COLLECTION_ID`. Entries have `quantity`, `isFoil`,
   `card.scryfall_id`. Paginated by `totalPages`.
 
 The third-party `moxfield-api` npm package only wraps the public deck/search/card endpoints; it adds

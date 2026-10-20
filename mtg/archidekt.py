@@ -1,7 +1,8 @@
 """Archidekt client (private API; see docs/apis.md).
 
-Logs in once with ARCHIDEKT_PASSWORD from the repo's gitignored .env (falling back to 1Password, which
-prompts Brian), caches the JWT in ~/.config/mtg/archidekt-session.json, and renews it with the refresh token.
+Logs in once with ARCHIDEKT_USERNAME and ARCHIDEKT_PASSWORD from mtg.config (the password falls back to
+the 1Password item ARCHIDEKT_OP_ITEM, which prompts), caches the JWT in ~/.config/mtg/archidekt-session.json,
+and renews it with the refresh token.
 """
 import datetime
 import json
@@ -11,14 +12,10 @@ import time
 import urllib.error
 import urllib.parse
 
-from . import decklist, http, quill, scryfall
+from . import config, decklist, http, quill, scryfall
 
 BASE = 'https://archidekt.com'
-USERNAME = 'basmith7'
-USER_ID = 309724
-OP_ITEM = '727iygg5qogmtfsx7mfphyubbi'
 SESSION = os.path.expanduser('~/.config/mtg/archidekt-session.json')
-ENV_FILE = os.path.join(os.path.dirname(__file__), '..', '.env')
 TYPES = ['Land', 'Creature', 'Planeswalker', 'Battle', 'Artifact', 'Enchantment', 'Instant', 'Sorcery']
 FORMATS = {'standard': 1, 'modern': 2, 'commander': 3, 'legacy': 4, 'vintage': 5, 'pauper': 6, 'custom': 7,
            'pioneer': 15, 'historic': 16, 'brawl': 13, 'oathbreaker': 14, 'premodern': 22}
@@ -32,23 +29,20 @@ def _save(session):
 
 
 def _password():
-    """ARCHIDEKT_PASSWORD from the environment or .env, else 1Password. Never print it."""
-    pw = os.environ.get('ARCHIDEKT_PASSWORD')
-    if not pw and os.path.exists(ENV_FILE):
-        for line in open(ENV_FILE):
-            key, _, value = line.strip().partition('=')
-            if key == 'ARCHIDEKT_PASSWORD':
-                pw = value.strip().strip('"\'')
+    """ARCHIDEKT_PASSWORD from mtg.config, else the 1Password item ARCHIDEKT_OP_ITEM. Never print it."""
+    pw = config.get('ARCHIDEKT_PASSWORD', required=False)
     if pw:
         return pw
-    return subprocess.run(['op', 'item', 'get', OP_ITEM, '--fields', 'password', '--reveal'],
+    item = config.get('ARCHIDEKT_OP_ITEM')
+    return subprocess.run(['op', 'item', 'get', item, '--fields', 'password', '--reveal'],
                           capture_output=True, text=True, check=True).stdout.strip()
 
 
 def login():
     """Full login; never prints the password."""
     pw = _password()
-    r = http.request('POST', f'{BASE}/api/rest-auth/login/', {'username': USERNAME, 'password': pw})
+    r = http.request('POST', f'{BASE}/api/rest-auth/login/',
+                     {'username': config.get('ARCHIDEKT_USERNAME'), 'password': pw})
     _save({'access': r['access_token'], 'refresh': r.get('refresh_token')})
 
 
@@ -94,9 +88,9 @@ def folder(folder_id):
 
 
 def my_decks():
-    out, page = [], 1
+    out, page, user = [], 1, config.get('ARCHIDEKT_USERNAME')
     while True:
-        r = call('GET', f'/api/decks/v3/?ownerUsername={USERNAME}&pageSize=50&page={page}')
+        r = call('GET', f'/api/decks/v3/?ownerUsername={user}&pageSize=50&page={page}')
         out += r['results']
         if not r.get('next'):
             return out
@@ -104,9 +98,9 @@ def my_decks():
 
 
 def collection():
-    out, page = [], 1
+    out, page, user_id = [], 1, config.get('ARCHIDEKT_USER_ID')
     while True:
-        r = call('GET', f'/api/collection/{USER_ID}/v2/?game=1&page={page}&pageSize=100')
+        r = call('GET', f'/api/collection/{user_id}/v2/?game=1&page={page}&pageSize=100')
         out += r['results']
         if page >= r['totalPages']:
             return out
