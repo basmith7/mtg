@@ -36,8 +36,7 @@ primer.
    (pieces totalling 6 MV or less, or rated Ruthless/Banned by Spellbook) are not. `--near` shows
    combos one card away, for suggestions or to avoid half-building one.
 4. **Use canonical names and check legality while drafting**, not at the end. Double-faced, split and
-   adventure cards need the full `A // B` name (Archidekt can't find "Brazen Borrower"; the checker flags
-   it). Drafts have picked banned (Dockside Extortionist), Universes Beyond (Delighted Halfling) and
+   adventure cards take the full `A // B` name (RULES.md; the checker flags a front-face name). Drafts have picked banned (Dockside Extortionist), Universes Beyond (Delighted Halfling) and
    off-colour cards (Phyrexian Metamorph in RG). Red decks keep landing one card from a fast combo:
    Dualcaster Mage with Twinflame / Heat Shimmer / Electroduplicate / Molten Duplication, Reiterate with
    Jeska's Will, Rionya with Terror of the Peaks.
@@ -48,8 +47,8 @@ primer.
    Tuning an existing deck: just do it and report the swaps.
 
 **Several decks at once:** give each subagent one deck to draft and check (files only), then upload
-from one place, serially and in the background: new cards cost ~1 s each in Archidekt lookups, so a
-batch takes minutes, and parallel Scryfall checks from many agents hit 429s.
+from one place, one deck after another: parallel uploads share one Archidekt session, and parallel
+Scryfall checks from many agents hit 429s.
 
 ## Primer
 `<slug>.md` beside the list, in the format RULES.md describes, written for any player reading it on

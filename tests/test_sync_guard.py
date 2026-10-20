@@ -20,7 +20,7 @@ class SyncGuardTest(unittest.TestCase):
             self.writes.append((method, path, body))
 
         for target, value in [('call', call), ('SEEN', os.path.join(self.dir, 'seen.json')),
-                              ('card_id', lambda c: 1), ('category', lambda c: 'Creature')]:
+                              ('resolve', lambda names: {n: (1, 'Creature') for n in names})]:
             p = mock.patch.object(archidekt, target, value)
             p.start()
             self.addCleanup(p.stop)

@@ -56,8 +56,9 @@
   "plays online" moved from the house rules into Brian's profile.
 - **Folder ids are `.env` settings**, not docs; `upload_decks.py` and `pull_deck.py` default to
   `ARCHIDEKT_DECKS_FOLDER`.
-- **The checker flags non-canonical names** (`use the full name: A -> A // B`): Archidekt can't find a
-  double-faced card by its front face, and that failure surfaced only at upload.
+- **The checker flags non-canonical names** (`use the full name: A -> A // B`): the old per-name card
+  lookup couldn't find a double-faced card by its front face. Bulk resolve now can, but full names keep
+  lists matching the site's export, so `verify` and `compare` don't report false differences.
 - **PR #14's primer-audience rule ported** (primers never mention our tools); its deck files are
   redundant with Archidekt, so it can close unmerged.
 - **Not built (noted in docs instead):** a `--primer-only` sync (pull-first plus "primer written only if
@@ -65,3 +66,9 @@
 - **Tahngarth:** Tear Asunder (black kicker in an RG deck) swapped for Return to Nature before upload.
 - **Anzrag** had an empty archived twin on Archidekt; the local file now carries the real deck's
   `# source:` line.
+- **Card ids resolve through Archidekt's import parser** (`massDeckEdit`, what the editor's "Import
+  cards" box calls): one ~1 s request per deck instead of ~1 req/s per card, the same printing the site
+  picks, front-face names accepted, every missing card named in one error. Rejected: `cards/v2/?uids=`
+  (needs a Scryfall round trip first, and picked a different printing for 18 of 83 cards) and a local
+  card database such as MTGJSON or Scryfall bulk data (has no Archidekt ids, so it can't replace this
+  call; our Scryfall use is a few cached requests per deck). The `archidekt_card_ids.json` cache goes.

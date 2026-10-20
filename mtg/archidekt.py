@@ -136,39 +136,25 @@ def search_tags(text):
 
 # ---- categories ----------------------------------------------------------------------------
 
-_POOL = os.path.join(os.path.dirname(__file__), '..', 'cache', 'pool.json')
-_TYPE_LINES = None
-
-
-def category(card):
-    """Type category for a card name (cache/pool.json type lines, else Scryfall)."""
-    global _TYPE_LINES
-    if _TYPE_LINES is None:
-        _TYPE_LINES = {c['name']: c['type_line'] for c in json.load(open(_POOL))} if os.path.exists(_POOL) else {}
-    tl = _TYPE_LINES.get(card) or scryfall.named(card)['type_line']
-    return next((t for t in TYPES if t in tl.split('//')[0]), 'Other')
-
-
 # ---- card ids ------------------------------------------------------------------------------
 
-_ID_CACHE = os.path.join(os.path.dirname(__file__), '..', 'cache', 'archidekt_card_ids.json')
-_SKIP_SETS = {'plst', 'sld', 'pmei', 'prm'}
+def resolve(names):
+    """{name: (Archidekt card id, type category)} for card names, in one request.
 
-
-def card_id(name):
-    """Archidekt card id for a card name (cached; the lookup endpoint rate-limits hard)."""
-    cache = json.load(open(_ID_CACHE)) if os.path.exists(_ID_CACHE) else {}
-    if name in cache:
-        return cache[name]
-    res = call('GET', '/api/cards/v2/?exact=true&name=' + urllib.parse.quote(name), auth=False)['results']
-    res = [c for c in res if c['oracleCard']['name'] == name] or res
-    if not res:
-        raise KeyError(f'Archidekt has no card named {name!r}')
-    cache[name] = next((c for c in res if c['edition']['editioncode'] not in _SKIP_SETS), res[0])['id']
-    os.makedirs(os.path.dirname(_ID_CACHE), exist_ok=True)
-    json.dump(cache, open(_ID_CACHE, 'w'))
-    time.sleep(1.1)
-    return cache[name]
+    Archidekt adds cards by its own id. This asks the parser behind the deck editor's "Import cards"
+    box (massDeckEdit), which takes a pasted list and returns each card with the printing the site
+    itself picks; it accepts front-face names. Raises KeyError listing every card it can't find.
+    """
+    names = list(dict.fromkeys(names))
+    if not names:
+        return {}
+    r = call('POST', '/api/cards/massDeckEdit/', {'parser': 'archidekt', 'current': '',
+                                                  'edit': ''.join(f'1 {n}\n' for n in names)})
+    if r['syntaxErrors'] or r['cardErrors']:
+        raise KeyError('; '.join(r['syntaxErrors'] + r['cardErrors']))
+    found = {e['name']: e['card'] for e in r['toAdd']}
+    return {n: (found[n]['id'], next((t for t in TYPES if t in found[n]['oracleCard']['types']), 'Other'))
+            for n in names}
 
 
 # ---- writing -------------------------------------------------------------------------------
@@ -315,7 +301,6 @@ def sync(deck_id, decklist_path, primer_path=None, dry_run=False, rename=True, f
     rename = rename and open(decklist_path).readline().startswith('#')
     cmdrs = decklist.commanders(decklist_path)
     have = main_cards(d)
-    cat = lambda c: 'Commander' if c in cmdrs else category(c)
     rm, mod, add = [], [], []
     for c, entries in have.items():
         if c not in want:
@@ -326,18 +311,21 @@ def sync(deck_id, decklist_path, primer_path=None, dry_run=False, rename=True, f
             rm += entries
             entries = []
         if not entries:
-            add.append((c, q, cat(c)))
+            add.append((c, q))
             continue
         e = entries[0]
-        is_cmdr = 'Commander' in e['categories']
-        if e['quantity'] != q or is_cmdr != (c in cmdrs):
-            mod.append((e, q, [cat(c)] if is_cmdr != (c in cmdrs) else None))
+        if e['quantity'] != q or ('Commander' in e['categories']) != (c in cmdrs):
+            mod.append((e, c, q))
+    # Card ids and categories for what's added or moved; an unknown card fails here, before any write.
+    cards = resolve([c for c, _ in add] + [c for e, c, _ in mod if ('Commander' in e['categories']) != (c in cmdrs)])
+    cat = lambda c: 'Commander' if c in cmdrs else cards[c][1]
+    mod = [(e, q, [cat(c)] if c in cards else None) for e, c, q in mod]
     site_md, dropped = quill.from_delta(d.get('description') or '')
     primer = open(primer_path).read() if primer_path else None
     if primer is not None and quill.to_delta(primer) == quill.to_delta(site_md):
         primer = None
     summary = {'removed': sorted(e['card']['oracleCard']['name'] for e in rm),
-               'added': [f'{q} {c}' for c, q, _ in add],
+               'added': [f'{q} {c}' for c, q in add],
                'changed': [f"{e['card']['oracleCard']['name']}: {e['quantity']} -> {q}" if e['quantity'] != q
                            else f"{e['card']['oracleCard']['name']}: -> {k[0]}" for e, q, k in mod],
                'renamed': name if rename and name != d['name'] else None,
@@ -351,7 +339,7 @@ def sync(deck_id, decklist_path, primer_path=None, dry_run=False, rename=True, f
     if not force and summary['primer_loses']:
         raise Refused(f"the new primer would drop the site primer's {', '.join(dropped)} formatting; "
                       f"skip the primer or force")
-    new = [(card_id(c), q, k, False) for c, q, k in add]  # fails here, before any write, on an unknown card
+    new = [(cards[c][0], q, cat(c), False) for c, q in add]
     backups = os.path.expanduser('~/.cache/mtg-backups')
     os.makedirs(backups, exist_ok=True)
     stamp = datetime.datetime.now().strftime('%Y%m%d-%H%M%S-%f')

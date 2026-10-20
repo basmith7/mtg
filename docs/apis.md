@@ -70,12 +70,17 @@ item `ARCHIDEKT_OP_ITEM`, which prompts.
   (60 a page), so follow `next`; `archidekt.folder()` does.
 - `GET /api/collection/<user id>/v2/?game=1&page=N&pageSize=100` — collection entries (`quantity`, `foil`,
   `card.uid`, `card.id`). Paginated by `totalPages`.
-- `GET /api/cards/v2/?exact=true&name=<name>` — card lookup → every printing with its Archidekt `id`.
-  Adding a card to a deck needs this id, so new cards cost one lookup each. **Rate-limited hard (HTTP
-  429):** keep ~1 request/sec and back off; the client sleeps 1.1 s per miss and caches name→id in
-  `cache/archidekt_card_ids.json`, so a new 100-card deck takes about 2 minutes. (Filtering by `uid` is
-  ignored by this endpoint.) **Double-faced, split and adventure cards need the full `A // B` name:**
-  "Brazen Borrower" returns nothing with `exact=true` or `false`, "Brazen Borrower // Petty Theft" finds it.
+- **Card ids.** Adding a card to a deck needs Archidekt's own card id.
+  - `POST /api/cards/massDeckEdit/` `{"parser": "archidekt", "current": <deck text>, "edit": <new text>}`:
+    the parser behind the deck editor's "Import cards" box (found 2026-10-20 in the deck page bundle).
+    It diffs two pasted lists and returns `toAdd` / `toRemove` (each with the full `card`, the printing
+    the site picks), `categories` from `# Category` lines, `syntaxErrors` and `cardErrors`. It only
+    parses; the page then saves through `modifyCards/v2`. Accepts `2x`, `(SET) 123`, front-face names.
+    A 100-card list resolves in one ~1 s request. `archidekt.resolve(names)` uses it with `current: ""`.
+  - `GET /api/cards/v2/?uids=<scryfall id>,...` — bulk lookup by Scryfall id, 60 a page (follow `next`).
+    `name=` with a comma-joined list returns nothing.
+  - `GET /api/cards/v2/?exact=true&name=<name>` — one name, every printing. **Rate-limited hard (HTTP
+    429)**, ~1 request/sec, and needs the full `A // B` name for double-faced cards. No longer used.
 - `GET /api/decks/tags/v2/?q=<text>` — search the fixed list of deck tags (id + name).
 
 ### Writing

@@ -7,8 +7,7 @@
 A 'deck.md' beside 'deck.txt' is that deck's primer. Each file gets a '# source:' line linking it to
 its new deck, for sync_deck.py. A file whose deck name already exists on the account is skipped, so
 re-running is safe. Commander lists ('Commander:' lines, see mtg/decklist.py) file their commanders
-under Commander. Cards are filed under their card type (Creature, Instant, ...). Needs cache/pool.json for type lines
-when cards aren't looked up from Scryfall (falls back to Scryfall per card).
+under Commander. Cards are filed under their card type (Creature, Instant, ...).
 """
 import argparse
 import os
@@ -33,9 +32,8 @@ def main():
             print(f'skip {name}: already on Archidekt  {archidekt.url(existing[name])}')
             continue
         cmdrs = decklist.commanders(path)
-        # Resolve every card first so a bad name fails before an empty deck is created.
-        entries = [(archidekt.card_id(c), q, 'Commander' if c in cmdrs else archidekt.category(c), False)
-                   for c, q in cards.items()]
+        ids = archidekt.resolve(cards)  # before creating the deck, so a bad name can't leave it empty
+        entries = [(ids[c][0], q, 'Commander' if c in cmdrs else ids[c][1], False) for c, q in cards.items()]
         did = archidekt.create_deck(name, a.format or ('commander' if cmdrs else 'custom'), a.folder)
         archidekt.add_cards(did, entries)
         md = os.path.splitext(path)[0] + '.md'
