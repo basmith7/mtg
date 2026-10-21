@@ -1,7 +1,7 @@
 # MTG APIs
 
 Most of this was worked out in October 2026 while organizing an Archidekt account and building
-decks. **Only Scryfall has a documented public API.** Archidekt and Moxfield are
+decks. **Only Scryfall and Mulligan Labs have documented APIs.** Archidekt and Moxfield are
 the sites' own private APIs, found by reading their web bundles; they can change without notice.
 If an endpoint stops working, re-derive it (see "Finding endpoints" at the bottom).
 
@@ -13,6 +13,7 @@ If an endpoint stops working, re-derive it (see "Finding endpoints" at the botto
 | Commander Spellbook | Combos a decklist contains or is one card from | None | Public, OpenAPI schema |
 | EDHREC | Card inclusion % and synergy per commander, themes, average decks | None | Private JSON, undocumented |
 | MTGGoldfish | Reading decklists out of articles | None | Scraping |
+| Mulligan Labs | Where the playgroup plays: game history, replays, a second copy of each deck | API key | Public, documented |
 
 Python clients for all of these live in `mtg/` (see the README).
 
@@ -223,6 +224,45 @@ and the plain profile HTML hides the bio). What works (2026-10-09, `scripts/impo
   Example: reel `Dd67dxZkSQF` ("54 FERAL HOGS DECKLIST...") -> linktr.ee/unmagical -> Moxfield user
   `willy` -> deck "54 Feral Hogs" (`t9G16DLc5EO0uYOuDftBIQ`).
 - Archidekt's `GET /api/decks/{id}/` needs no auth for public decks (`auth=False` in the client).
+
+---
+
+## Mulligan Labs — `https://mulligan-labs.com`
+
+The browser tabletop the playgroup plays Commander on. **It has a documented API** (in-app docs,
+"Deck API & MCP": `/docs`) and an MCP server at `https://mulligan-labs.com/mcp` for deck tools.
+Checked 2026-10-20.
+
+- **Auth:** a personal key from mulligan-labs.com/account (`mll_…`, shown once), sent as
+  `Authorization: Bearer mll_...`; ours is `MULLIGAN_LABS_API_KEY` in `.env`. Scopes: *Full access*
+  (everything but admin and key management; a password equivalent), *Decks read/write*, *Decks read*.
+  Only full access reaches game history, replays and exports. OAuth connectors (claude.ai) get decks only.
+- **Decks** (documented): `GET /api/decks?summary=1` (`limit` ≤ 200), `GET|PUT|DELETE /api/decks/{id}`,
+  `POST /api/decks` (`{name, decklist: {name, commanders, cards}, format?, visibility?, description?}`),
+  `POST /api/decks/{id}/cards` (`{name}`, `{names: []}` or pasted `{text}`; `Commander:` lines become
+  commanders), `DELETE /api/decks/{id}/cards` (`{name, all?}`). `PUT` accepts `bracket`, and is
+  conditional when sent `expectedRevision` (from the last `GET`/`PUT`): 409 if the deck changed.
+  Decks are separate copies, not live links to Archidekt.
+- **Game history** (found in the bundle, works with a full-access key):
+  - `GET /api/export/my-games`: CSV `game_id, started_at, ended_at, outcome (completed|abandoned),
+    placement, duration_minutes, room_code`. Abandoned games are common (rooms left open for hours).
+  - `GET /api/export/my-events`: CSV of every action in those games (`turn, phase, action_type`), no
+    players or cards. 13.7k rows for 27 games; the replays are the useful form.
+  - `GET /api/replays/{game_id}`: JSON with `players` (`name`, `seatIndex`, `commanderName`,
+    `placement`, `finalLife`), `winnerId`, `settings`, `deckSnapshots` (per seat, a JSON-string
+    `decklist` with `name`, **`sourceUrl`** (the Archidekt or Moxfield deck it was imported from), and
+    `cards`/`commanders` each carrying `name`, `scryfallId` and an **`instanceId`**), and `events`
+    (`turn`, `phase`, `playerSeatIndex`, `actionType`, `actionData`).
+  - **Events name cards by `instanceId`**, which maps back to a name through `deckSnapshots`:
+    `PLAY_CARD {cardInstanceId}` (every card put onto the battlefield, lands included),
+    `MOVE_CARDS {cardInstanceIds, from, to}` (zones: `hand`, `library`, `battlefield`, `graveyard`,
+    `exile`, `commandZone`), `CHANGE_CONTROLLER`, `CREATE_TOKEN {token: {name, ...}}`,
+    `ADJUST_LIFE {delta, targetPlayerIndex}`, `ADD_COMMANDER_DAMAGE`. `DRAW_CARDS` carries only a
+    `count`, so which cards were drawn (and the opening hand) is not recorded.
+  - `GET /api/games/mine`: async games only (`yourMove`, `waiting`, `finished`).
+- **Other:** `GET /api/auth/me` (account), `/api/stats/commanders` (site-wide commander stats),
+  `/api/decks/analyze`, `/api/decks/combos`, `/api/rooms/public`. The site also runs as a Discord
+  Activity (`/api/discord/*`).
 
 ---
 
