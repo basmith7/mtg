@@ -7,16 +7,13 @@
 """
 import re
 from collections import Counter, namedtuple
-from functools import lru_cache
 from itertools import combinations
-from math import comb
 
 # One library entry. kind: land, rock, dork, lramp, other. amount: mana it adds once online.
 # produces: colours it adds (WUBRG, C for colourless). pips: {colour: count} in its cost.
 Card = namedtuple('Card', 'kind mv amount produces pips')
 Cost = namedtuple('Cost', 'mv pips')
 
-DECK, HAND, LANDS = 99, 7, 41  # LANDS: Karsten's assumed 99-card land count (mana rocks as partial lands)
 TURNS = 12
 
 
@@ -49,33 +46,39 @@ def pips(c):
 
 # -- Source counts ------------------------------------------------------------------------------------
 
-def p_on_curve(sources, p, mv, lands=LANDS):
-    """P(>= p coloured sources among the cards seen by turn mv | >= mv lands seen). 99-card deck, 7-card
-    hand, a draw every turn including the first (multiplayer), no mulligans: a hypergeometric."""
-    n, other = HAND + mv, lands - sources
-    hit = enough = 0
-    for k in range(min(sources, n) + 1):
-        for j in range(min(other, n - k) + 1):
-            if k + j < mv:
-                continue
-            w = comb(sources, k) * comb(other, j) * comb(DECK - lands, n - k - j)
-            enough += w
-            hit += w if k >= p else 0
-    return hit / enough if enough else 0.0
+# Frank Karsten, "How Many Sources Do You Need to Consistently Cast Your Spells? A 2022 Update"
+# (TCGplayer, 2022-08-02), 99-card column, read through TCGplayer's content API:
+# https://infinite-api.tcgplayer.com/content/article/dc23a7d2-0a16-4c0b-ad36-586fcca03ad8/
+# His model: 41 lands, London mulligan with Commander's free first mulligan and a turn-1 draw, cast on
+# curve with 89 + MV percent probability given enough lands. Index: pips -> {MV: sources}.
+KARSTEN_2022_99 = {
+    1: {1: 19, 2: 19, 3: 18, 4: 16, 5: 15, 6: 14},
+    2: {2: 30, 3: 28, 4: 26, 5: 23, 6: 22, 7: 20},
+    3: {3: 36, 4: 33, 5: 30, 6: 28, 7: 26},
+    4: {5: 36},
+}
+BASIC_TYPES = {'Plains': 'W', 'Island': 'U', 'Swamp': 'B', 'Mountain': 'R', 'Forest': 'G'}
 
 
-@lru_cache(maxsize=None)
-def sources_needed(pips, mv, lands=LANDS):
-    """Fewest coloured sources for `pips` symbols of one colour on a spell of MV `mv` to be castable on
-    turn mv with probability >= 89 + mv percent (Karsten's per-MV consistency target), conditional on
-    having drawn mv lands. Computed here by `p_on_curve` (no mulligans), not copied from Karsten; his
-    published 99-card table, which also models mulligans, is compared in specs/deck-tools/slices/06-goldfish.md.
-    Returns None when even an all-source mana base misses the target."""
-    mv, target = max(mv, pips, 1), (89 + min(max(mv, pips, 1), 7)) / 100
-    for s in range(pips, lands + 1):
-        if p_on_curve(s, pips, mv, lands) >= target:
-            return s
-    return None
+def sources_needed(pips, mv):
+    """Sources of one colour wanted for `pips` symbols of it on a spell of MV `mv`, from Karsten's table.
+    Cells he didn't publish take the nearest MV he did for that pip count (a cheaper MV wants more, so
+    this is conservative above his range); 4+ pips use his one 4-pip cell."""
+    row = KARSTEN_2022_99[min(pips, 4)]
+    return row[min(row, key=lambda m: (abs(m - mv), m))]
+
+
+def land_produces(c, identity):
+    """Colours a land can make: its produced_mana plus whatever it fetches. "Search ... for a Plains or
+    Island card" gives those colours; a basic-land fetcher (Evolving Wilds, Prismatic Vista) gives the
+    deck's identity. Returns a set, empty for a land that makes no mana."""
+    made = set(c.get('produced_mana') or ())
+    txt = ' '.join(f.get('oracle_text', '') for f in faces(c))
+    for m in re.finditer(r'[Ss]earch your library for ([^.]*?) cards?\b', txt):
+        what = m.group(1)
+        types = {col for t, col in BASIC_TYPES.items() if t in what}
+        made |= types or (set(identity) if 'basic land' in what else set())
+    return made
 
 
 # -- Goldfish -----------------------------------------------------------------------------------------
@@ -119,7 +122,7 @@ def keepable(hand):
 
 def simulate(deck, commander, games, rng):
     """deck: list of Card for the library; commander: Cost or None.
-    Model: London mulligan to 4 (keepable() decides), a draw every turn, one land per turn (the first in
+    Model: London mulligan to 4, the first one free (keepable() decides), a draw every turn, one land per turn (the first in
     hand), then ramp cheapest first with the coloured mana available. Rocks work the turn they land, dorks
     and land-ramp the turn after; land-ramp fetches a land making one of the colours already out. The
     commander is cast as soon as it can be; it is then removed the same turn, and recast at MV + 2.
@@ -130,11 +133,13 @@ def simulate(deck, commander, games, rng):
         lib = deck[:]
         rng.shuffle(lib)
         n = 0
-        while not keepable(lib[:7]) and n < 3:
+        while not keepable(lib[:7]) and n < 4:
             rng.shuffle(lib)
             n += 1
         hand, rest = lib[:7], lib[7:]
-        for _ in range(n):  # bottom n: a land if flooded (or nothing else), else the priciest spell
+        # The first mulligan is free (multiplayer, CR 103.5c). Bottom a land if flooded (or nothing
+        # else), else the priciest spell.
+        for _ in range(max(n - 1, 0)):
             ls = [c for c in hand if c.kind == 'land']
             spells = [c for c in hand if c.kind != 'land']
             drop = ls[0] if len(ls) > 3 or not spells else max(spells, key=lambda c: c.mv)

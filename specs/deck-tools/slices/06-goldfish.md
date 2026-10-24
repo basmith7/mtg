@@ -31,15 +31,15 @@ pips. Replace slice 01's golden values where behaviour intentionally changed (sa
 
 ## Source-count table: provenance (checkpoint)
 
-`goldfish.sources_needed` is **computed**, not copied: a stdlib multivariate hypergeometric over a
-99-card deck with 41 lands (Karsten's 2022 assumption), 7-card hand plus a draw every turn including
-turn 1, conditional on at least MV lands seen, target 89 + MV percent (Karsten's per-MV consistency
-rule), **no mulligans**. Karsten's numbers below are from his article "How Many Sources Do You Need to
-Consistently Cast Your Spells? A 2022 Update" (TCGplayer, 2022-08-02, 99-card column), read on
-2026-10-24 through TCGplayer's content API (`infinite-api.tcgplayer.com/content/article/dc23a7d2-…`).
-His model adds a London mulligan with Commander's free mulligan; that is why his 1-3 drops need fewer
-sources (his article says the free mulligan lowered them by up to 3-4). From MV 4 up the two agree
-within 1. The old `KARSTEN_99` table was from memory and ran 3-9 sources low throughout.
+`goldfish.sources_needed` is **Karsten's published table**: "How Many Sources Do You Need to Consistently
+Cast Your Spells? A 2022 Update" (TCGplayer, 2022-08-02), 99-card column, read on 2026-10-24 through
+TCGplayer's content API (`infinite-api.tcgplayer.com/content/article/dc23a7d2-0a16-4c0b-ad36-586fcca03ad8/`).
+His model includes the free first mulligan, which applies here (CR 103.5c; the group plays four-player).
+Unpublished cells take the nearest MV he did publish for that pip count.
+
+For the record, a no-mulligan hypergeometric (same 41 lands and 89 + MV % target) matched him within 1
+from MV 4 up and ran 1-5 higher below, as his free mulligan predicts. It was removed once his table was
+the lookup. The old from-memory `KARSTEN_99` ran 3-9 low.
 
 | Cost | Computed | Karsten 2022 (99) | Old table |
 |---|---|---|---|
@@ -62,17 +62,14 @@ within 1. The old `KARSTEN_99` table was from memory and ran 3-9 sources low thr
 | 5CC | 20 | 20 | 17 |
 | 4CCC | 26 | 26 | 22 |
 
-We keep the computed numbers: the playgroup's free mulligan isn't recorded in `RULES.md`, so the stricter
-no-mulligan figures are the honest default for cheap spells. If the table plays the free mulligan, Karsten's
-column is the one to use for MV 1-3.
 
 ## Done
 
 - `mtg/goldfish.py`: `Card`/`Cost` entries with colours; `can_pay` (Hall's condition) and `pay`; mulligan
-  `keepable`; `simulate` returns `keep7`, `cast_by`, `recast_by`, `mulls`, `lands4`, `drops4`, `ramp2`;
-  `sources_needed` computed by `p_on_curve`.
+  `keepable` with the first mulligan free; `simulate` returns `keep7`, `cast_by`, `recast_by`, `mulls`,
+  `lands4`, `drops4`, `ramp2`; `sources_needed` looks up Karsten's table; `land_produces` counts fetch lands.
 - `scripts/deck_stats.py`: the Mana check judges each colour by the card needing the most sources
   (not just the most pips); Goldfish prints the keepable/cast/recast line.
 - Tests re-pinned (golden values changed with the model) plus the slice's properties and a check against
   Karsten's MV 4+ numbers. Evidence: Breya (WUBR) commander castable by T4 went from 87% (colours ignored)
-  to 35%; Anzrag (RG) stays at 91%.
+  to 35%, then 54% once fetch lands count and the first mulligan is free; Anzrag (RG) stays at 91%.

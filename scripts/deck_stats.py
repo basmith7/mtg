@@ -23,7 +23,7 @@ from collections import Counter
 ROOT = os.path.join(os.path.dirname(__file__), '..')
 sys.path.insert(0, ROOT)
 from mtg import decklist, scryfall
-from mtg.goldfish import Card, Cost, faces, is_land, mana_producer, pips, simulate, sources_needed
+from mtg.goldfish import Card, Cost, faces, is_land, land_produces, mana_producer, pips, simulate, sources_needed
 from mtg.roles import ROLES, SHOW, TARGETS, TARGETS_60, role_hits
 
 TYPES = ['Land', 'Creature', 'Planeswalker', 'Battle', 'Artifact', 'Enchantment', 'Instant', 'Sorcery']
@@ -71,7 +71,7 @@ def stats(path, games, seed):
     print('\n-- Mana --')
     print(f'lands {nlands}{flag(nlands, "lands")}, mana rocks/dorks {sum(cards[n] for n in producers)}')
     for col in colours:
-        srcs = sum(cards[n] for n in lands if col in (data[n].get('produced_mana') or []))
+        srcs = sum(cards[n] for n in lands if col in land_produces(data[n], colours))
         srcs += sum(cards[n] for n, p in producers.items() if col in p[0])
         worst = None  # (wants, pips, mv, card): the card that needs the most sources of this colour
         for n in names:
@@ -86,8 +86,8 @@ def stats(path, games, seed):
         status = f' wants {want}: ' + ('SHORT' if srcs < want else 'ok') if cmd_deck else ''
         print(f'{col}: {srcs} sources; hardest {col * p} at MV {mv} ({n}){status}')
     if cmd_deck:
-        print('(wants: sources to cast it on curve ~90% of the time given enough lands, computed for a 41-land 99;'
-              ' fetch/search lands not counted)')
+        print("(wants: Karsten's 2022 Commander table, ~90% on curve given enough lands;"
+              ' fetch lands count for the colours they can find)')
 
     # Curve and types
     spells = [n for n in names if in_deck(n) and not is_land(data[n])]
@@ -114,7 +114,7 @@ def stats(path, games, seed):
         mv, cost = int(c.get('cmc', 0)), dict(pips(c))
         for _ in range(cards[n]):
             if is_land(c):
-                lib.append(Card('land', 0, 1, frozenset(c.get('produced_mana') or 'C'), {}))
+                lib.append(Card('land', 0, 1, frozenset(land_produces(c, colours) or 'C'), {}))
             elif p:
                 lib.append(Card('rock' if p[2] else 'dork', mv, p[1], frozenset(p[0]), cost))
             elif n in lramp and mv >= 2:
@@ -125,7 +125,7 @@ def stats(path, games, seed):
     commander = Cost(int(cmdr.get('cmc', 0)), dict(pips(cmdr))) if cmdr else None
     r = simulate(lib, commander, games, random.Random(seed))
     print(f'\n-- Goldfish ({games} games, seed {seed}) --')
-    print('model: London mulligan to 4 (keep 2-5 lands with 3+ lands or a castable 2-drop), draw every turn,'
+    print('model: London mulligan to 4, first one free (keep 2-5 lands with 3+ lands or a castable 2-drop), draw every turn,'
           ' one land per turn, coloured pips paid, ramp cast cheapest-first; rocks work at once, dorks/land-ramp'
           ' next turn; the commander is removed on landing and recast with tax; nothing else is played.')
     line = f'keepable 7: {r["keep7"]:.0%}'

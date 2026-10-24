@@ -18,7 +18,7 @@ def library(red=18, black=18, colourless=0):
 
 class SimulateTest(unittest.TestCase):
     def test_seeded_run_is_reproducible(self):
-        # Golden values re-pinned in slice 06, when the model learnt colours and commander tax.
+        # Golden values re-pinned in slice 06, when the model learnt colours, commander tax and the free mulligan.
         r = goldfish.simulate(library(), RR5, 500, random.Random(7))
         self.assertEqual(r, goldfish.simulate(library(), RR5, 500, random.Random(7)))
         self.assertAlmostEqual(r['keep7'], GOLDEN['keep7'])
@@ -54,19 +54,56 @@ class CanPayTest(unittest.TestCase):
 
 
 class SourcesNeededTest(unittest.TestCase):
-    def test_monotonic_in_pips(self):
-        for mv in range(3, 8):
-            needs = [goldfish.sources_needed(p, mv) for p in (1, 2, 3)]
+    def test_karstens_published_cells(self):
+        self.assertEqual(goldfish.sources_needed(1, 1), 19)
+        self.assertEqual(goldfish.sources_needed(2, 4), 26)
+        self.assertEqual(goldfish.sources_needed(3, 3), 36)
+
+    def test_unpublished_cells_take_the_nearest_mv(self):
+        self.assertEqual(goldfish.sources_needed(1, 10), 14)
+        self.assertEqual(goldfish.sources_needed(2, 1), 30)
+        self.assertEqual(goldfish.sources_needed(5, 9), 36)
+
+    def test_more_pips_never_want_fewer_sources(self):
+        for mv in range(1, 11):
+            needs = [goldfish.sources_needed(p, mv) for p in (1, 2, 3, 4)]
             self.assertEqual(needs, sorted(needs), mv)
-            self.assertLess(needs[0], needs[1])
 
-    def test_matches_karstens_published_99_card_numbers_from_mv_4(self):
-        # His 2022 table (TCGplayer, 2022-08-02). Below MV 4 his free mulligan lowers his numbers; we model none.
-        for (p, mv), want in {(1, 4): 16, (2, 4): 26, (3, 4): 33, (2, 5): 23, (3, 6): 28, (2, 7): 20}.items():
-            self.assertLessEqual(abs(goldfish.sources_needed(p, mv) - want), 1, (p, mv))
+    def test_higher_mv_never_wants_more_sources(self):
+        for p in (1, 2, 3, 4):
+            needs = [goldfish.sources_needed(p, mv) for mv in range(1, 11)]
+            self.assertEqual(needs, sorted(needs, reverse=True), p)
 
 
-GOLDEN = {'keep7': 0.644, 'cast5': 0.718, 'recast8': 0.594}
+def land(text, produced=None):
+    return {'type_line': 'Land', 'oracle_text': text, 'produced_mana': produced}
+
+
+class LandProducesTest(unittest.TestCase):
+    def test_typed_fetch_finds_its_types(self):
+        delta = land('{T}, Pay 1 life, Sacrifice Polluted Delta: Search your library for an Island or Swamp card, '
+                     'put it onto the battlefield, then shuffle.')
+        self.assertEqual(goldfish.land_produces(delta, 'WUBR'), {'U', 'B'})
+
+    def test_basic_land_fetch_finds_the_identity(self):
+        vista = land('{T}: Add {C}.\n{T}, Pay 1 life, Sacrifice Prismatic Vista: Search your library for a basic '
+                     'land card, put it onto the battlefield, then shuffle.', ['C'])
+        self.assertEqual(goldfish.land_produces(vista, 'RG'), {'C', 'R', 'G'})
+
+    def test_plain_land_is_its_produced_mana(self):
+        self.assertEqual(goldfish.land_produces(land('({T}: Add {R}.)', ['R']), 'RG'), {'R'})
+
+
+class MulliganTest(unittest.TestCase):
+    def test_first_mulligan_is_free(self):
+        # An all-land deck never keeps, so it mulligans to the cap of four and bottoms only three: four
+        # cards kept plus four draws are the lands seen by turn 4 (seven if every mulligan cost a card).
+        r = goldfish.simulate([Card('land', 0, 1, R, {})] * 99, None, 20, random.Random(1))
+        self.assertEqual(dict(r['mulls']), {4: 20})
+        self.assertEqual(r['lands4'], 8)
+
+
+GOLDEN = {'keep7': 0.646, 'cast5': 0.724, 'recast8': 0.62}
 
 if __name__ == '__main__':
     unittest.main()
