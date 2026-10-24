@@ -60,7 +60,7 @@ flavour word or year) and the Scryfall query for its pool. Build from that query
    off-colour cards (Phyrexian Metamorph in RG). Red decks keep landing one card from a fast combo:
    Dualcaster Mage with Twinflame / Heat Shimmer / Electroduplicate / Molten Duplication, Reiterate with
    Jeska's Will, Rionya with Terror of the Peaks.
-6. **Verify card text** against Scryfall (`scryfall.collection(names)`, `scryfall.oracle_text(card)`)
+6. **Verify card text** against Scryfall (`scryfall.collection(names)`, `cards.oracle_text(card)`)
    before writing anything about a card. Then check claims about how cards *combine*, which per-card
    checks miss: tutors and recursion can't reach the commander in the command zone (a primer once said
    Natural Order finds Etali).

@@ -26,7 +26,7 @@ guideposts, so break them when the deck's plan calls for it and say why.
   the player's profile; without a stated preference, ask first. D&D sets (AFR, CLB, AFC) count as
   normal Magic.
 - Verify every card exists and does what you think. Rules text in the primer must match Scryfall
-  oracle text (`scryfall.collection(names)`, `scryfall.oracle_text(card)`). Don't rely on memory.
+  oracle text (`scryfall.collection(names)`, `cards.oracle_text(card)`). Don't rely on memory.
 - Use the exact Scryfall card names. Double-faced and split cards take the full name with ` // `.
 
 ## Someone else's list

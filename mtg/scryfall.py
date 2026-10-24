@@ -3,7 +3,7 @@ import time
 import urllib.parse
 
 from . import http
-from .cards import front, oracle_text  # noqa: F401  oracle_text: RULES.md and the commander-deck skill cite it here
+from .cards import front
 
 BASE = 'https://api.scryfall.com'
 HEADERS = {'User-Agent': 'mtg-tools (github.com/basmith7/mtg)'}
