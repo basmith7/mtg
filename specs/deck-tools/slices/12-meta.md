@@ -12,3 +12,9 @@ public repo.
 
 **Tests:** synthetic replays: counts exclude the player's own seat; `--names` format.
 **Delegated:** how many games back to look by default.
+
+## Done (2026-10-24)
+
+`mtg-table/meta.py` (commanders, themes, `--names`) with synthetic-replay tests; mtg-table's README
+documents both tools. Themes use `mtg.patterns` once slice 02 lands (tested against that module) and fall
+back to the site's tags before then. Choices: [choices/12.md](../choices/12.md).
