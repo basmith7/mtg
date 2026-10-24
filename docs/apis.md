@@ -1,7 +1,7 @@
 # MTG APIs
 
 Most of this was worked out in October 2026 while organizing an Archidekt account and building
-decks. **Only Scryfall has a documented public API.** Archidekt and Moxfield are
+decks. **Only Scryfall and Mulligan Labs have documented APIs.** Archidekt and Moxfield are
 the sites' own private APIs, found by reading their web bundles; they can change without notice.
 If an endpoint stops working, re-derive it (see "Finding endpoints" at the bottom).
 
@@ -13,6 +13,7 @@ If an endpoint stops working, re-derive it (see "Finding endpoints" at the botto
 | Commander Spellbook | Combos a decklist contains or is one card from | None | Public, OpenAPI schema |
 | EDHREC | Card inclusion % and synergy per commander, themes, average decks | None | Private JSON, undocumented |
 | MTGGoldfish | Reading decklists out of articles | None | Scraping |
+| Mulligan Labs | Where the playgroup plays: game history, replays, a second copy of each deck | API key | Public, documented |
 
 Python clients for all of these live in `mtg/` (see the README).
 
@@ -25,13 +26,20 @@ Docs: <https://scryfall.com/docs/api>. Send `User-Agent` **and** `Accept: applic
 The limit is per machine, so several agents running checkers at once hit 429s.
 
 - `GET /cards/search?q=<query>&unique=cards|prints&order=usd&dir=asc` — full Scryfall search syntax.
-  Paginated: follow `next_page` until absent.
+  Paginated: follow `next_page` until absent. `order=edhrec&dir=asc` is most-played first; `dir=desc`
+  starts with unranked playtest and joke cards (`Cursed Firebreathing Yogurt`) even under `f:commander`,
+  so add `not:funny`. `-is:gamechanger` drops Game Changers (seen 2026-10-24).
 - `GET /cards/named?exact=<name>` — one card. `fuzzy=` also works.
 - Useful card fields: `name`, `mana_cost`, `type_line`, `oracle_text` (or `card_faces[].oracle_text` for
   split/DFC cards), `color_identity`, `rarity`, `legalities`, `prices.usd`, `id` (Scryfall UUID).
 - `POST /cards/collection` (75 names a request) accepts a double-faced card's front-face name, and
   `scryfall.collection()` returns such cards under both the full and the front name, so looping over its
   values gives duplicates. Cards not yet released aren't there (EDHREC has no page for them either).
+- Search gotchas (probed 2026-10-24): `kw:monarch` matches thousands of commanders (use `o:monarch`);
+  `edhrec_rank` ranks a card across all decks, not as a commander (Abby, Merciless Soldier: rank 15543,
+  18 decks; Bill Ferny: rank 21974, 604), so EDHREC's `num_decks` is the real "underplayed" signal.
+  `atag:` (art tags) and `ft:` (flavour text) work; `total_cards` on page one is the match count.
+  Several agents on one IP get 429s within ~30 quick searches; ~1.5 s between them recovers.
 
 **The Scryfall UUID is the join key across sites:** Moxfield exposes it as `card.scryfall_id`,
 Archidekt as `card.uid`.
@@ -170,6 +178,14 @@ Public, no auth. OpenAPI schema (Swagger) at `/schema/`; client is `mtg/spellboo
   own tiers, not the same as the house "B3.75"). No mana values come back; the checker gets them from Scryfall.
 - Combo names in `uses` are sometimes a face name only; `uses` can also list a combo's commander.
 - Cheap to call (one request per deck, ~1 s); no rate limit hit so far.
+- `POST /estimate-bracket`, same body as `/find-my-combos` (probed 2026-10-24; client
+  `spellbook.estimate_bracket`). Returns `bracketTag` (the deck's tag on the scale above), `cards[]`
+  (only cards it flags: `card.name`, `gameChanger`, `massLandDenial`, `extraTurn`, `banned`) and
+  `combos[]` (`combo` is a full variant; beside it `definitelyTwoCard`, `arguablyTwoCard`, `speed`
+  (small int), `lock`, `massLandDenial`, `extraTurn`, `skipTurns`, `relevant`). Its tag is not a WotC
+  bracket: 4 Game Changers → `R`, Winter Orb alone → `R`, Time Warp alone → `C`; Thassa's Oracle +
+  Demonic Consultation is `definitelyTwoCard` though it produces "Win the game", not an "Infinite …"
+  feature. Trimmed reply: `tests/fixtures/spellbook_estimate_thoracle.json`.
 ## EDHREC — `https://json.edhrec.com/pages`
 
 No auth, no documentation; these are the JSON files the edhrec.com site loads (found 2026-10-09).
@@ -190,12 +206,22 @@ Commander page shape: top-level `tag_counts` (`[{slug, value, count}]` = themes)
 `container.json_dict.cardlists[]`: `{header, tag, cardviews[]}`. Headers: `New Cards`, `Top Cards`,
 `High Lift Cards`, then `Creatures`, `Instants`, `Sorceries`, `Utility Artifacts`, `Enchantments`,
 `Planeswalkers`, `Utility Lands`, `Mana Artifacts`, `Lands`. Each cardview: `name`, `slug`, `num_decks`,
-`potential_decks`, `synergy` (fraction, -1..1), `lift`, `trend_zscore`. There is no inclusion field:
+`potential_decks`, `synergy` (fraction, -1..1), `lift`, `trend_zscore`. `lift` is a ratio, not a fraction:
+~1 for colour staples (Path to Exile 1.03 under Zur), ~20–30 for cards this commander alone plays;
+`trend_zscore` is recent change in play, mostly within ±1 (seen 2026-10-24). There is no inclusion field:
 **inclusion = num_decks / potential_decks**.
 
 Gotchas: the highlight lists (`Top Cards` etc.) *remove* their cards from the type lists, so merge them
 (`mtg/edhrec.py` does, preferring the type list). Each list is capped (~50 creatures), so a card absent from
 the lists is not necessarily rare in the deck. Basics appear in `Lands`.
+
+**Salt scores come from MTGJSON, not card pages** (probed 2026-10-24). MTGJSON's
+`https://mtgjson.com/api/v5/AtomicCards.json.gz` (52 MB, no auth; `data` maps each name, `A // B` for
+double-faced cards, to a list of faces) carries EDHREC's salt as `edhrecSaltiness` on every card:
+it covered 100% of the nonbasic cards in three of the player's decks, and matched the card page's `salt`
+(Cyclonic Rift 2.35 both). Scores run 0–4; most cards sit under 1 and basics have one too.
+`edhrec.salt` downloads it once a week and keeps only `{name: salt}` in `~/.cache/mtg/edhrec/salt.json`,
+instead of fetching ~85 card pages a deck at 1 request a second.
 
 ---
 
@@ -223,6 +249,67 @@ and the plain profile HTML hides the bio). What works (2026-10-09, `scripts/impo
   Example: reel `Dd67dxZkSQF` ("54 FERAL HOGS DECKLIST...") -> linktr.ee/unmagical -> Moxfield user
   `willy` -> deck "54 Feral Hogs" (`t9G16DLc5EO0uYOuDftBIQ`).
 - Archidekt's `GET /api/decks/{id}/` needs no auth for public decks (`auth=False` in the client).
+
+---
+
+## Mulligan Labs — `https://mulligan-labs.com`
+
+The browser tabletop the playgroup plays Commander on. **It has a documented API** (in-app docs,
+"Deck API & MCP": `/docs`) and an MCP server at `https://mulligan-labs.com/mcp` for deck tools.
+Checked 2026-10-20.
+
+- **Auth:** a personal key from mulligan-labs.com/account (`mll_…`, shown once), sent as
+  `Authorization: Bearer mll_...`; ours is `MULLIGAN_LABS_API_KEY` in `.env`. Scopes: *Full access*
+  (everything but admin and key management; a password equivalent), *Decks read/write*, *Decks read*.
+  Only full access reaches game history, replays and exports. OAuth connectors (claude.ai) get decks only.
+- **Decks** (documented): `GET /api/decks?summary=1` (`limit` ≤ 200), `GET|PUT|DELETE /api/decks/{id}`,
+  `POST /api/decks` (`{name, decklist: {name, commanders, cards}, format?, visibility?, description?}`),
+  `POST /api/decks/{id}/cards` (`{name}`, `{names: []}` or pasted `{text}`; `Commander:` lines become
+  commanders), `DELETE /api/decks/{id}/cards` (`{name, all?}`). `PUT` accepts `bracket`, and is
+  conditional when sent `expectedRevision` (from the last `GET`/`PUT`): 409 if the deck changed.
+  Decks are separate copies, not live links to Archidekt.
+- **Game history** (found in the bundle, works with a full-access key):
+  - `GET /api/export/my-games`: CSV `game_id, started_at, ended_at, outcome (completed|abandoned),
+    placement, duration_minutes, room_code`. Abandoned games are common (rooms left open for hours).
+  - `GET /api/export/my-events`: CSV of every action in those games (`turn, phase, action_type`), no
+    players or cards. 13.7k rows for 27 games; the replays are the useful form.
+  - `GET /api/replays/{game_id}`: JSON with `players` (`name`, `seatIndex`, `commanderName`,
+    `placement`, `finalLife`), `winnerId`, `settings`, `deckSnapshots` (per seat, a JSON-string
+    `decklist` with `name`, **`sourceUrl`** (the Archidekt or Moxfield deck it was imported from), and
+    `cards`/`commanders` each carrying `name`, `scryfallId` and an **`instanceId`**), and `events`
+    (`turn`, `phase`, `playerSeatIndex`, `actionType`, `actionData`).
+  - **Events name cards by `instanceId`**, which maps back to a name through `deckSnapshots`:
+    `PLAY_CARD {cardInstanceId}` (every card put onto the battlefield, lands included),
+    `MOVE_CARDS {cardInstanceIds, from, to}` (zones: `hand`, `library`, `battlefield`, `graveyard`,
+    `exile`, `commandZone`), `CHANGE_CONTROLLER`, `CREATE_TOKEN {token: {name, ...}}`,
+    `ADJUST_LIFE {delta, targetPlayerIndex}`, `ADD_COMMANDER_DAMAGE`. `DRAW_CARDS` carries only a
+    `count`, so which cards were drawn (and the opening hand) is not recorded.
+  - `GET /api/games/mine`: async games only (`yourMove`, `waiting`, `finished`).
+- **Other:** `GET /api/auth/me` (account), `/api/stats/commanders` (site-wide commander stats),
+  `/api/decks/analyze`, `/api/decks/combos`, `/api/rooms/public`. The site also runs as a Discord
+  Activity (`/api/discord/*`).
+
+---
+
+## MCP server — j4th/mtg-mcp-server (`.mcp.json`)
+
+A third-party MCP server (MIT) that gives agents read-only card tools we have no script for:
+`theme_search`, `bulk_similar_cards`, `build_around`, `card_comparison`, `rules_lookup`,
+`rules_interaction`, plus wrappers over Scryfall and Spellbook (`spellbook_estimate_bracket`). Every
+tool is annotated `readOnlyHint`; none writes to an account. Checked 2026-10-24.
+
+- **Pinned to a commit, not PyPI 3.0.0.** 3.0.0 fails at import with current `selectolax` (≥1.0
+  removed the Modest backend) and its bulk-data tools fail on Scryfall's renamed bulk field
+  (`download_uri` → `jsonl_download_uri`, upstream issue #69). Both are fixed on `main` but unreleased.
+  `uvx --from git+…` ignores the repo's `uv.lock`, so `--exclude-newer` freezes the dependency
+  resolution to the date the tree was audited (81 packages, 0 known advisories).
+- **Modules default to on** in this release (all of EDHREC, Moxfield, 17Lands, Spicerack,
+  MTGGoldfish, bulk data, rules). `.mcp.json` turns off EDHREC (its traffic stays in our 1 req/s
+  cache via `mtg/edhrec.py`), Moxfield (we have a client) and the constructed and draft sources.
+  Bulk data (a ~30 MB Scryfall Oracle download per start, held in memory) and rules stay on.
+- `evaluate_upgrade` and `deck_analysis` lean on EDHREC; with it off they return combos and prices only.
+- `rules_lookup` loads the April 2025 Comprehensive Rules; check newer rules on Scryfall rulings.
+- The server reads `MTG_MCP_*` keys from a `.env` in its working directory (ours has none).
 
 ---
 

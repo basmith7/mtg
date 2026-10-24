@@ -13,6 +13,12 @@ Then asks Commander Spellbook which combos the deck contains (network; --no-comb
 Combos are fine if they're fun and late (house rule, RULES.md). A combo is FAST when its pieces total mana
 value 6 or less, or Spellbook rates it Ruthless or Banned; a fast infinite combo is a problem (`!!`).
 --near also lists combos missing one card. Primers should take their combo claims from this output.
+
+The bracket line shows the official WotC bracket, Spellbook's own tag (information only) and the house
+verdict (RULES.md: Game Changers, no mass land denial, no extra-turn chains, no fast infinite combo).
+Official Bracket 4 alone is not a problem; a house failure is.
+--pool "<query>" checks a challenge deck (scripts/discover.py --challenge): every card but basic lands
+must match the Scryfall query, e.g. --pool "atag:dragon f:commander".
 """
 import argparse
 import os
@@ -20,47 +26,36 @@ import sys
 from collections import Counter
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
-from mtg import decklist, scryfall, spellbook
-
-FAST_MV = 6  # combo pieces totalling this much mana value or less can land by turn 3-4
+from mtg import brackets, decklist, patterns, scryfall, spellbook
+from mtg.cards import is_land, oracle_text
 
 
 def show_combos(cmdrs, cards, data, near):
-    """Print Spellbook combos; return problem strings."""
-    def mv(n):  # Spellbook sometimes names one face of a double-faced card
-        c = data.get(n) or next((v for k, v in data.items() if n in k.split(' // ')), None)
-        return c.get('cmc', 0) if c else None
-
-    def total(c):
-        mvs = [mv(n) for n in c['cards']]
-        return '?' if None in mvs else int(sum(mvs))
-
-    def fast(c):  # an unknown mana value counts as fast, so it gets looked at
-        return total(c) == '?' or total(c) <= FAST_MV or c['bracket'] in ('Ruthless', 'Banned')
-
+    """Spellbook combos: (the included ones with 'fast' and 'infinite' set, the lines to print)."""
+    mv = brackets.mana_value(data)
     found = spellbook.find_combos(cmdrs, list(cards))
     if near:  # look up the missing pieces too, so near-miss combos get a real total
         missing = {n for c in found['almost'] for n in c['cards'] if mv(n) is None}
-        data = {**data, **(scryfall.collection(missing) if missing else {})}
-    problems = []
+        mv = brackets.mana_value({**data, **(scryfall.collection(missing) if missing else {})})
+    out = [f'   combos: {len(found["included"])} included, {len(found["almost"])} one card away']
 
-    def line(c, tag=''):
-        print(f'   {tag}{" + ".join(c["cards"])} [{c["bracket"]}] total MV {total(c)}{" FAST" if fast(c) else ""}')
-        print(f'      -> {"; ".join(c["results"])}')
+    def show(c, tag=''):
+        t = brackets.total_mv(c, mv)
+        fast = ' FAST' if brackets.is_fast(c, mv) else ''
+        out.append(f'   {tag}{" + ".join(c["cards"])} [{c["bracket"]}] total MV {"?" if t is None else t}{fast}')
+        out.append(f'      -> {"; ".join(c["results"])}')
         if c['prerequisites'] and not tag:
-            print(f'      needs: {c["prerequisites"].replace(chr(10), " ")}')
-        print(f'      {c["url"]}')
+            out.append(f'      needs: {c["prerequisites"].replace(chr(10), " ")}')
+        out.append(f'      {c["url"]}')
 
-    print(f'   combos: {len(found["included"])} included, {len(found["almost"])} one card away')
     for c in found['included']:
-        line(c)
-        if fast(c) and any(r.lower().startswith('infinite') for r in c['results']):
-            problems.append(f'fast infinite combo: {" + ".join(c["cards"])} ({c["url"]})')
+        show(c)
     if near:
-        print('   near (missing one card):')
+        out.append('   near (missing one card):')
         for c in found['almost']:
-            line(c, f'+{c["missing"][0]}: ' if c['missing'] else '')
-    return problems
+            show(c, f'+{c["missing"][0]}: ' if c['missing'] else '')
+    infinite = lambda c: any(r.lower().startswith('infinite') for r in c['results'])
+    return [{**c, 'fast': brackets.is_fast(c, mv), 'infinite': infinite(c)} for c in found['included']], out
 
 
 def check(path, max_gc, allow_ub, combos=True, near=False):
@@ -87,7 +82,7 @@ def check(path, max_gc, allow_ub, combos=True, near=False):
             continue
         if c['name'] != card:  # the site exports the full name, so a front-face name shows up as a change
             problems.append(f'use the full name: {card} -> {c["name"]}')
-        if q > 1 and 'Basic' not in c['type_line'] and 'any number of cards named' not in scryfall.oracle_text(c):
+        if q > 1 and 'Basic' not in c['type_line'] and 'any number of cards named' not in oracle_text(c):
             problems.append(f'{q} copies: {card}')
         if c['legalities'].get('commander') != 'legal':
             problems.append(f'not Commander-legal: {card}')
@@ -95,24 +90,42 @@ def check(path, max_gc, allow_ub, combos=True, near=False):
             problems.append(f'off-colour: {card} ({"".join(c["color_identity"])})')
         if c.get('game_changer'):
             gcs.append(card)
-        if 'Land' in c['type_line'].split('//')[0]:
+        if is_land(c):
             lands += q
         elif card not in cmdrs:
             curve[min(int(c.get('cmc', 0)), 7)] += q
-    if len(gcs) > max_gc:
-        problems.append(f'{len(gcs)} Game Changers (max {max_gc})')
     if not allow_ub:
         problems += [f'Universes Beyond: {c}' for c in scryfall.ub_only([n for n in cards if n in data]) if c not in cmdrs]
     print(f'{name}: {total} cards, {lands} lands, Game Changers {len(gcs)}: {", ".join(gcs) or "-"}')
-    print('   curve ' + '  '.join(f'{k}{"+" if k == 7 else ""}:{curve[k]}' for k in range(8)))
+    est, sb, found, combo_lines = None, 'skipped', [], []
     if combos:
+        est = spellbook.estimate_bracket(cmdrs, list(cards))
+        sb = est or 'unavailable'
         try:
-            problems += show_combos(cmdrs, cards, data, near)
+            found, combo_lines = show_combos(cmdrs, cards, data, near)
         except (OSError, KeyError, TypeError) as e:  # network down or an unexpected response
-            print(f'   combos: Spellbook unavailable ({e})')
+            combo_lines = [f'   combos: Spellbook unavailable ({e})']
+    mv = brackets.mana_value(data)
+    fl = brackets.flags({n: patterns.classify(data[n]) for n in cards if n in data}, est and est['cards'])
+    official = brackets.official(gcs, fl, [{**c, 'fast': brackets.is_fast(c, mv)} for c in est['combos']] if est else [])
+    if not est:
+        official[1].append('combos not checked')
+    house = brackets.house(gcs, fl, found, max_gc)
+    problems += house[1]
+    print('   ' + brackets.line(official, sb, house))
+    print('   curve ' + '  '.join(f'{k}{"+" if k == 7 else ""}:{curve[k]}' for k in range(8)))
+    for ln in combo_lines:
+        print(ln)
     for p in problems:
         print(f'   !! {p}')
     return not problems
+
+
+def outside_pool(path, query):
+    """Cards in the list (basic lands aside) that the Scryfall query doesn't match."""
+    names = [n for n in decklist.parse(path)[2] if n not in decklist.BASICS]
+    inside = set(scryfall.matching(names, query))
+    return [n for n in names if n not in inside]
 
 
 def main():
@@ -122,8 +135,17 @@ def main():
     ap.add_argument('--allow-ub', action='store_true')
     ap.add_argument('--near', action='store_true', help='also list combos missing one card')
     ap.add_argument('--no-combos', action='store_true', help='skip the Commander Spellbook lookup')
+    ap.add_argument('--pool', help='challenge pool: a Scryfall query every card must match')
     a = ap.parse_args()
-    ok = [check(p, a.max_gc, a.allow_ub, not a.no_combos, a.near) for p in a.decks]
+    ok = []
+    for p in a.decks:
+        ok.append(check(p, a.max_gc, a.allow_ub, not a.no_combos, a.near))
+        if a.pool:
+            out = outside_pool(p, a.pool)
+            print(f'   pool ({a.pool}): {len(out)} cards outside')
+            ok[-1] &= not out
+            for n in out:
+                print(f'   !! outside the pool: {n}')
     sys.exit(0 if all(ok) else 1)
 
 

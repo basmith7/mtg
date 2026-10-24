@@ -5,13 +5,16 @@
     edhrec.themes('Ruric Thar, the Unbowed')                            # [{'slug', 'name', 'count'}]
     edhrec.average_deck('Ruric Thar, the Unbowed')                      # {'Creature': [(name, qty)], ...}
 """
+import gzip
 import json
 import os
 import re
 import time
 import unicodedata
+import urllib.request
 
 from mtg import config, http
+from mtg.cards import front
 
 BASE = 'https://json.edhrec.com/pages'
 CACHE = os.path.join(config.CACHE, 'edhrec')
@@ -68,13 +71,14 @@ def _cards(page):
             pot = c.get('potential_decks') or 0
             out.append({'name': c['name'], 'section': lst['header'], 'num_decks': c.get('num_decks', 0),
                         'potential_decks': pot, 'inclusion': 100 * c.get('num_decks', 0) / pot if pot else 0.0,
-                        'synergy': c.get('synergy', 0.0)})
+                        'synergy': c.get('synergy', 0.0), 'lift': c.get('lift', 0.0),
+                        'trend_zscore': c.get('trend_zscore', 0.0)})
     return out
 
 
 def commander(name, theme=None, budget=None):
     """Commander page. budget: 'budget' or 'expensive'. Returns dict with name, theme, num_decks,
-    themes, similar, and cards (flat list: name, section, inclusion %, synergy, num_decks, potential_decks)."""
+    themes, similar, and cards (flat list: name, section, inclusion %, synergy, lift, trend_zscore, num_decks, potential_decks)."""
     page = _page(name, theme, budget)
     cards = _cards(page)
     return {'name': page['header'], 'theme': theme, 'num_decks': max((c['potential_decks'] for c in cards), default=0),
@@ -96,3 +100,35 @@ def average_deck(name):
     out = {k: [tuple(c) for c in v] for k, v in deck['cards'].items()}
     out['Commander'] = [tuple(c) for c in deck.get('commander_v2', [])]
     return out
+
+
+# EDHREC's salt scores (0-4, from its yearly player vote), read from MTGJSON's AtomicCards, which carries
+# them as `edhrecSaltiness` for every card: one 52 MB download a week instead of a page per card.
+MTGJSON_ATOMIC = 'https://mtgjson.com/api/v5/AtomicCards.json.gz'
+SALT_FILE = os.path.join(CACHE, 'salt.json')
+
+
+def _salt_table():
+    """{card name: salt} for every card, rebuilt from MTGJSON when older than TTL. Double-faced and split
+    cards are stored under both the full 'A // B' name and the front face."""
+    if os.path.exists(SALT_FILE) and time.time() - os.path.getmtime(SALT_FILE) < TTL:
+        return json.load(open(SALT_FILE))
+    req = urllib.request.Request(MTGJSON_ATOMIC, headers={'User-Agent': http.BROWSER_UA})
+    with urllib.request.urlopen(req) as resp:
+        data = json.loads(gzip.decompress(resp.read()))['data']
+    table = {}
+    for name, faces in data.items():
+        s = faces[0].get('edhrecSaltiness')
+        if s is not None:
+            table[name] = s
+            table.setdefault(front(name), s)
+    os.makedirs(CACHE, exist_ok=True)
+    json.dump(table, open(SALT_FILE + '.tmp', 'w'))
+    os.replace(SALT_FILE + '.tmp', SALT_FILE)
+    return table
+
+
+def salt(names):
+    """{name: salt score} for the names EDHREC has a score for (basics and new cards may have none)."""
+    table = _salt_table()
+    return {n: table[n] for n in names if n in table}

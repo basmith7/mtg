@@ -1,0 +1,204 @@
+{
+ "header": "Zur the Enchanter (Commander)",
+ "tag_counts": [
+  {
+   "count": 1214,
+   "slug": "enchantress",
+   "value": "Enchantress"
+  },
+  {
+   "count": 606,
+   "slug": "auras",
+   "value": "Auras"
+  },
+  {
+   "count": 568,
+   "slug": "control",
+   "value": "Control"
+  }
+ ],
+ "similar": [],
+ "container": {
+  "json_dict": {
+   "cardlists": [
+    {
+     "header": "High Lift Cards",
+     "cardviews": [
+      {
+       "name": "Energy Field",
+       "synergy": 0.13600354071044513,
+       "lift": 21.231154665365366,
+       "num_decks": 2488,
+       "potential_decks": 17432,
+       "trend_zscore": 0.10972863635584817
+      },
+      {
+       "name": "Diplomatic Immunity",
+       "synergy": 0.40638327329338997,
+       "lift": 20.465655209630196,
+       "num_decks": 7448,
+       "potential_decks": 17432,
+       "trend_zscore": -0.7426292173730757
+      },
+      {
+       "name": "Vanishing",
+       "synergy": 0.16038249775563493,
+       "lift": 20.12142629334853,
+       "num_decks": 2942,
+       "potential_decks": 17432,
+       "trend_zscore": 0.826460443378891
+      },
+      {
+       "name": "Energy Flux",
+       "synergy": 0.07645777377513298,
+       "lift": 19.989147003940296,
+       "num_decks": 1403,
+       "potential_decks": 17432,
+       "trend_zscore": -0.26022311848815227
+      }
+     ]
+    },
+    {
+     "header": "Creatures",
+     "cardviews": [
+      {
+       "name": "Grand Abolisher",
+       "synergy": 0.19398800198574392,
+       "lift": 2.3622290061595903,
+       "num_decks": 5864,
+       "potential_decks": 17432,
+       "trend_zscore": 0.013635613803941352
+      },
+      {
+       "name": "Esper Sentinel",
+       "synergy": 0.04806212144273447,
+       "lift": 1.1784422971813293,
+       "num_decks": 5533,
+       "potential_decks": 17432,
+       "trend_zscore": 0.31728960696349473
+      },
+      {
+       "name": "Sun Titan",
+       "synergy": 0.20627414138333378,
+       "lift": 3.744383136969815,
+       "num_decks": 4906,
+       "potential_decks": 17432,
+       "trend_zscore": -0.9471951136852675
+      },
+      {
+       "name": "Mesa Enchantress",
+       "synergy": 0.20211683088441684,
+       "lift": 3.6377945407220467,
+       "num_decks": 4859,
+       "potential_decks": 17432,
+       "trend_zscore": -0.3486512508199634
+      }
+     ]
+    },
+    {
+     "header": "Instants",
+     "cardviews": [
+      {
+       "name": "Path to Exile",
+       "synergy": 0.011597069507110314,
+       "lift": 1.0272165419281358,
+       "num_decks": 7630,
+       "potential_decks": 17432,
+       "trend_zscore": -0.6167229915326294
+      },
+      {
+       "name": "Dovin's Veto",
+       "synergy": 0.1278626887909352,
+       "lift": 1.469331770899229,
+       "num_decks": 6978,
+       "potential_decks": 17432,
+       "trend_zscore": 0.4467320322439133
+      },
+      {
+       "name": "An Offer You Can't Refuse",
+       "synergy": 0.08481816182224128,
+       "lift": 1.2932206079616337,
+       "num_decks": 6521,
+       "potential_decks": 17432,
+       "trend_zscore": 0.8547373408550849
+      }
+     ]
+    },
+    {
+     "header": "Enchantments",
+     "cardviews": [
+      {
+       "name": "Darksteel Mutation",
+       "synergy": 0.3804193939401142,
+       "lift": 7.523640801963654,
+       "num_decks": 7648,
+       "potential_decks": 17432,
+       "trend_zscore": 0.6562085693740152
+      },
+      {
+       "name": "Steel of the Godhead",
+       "synergy": 0.386088181108404,
+       "lift": 12.002403222103798,
+       "num_decks": 7342,
+       "potential_decks": 17432,
+       "trend_zscore": 0.12179629811698237
+      },
+      {
+       "name": "Mystic Remora",
+       "synergy": 0.2151780735558484,
+       "lift": 2.078794106927958,
+       "num_decks": 7228,
+       "potential_decks": 17432,
+       "trend_zscore": 0.34275019870478773
+      },
+      {
+       "name": "Copy Enchantment",
+       "synergy": 0.3563881928009342,
+       "lift": 8.322322716374297,
+       "num_decks": 7061,
+       "potential_decks": 17432,
+       "trend_zscore": -0.27887517908849735
+      },
+      {
+       "name": "Rest in Peace",
+       "synergy": 0.3655925794094478,
+       "lift": 15.22578099694304,
+       "num_decks": 6821,
+       "potential_decks": 17432,
+       "trend_zscore": -0.5289805244929048
+      }
+     ]
+    },
+    {
+     "header": "Lands",
+     "cardviews": [
+      {
+       "name": "Island",
+       "synergy": -0.01567131167705904,
+       "lift": 0.9832250999690666,
+       "num_decks": 16012,
+       "potential_decks": 17432,
+       "trend_zscore": 0.0
+      },
+      {
+       "name": "Command Tower",
+       "synergy": -0.020864488450744734,
+       "lift": 0.9774774723170718,
+       "num_decks": 15785,
+       "potential_decks": 17432,
+       "trend_zscore": 0.0
+      },
+      {
+       "name": "Plains",
+       "synergy": -0.021577340845119197,
+       "lift": 0.97662899078231,
+       "num_decks": 15718,
+       "potential_decks": 17432,
+       "trend_zscore": 0.0
+      }
+     ]
+    }
+   ]
+  }
+ }
+}

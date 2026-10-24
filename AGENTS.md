@@ -20,6 +20,8 @@ Read `ARCHITECTURE.md` first to orient: the codemap, the deck flow and the invar
   deletes with the player. Archive rather than delete (`archidekt.archive`). If `push.py`
   refuses because the site deck changed, pull and redo the change on top; don't `--force` over the
   player's site edits.
+- `.mcp.json` runs j4th/mtg-mcp-server (pinned, EDHREC off) for read-only card search: theme, similar
+  cards, rules. It never writes; our scripts own every Archidekt write. Notes in `docs/apis.md`.
 - House rules for Commander decks live in `RULES.md`; each player's taste and preferences in their
   profile, which wins where they differ.
 - Card text you put in primers or recommendations: check it against Scryfall oracle text, don't

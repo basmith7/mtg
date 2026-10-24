@@ -1,0 +1,19 @@
+{
+  "mcpServers": {
+    "mtg": {
+      "command": "uvx",
+      "args": [
+        "--exclude-newer", "2026-10-24T00:00:00Z",
+        "--from", "git+https://github.com/j4th/mtg-mcp-server@51479f7af2bcd81db6419abad77406b6e9b5a5ba",
+        "mtg-mcp-server"
+      ],
+      "env": {
+        "MTG_MCP_ENABLE_EDHREC": "false",
+        "MTG_MCP_ENABLE_MOXFIELD": "false",
+        "MTG_MCP_ENABLE_17LANDS": "false",
+        "MTG_MCP_ENABLE_SPICERACK": "false",
+        "MTG_MCP_ENABLE_MTGGOLDFISH": "false"
+      }
+    }
+  }
+}

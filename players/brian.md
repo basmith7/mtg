@@ -35,3 +35,9 @@ Newest first, one block per game or session:
 - Fun: "really fucking cool mechanic": handing Xantcha to an opponent and watching it attack for them
 - Flopped: nothing mentioned
 - Change: none; wants more decks built on weird control-swapping mechanics
+
+### 2026-05-09 to 2026-07-10 — Arcades – Defenders
+- Result: 2nd of 2; 2nd of 2; 3rd of 4 (from the Mulligan Labs replays)
+- Fun: not given
+- Flopped: never played in 3 games (undrawn or held; the replay can't tell): Angelic Wall, Arcane Signet, Axebane Guardian, Bar the Door, Beast Within, Carven Caryatid, Corrupted Shapeshifter, Counterspell, Crashing Drawbridge, Cultivate and 22 more
+- Change: not given

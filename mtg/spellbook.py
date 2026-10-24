@@ -24,13 +24,41 @@ def _combo(v, deck_names):
     }
 
 
+def _body(commanders, cards):
+    return {'commanders': [{'card': c} for c in commanders],
+            'main': [{'card': c} for c in cards if c not in commanders]}
+
+
 def find_combos(commanders, cards):
     """commanders, cards: lists of card names (cards = the 99, or any list; commanders may repeat there).
     Returns {'included': [...], 'almost': [...]} of combo dicts (id, cards, missing, results, bracket,
     prerequisites, templates, description, url). `almost` is missing exactly one card, in colour identity."""
     names = set(commanders) | set(cards)
-    body = {'commanders': [{'card': c} for c in commanders],
-            'main': [{'card': c} for c in cards if c not in commanders]}
-    r = http.request('POST', f'{API}/find-my-combos', body)['results']
+    r = http.request('POST', f'{API}/find-my-combos', _body(commanders, cards))['results']
     return {'included': [_combo(v, names) for v in r['included']],
             'almost': [_combo(v, names) for v in r['almostIncluded']]}
+
+
+def estimate_bracket(commanders, cards):
+    """Spellbook's bracket estimate (same arguments as find_combos), or None if the call fails.
+    {'tag': 'P', 'name': 'Powerful', 'cards': [{'name', 'game_changer', 'mass_land_denial', 'extra_turn',
+    'banned'}], 'combos': [{'id', 'cards', 'bracket', 'two_card', 'speed', 'lock', 'tag'}]}.
+    `cards` holds only the cards Spellbook flags; `two_card` is its `definitelyTwoCard`; a combo's `tag`
+    is its own bracket tag and `bracket` that tag's name (as in find_combos)."""
+    try:
+        r = http.request('POST', f'{API}/estimate-bracket', _body(commanders, cards))
+        return {
+            'tag': r['bracketTag'],
+            'name': BRACKET_TAGS.get(r['bracketTag'], r['bracketTag']),
+            'cards': [{'name': c['card']['name'], 'game_changer': c['gameChanger'],
+                       'mass_land_denial': c['massLandDenial'], 'extra_turn': c['extraTurn'], 'banned': c['banned']}
+                      for c in r['cards']],
+            'combos': [{'id': c['combo']['id'],
+                        'cards': [u['card']['name'] for u in c['combo']['uses'] for _ in range(u['quantity'])],
+                        'bracket': BRACKET_TAGS.get(c['combo']['bracketTag'], c['combo']['bracketTag']),
+                        'two_card': c['definitelyTwoCard'], 'speed': c['speed'], 'lock': c['lock'],
+                        'tag': c['combo']['bracketTag']}
+                       for c in r['combos']],
+        }
+    except (OSError, KeyError, TypeError):  # network down, an HTTP error, or an unexpected response
+        return None

@@ -26,7 +26,7 @@ guideposts, so break them when the deck's plan calls for it and say why.
   the player's profile; without a stated preference, ask first. D&D sets (AFR, CLB, AFC) count as
   normal Magic.
 - Verify every card exists and does what you think. Rules text in the primer must match Scryfall
-  oracle text (`scryfall.collection(names)`, `scryfall.oracle_text(card)`). Don't rely on memory.
+  oracle text (`scryfall.collection(names)`, `cards.oracle_text(card)`). Don't rely on memory.
 - Use the exact Scryfall card names. Double-faced and split cards take the full name with ` // `.
 
 ## Someone else's list
@@ -52,20 +52,27 @@ The deck name follows "Commander – Theme or nickname (B3.75)". Make the nickna
 player's other decks (e.g. "Kenrith – Big Booty", "Talrand – Counter Target Dan").
 
 `<slug>.md` is the primer, in light markdown: `## ` headings, `- ` bullets, `**bold**`, and `[[Card Name]]`
-links. Keep it about 300–500 words, in plain, direct English. It's public on Archidekt, so write for any
+links. Keep it about 300–550 words (as `wc -w` counts them), in plain, direct English. It's public on Archidekt, so write for any
 player picking up the deck: state combos, odds and card counts as plain facts about the deck ("Etali
 usually lands by turn 5–6"). Never mention our tools in a primer (no "the checker", "goldfish sim" or
 script names); tooling and build notes go in your reply to the player. Sections:
 1. One or two lines on what the deck is and why it's fun.
-2. `## How it plays`: early, mid and late game.
+2. `## How it plays`: early, mid and late game, ending on the deck's **signature turn**: two or three
+   sentences narrating the turn the deck is built for (the turn to aim at, not a typical one), so a new
+   pilot knows what to aim at. It can stand in for the late game.
 3. `## How it wins`: list the win routes. Name any late-game combos and what they need.
 4. `## Key cards`: 6–10 bullets, each with what the card actually does, checked against oracle text.
-5. `## Tips`: table politics, sequencing, and what to mulligan for.
+5. `## Tips`: sequencing, plus two bullets every primer has. **Mulligan:** what a keepable seven looks
+   like for this deck (lands, colours, the early play it needs), grounded in how often a random seven is
+   keepable. **Politics:** how to play the table: who to make deals with, when to be the villain and when
+   to look harmless, which cards will draw hate.
 
 ## Check before you finish
 ```
 scripts/check_commander.py decks/commander/<slug>.txt          # --allow-ub only where UB is approved
 scripts/deck_stats.py decks/commander/<slug>.txt               # role counts, mana sources, goldfish
+scripts/table_feel.py decks/commander/<slug>.txt               # salt, table interaction, a Rule 0 pitch
+scripts/originality.py decks/commander/<slug>.txt              # same-99 share, overlap with your decks
 ```
 The checker's `!!` lines are flags, not verdicts: fix them or explain why the deck is still in
 moderation. It asks Commander Spellbook which combos the deck contains and marks an infinite combo
@@ -73,6 +80,8 @@ moderation. It asks Commander Spellbook which combos the deck contains and marks
 win on turn 2 or 3". **The primer's combo claims must come from this output**: name every included combo
 that is infinite or wins the game, say what it needs, and don't claim combos the checker didn't list.
 `--near` shows combos one card away (for suggestions, or to avoid leaving one half-built).
+Its bracket line shows the official WotC bracket next to the house verdict: "around 4 Game Changers"
+is officially Bracket 4, so `Official B4 · House 3.75 ✓` is a normal result for these decks.
 `deck_stats.py` flags LOW/HIGH role counts against generic targets; judge them against the deck's plan.
 Also look at the land count (usually 35–37, fewer with heavy ramp) and the curve.
 
