@@ -2,16 +2,19 @@
 
     from mtg import brackets
     brackets.is_fast(combo, mv)              # combo: a spellbook combo dict; mv: card name -> mana value or None
-    fl = brackets.flags(classified, sb_cards) # {'mld': [names], 'extra-turn': [names]}
+    fl = brackets.flags(classified, sb_cards) # {'mld': [names], 'extra-turn': [names], 'goad': ...}
     brackets.official(gcs, fl, combos)       # (2..4, [reasons])
     brackets.house(gcs, fl, combos, max_gc)  # (ok, [reasons])
     brackets.line(official, spellbook, house)
+    brackets.pitch(official, house, fl, salt_summary, share)   # a Rule 0 sentence
 
 Official criteria (WotC Commander Brackets; checked against the 2025-10-21 and 2026-02-09 updates): Brackets 1-2
 have no Game Changers, Bracket 3 up to three; mass land denial, chained extra turns and early two-card
 combos are Bracket 4 territory; a late two-card combo is Bracket 3. Bracket 5 (cEDH) and Bracket 1
 (theme) are intent, so they are never inferred. House rules: RULES.md.
 """
+from mtg import patterns
+
 FAST_MV = 6  # combo pieces totalling this much mana value or less can land by turn 3-4
 OFFICIAL_MAX_GC = 3  # Bracket 3's cap
 
@@ -29,18 +32,27 @@ def is_fast(combo, mv):
     return t is None or t <= FAST_MV or combo['bracket'] in ('Ruthless', 'Banned')
 
 
+def mana_value(data):
+    """card name -> mana value or None, from Scryfall data ({name: card})."""
+    def mv(n):  # Spellbook sometimes names one face of a double-faced card
+        c = data.get(n) or next((v for k, v in data.items() if n in k.split(' // ')), None)
+        return c.get('cmc', 0) if c else None
+    return mv
+
+
 def flags(classified, spellbook_cards=None):
-    """{'mld': [names], 'extra-turn': [names]} for a deck. classified: {name: patterns.classify(card)}.
-    spellbook_cards: estimate_bracket's 'cards' (or None); a card Spellbook lists takes its flags from there."""
+    """{tag: [names]} for every patterns tag. classified: {name: patterns.classify(card)}.
+    spellbook_cards: estimate_bracket's 'cards' (or None); a card Spellbook lists takes its `mld` and
+    `extra-turn` from there."""
     sb = {c['name']: c for c in spellbook_cards or []}
-    out = {'mld': [], 'extra-turn': []}
+    out = {t: [] for t in patterns.PATTERNS}
     for name, tags in classified.items():
         c = sb.get(name)
         if c:
-            tags = {t for t, on in (('mld', c['mass_land_denial']), ('extra-turn', c['extra_turn'])) if on}
-        for t in out:
-            if t in tags:
-                out[t].append(name)
+            tags = (tags - {'mld', 'extra-turn'}) | {
+                t for t, on in (('mld', c['mass_land_denial']), ('extra-turn', c['extra_turn'])) if on}
+        for t in tags:
+            out[t].append(name)
     return out
 
 
@@ -86,3 +98,36 @@ def line(official, spellbook, house):
     n, why = official
     sb = f'{spellbook["tag"]} ({spellbook["name"]})' if isinstance(spellbook, dict) else spellbook
     return f'bracket: Official B{n} ({"; ".join(why)}) · Spellbook {sb} · House 3.75 {"✓" if house[0] else "✗"}'
+
+
+THEMES = {'goad': 'goad', 'theft': 'theft', 'donate': 'gift', 'stax': 'stax', 'vote': 'voting', 'coin': 'coin-flip',
+          'monarch': 'monarch'}
+THEME_MIN = 3  # cards with a tag before it names the deck
+
+
+def pitch(official, house, flags, salt_summary, share):
+    """One plain Rule 0 sentence for the other players, e.g. 'Goad and theft deck, B4 on paper
+    (4 Game Changers) but no stax, land wipes or fast combos.' Never names a tool."""
+    themes = sorted((t for t in THEMES if len(flags[t]) >= THEME_MIN), key=lambda t: -len(flags[t]))[:2]
+    what = (' and '.join(THEMES[t] for t in themes).capitalize() + ' deck' if themes
+            else 'Interactive deck' if share >= 0.25 else 'Mostly self-focused deck')
+    n, why = official
+    fast = any(r.startswith('fast two-card') for r in why)
+    present = {'stax': bool(flags['stax']), 'land wipes': bool(flags['mld']),
+               'extra-turn chains': len(flags['extra-turn']) > 1, 'fast combos': fast}
+    absent = [k for k, v in present.items() if not v]
+    has = [k for k, v in present.items() if v]
+    out = f'{what}, B{n} on paper ({why[0]})'
+    if has:
+        out += ' with ' + _join(has)
+    elif absent:
+        out += ' but no ' + _join(absent, 'or')
+    if salt_summary['over2']:
+        out += f'; the saltiest card is {salt_summary["top"][0][0]}'
+    if not house[0]:
+        out += '; it bends our house rules'
+    return out + '.'
+
+
+def _join(xs, word='and'):
+    return xs[0] if len(xs) == 1 else ', '.join(xs[:-1]) + f' {word} ' + xs[-1]

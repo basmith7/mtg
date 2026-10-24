@@ -23,7 +23,7 @@ Warnings:
 - [x] [00 hygiene](slices/00-hygiene.md)
 - [x] [01 seams](slices/01-seams.md)
 - [x] [02 bracket check](slices/02-bracket.md)
-- [ ] [03 table feel](slices/03-table-feel.md)
+- [x] [03 table feel](slices/03-table-feel.md)
 - [x] [04 hidden gems](slices/04-gems.md)
 - [x] [05 originality and synergy density](slices/05-originality.md)
 - [ ] [06 goldfish and mana](slices/06-goldfish.md)

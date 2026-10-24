@@ -27,21 +27,13 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 from mtg import brackets, decklist, patterns, scryfall, spellbook
 
 
-def mana_value(data):
-    """card name -> mana value or None, from Scryfall data."""
-    def mv(n):  # Spellbook sometimes names one face of a double-faced card
-        c = data.get(n) or next((v for k, v in data.items() if n in k.split(' // ')), None)
-        return c.get('cmc', 0) if c else None
-    return mv
-
-
 def show_combos(cmdrs, cards, data, near):
     """Spellbook combos: (the included ones with 'fast' and 'infinite' set, the lines to print)."""
-    mv = mana_value(data)
+    mv = brackets.mana_value(data)
     found = spellbook.find_combos(cmdrs, list(cards))
     if near:  # look up the missing pieces too, so near-miss combos get a real total
         missing = {n for c in found['almost'] for n in c['cards'] if mv(n) is None}
-        mv = mana_value({**data, **(scryfall.collection(missing) if missing else {})})
+        mv = brackets.mana_value({**data, **(scryfall.collection(missing) if missing else {})})
     out = [f'   combos: {len(found["included"])} included, {len(found["almost"])} one card away']
 
     def show(c, tag=''):
@@ -110,7 +102,7 @@ def check(path, max_gc, allow_ub, combos=True, near=False):
             found, combo_lines = show_combos(cmdrs, cards, data, near)
         except (OSError, KeyError, TypeError) as e:  # network down or an unexpected response
             combo_lines = [f'   combos: Spellbook unavailable ({e})']
-    mv = mana_value(data)
+    mv = brackets.mana_value(data)
     fl = brackets.flags({n: patterns.classify(data[n]) for n in cards if n in data}, est and est['cards'])
     official = brackets.official(gcs, fl, [{**c, 'fast': brackets.is_fast(c, mv)} for c in est['combos']] if est else [])
     if not est:

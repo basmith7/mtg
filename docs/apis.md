@@ -210,6 +210,14 @@ Gotchas: the highlight lists (`Top Cards` etc.) *remove* their cards from the ty
 (`mtg/edhrec.py` does, preferring the type list). Each list is capped (~50 creatures), so a card absent from
 the lists is not necessarily rare in the deck. Basics appear in `Lands`.
 
+**Salt scores come from MTGJSON, not card pages** (probed 2026-10-24). MTGJSON's
+`https://mtgjson.com/api/v5/AtomicCards.json.gz` (52 MB, no auth; `data` maps each name, `A // B` for
+double-faced cards, to a list of faces) carries EDHREC's salt as `edhrecSaltiness` on every card:
+it covered 100% of the nonbasic cards in three of the player's decks, and matched the card page's `salt`
+(Cyclonic Rift 2.35 both). Scores run 0–4; most cards sit under 1 and basics have one too.
+`edhrec.salt` downloads it once a week and keeps only `{name: salt}` in `~/.cache/mtg/edhrec/salt.json`,
+instead of fetching ~85 card pages a deck at 1 request a second.
+
 ---
 
 ## MTGGoldfish — `https://www.mtggoldfish.com`
