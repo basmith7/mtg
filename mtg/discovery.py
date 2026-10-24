@@ -3,15 +3,22 @@
     from mtg import discovery, profile
     discovery.mechanics_for(profile.enjoys('brian'))      # ['control-swap']
     discovery.candidates(['goad'], exclude={'Karazikar, the Eye Tyrant'}, colours='BR')
-    discovery.challenge(random.Random(3))                 # {'text': 'Challenge: ...', 'query': 'atag:dragon f:commander'}
+    discovery.challenge(random.Random(3))                 # {'text': 'Challenge: ...', 'query': 'atag:dragon f:commander not:universesbeyond'}
 
 Everything comes from Scryfall searches (`edhrec_rank` rides along on each card); no EDHREC calls.
 """
 from . import scryfall
 
-COMMANDER = 'is:commander f:commander'
+COMMANDER = 'is:commander'
+LEGAL = 'f:commander'
+NO_UB = 'not:universesbeyond'  # house rule: Universes Beyond only when the player's profile allows it
 
-# Oracle-text queries, each ANDed with COMMANDER. Counts probed live are in the slice file.
+
+def legal(allow_ub=False):
+    """The Scryfall terms every discovery and challenge query carries."""
+    return LEGAL if allow_ub else f'{LEGAL} {NO_UB}'
+
+# Oracle-text queries, each ANDed with COMMANDER and legal(). Counts probed live are in the slice file.
 # kw:monarch is wrong: it matched thousands of commanders, so monarch is an oracle search.
 MECHANICS = {
     'control-swap': '(o:"target opponent gains control" or o:"target player gains control" '
@@ -52,9 +59,9 @@ def mechanics_for(enjoys):
     return [m for m, words in KEYWORDS.items() if any(w in text for w in words)]
 
 
-def query(mechanic, colours=None):
+def query(mechanic, colours=None, allow_ub=False):
     """The Scryfall query for a mechanic's commanders, optionally within a colour identity ('BR')."""
-    q = f'{MECHANICS[mechanic]} {COMMANDER}'
+    q = f'{MECHANICS[mechanic]} {COMMANDER} {legal(allow_ub)}'
     return f'{q} id<={colours}' if colours else q
 
 
@@ -62,13 +69,13 @@ def _front(name):
     return name.split(' // ')[0]
 
 
-def candidates(mechanics, exclude=(), colours=None):
+def candidates(mechanics, exclude=(), colours=None, allow_ub=False):
     """[(name, [mechanics], edhrec_rank, identity)] for commanders with any of the mechanics, least played first
     (highest Scryfall edhrec_rank; unranked ones first of all). exclude: names to skip (front faces match)."""
     skip = set(map(_front, exclude))
     found = {}
     for m in mechanics:
-        for c in scryfall.search(query(m, colours)):
+        for c in scryfall.search(query(m, colours, allow_ub)):
             if _front(c['name']) in skip:
                 continue
             entry = found.setdefault(c['name'], [c, []])
@@ -79,26 +86,26 @@ def candidates(mechanics, exclude=(), colours=None):
     return rows
 
 
-def challenge(rng, kinds=None, exclude=()):
+def challenge(rng, kinds=None, exclude=(), allow_ub=False):
     """Roll a challenge deck: {'text', 'query'}, where query is the Scryfall search bounding the card pool.
     kinds: some of KINDS (default all). Every roll comes from rng, so the same seed gives the same challenge
     while Scryfall's data doesn't change."""
     kind = rng.choice(list(kinds or KINDS))
     if kind == 'commander':
         mech = rng.choice(sorted(MECHANICS))
-        pick = rng.choice(candidates([mech], exclude)[:10])
+        pick = rng.choice(candidates([mech], exclude, allow_ub=allow_ub)[:10])
         name, ident = pick[0], pick[3] or 'C'
         return {'text': f'Challenge: build {name}, one of the least-played {mech} commanders',
-                'query': f'id<={ident} f:commander'}
+                'query': f'id<={ident} {legal(allow_ub)}'}
     if kind == 'art':
         tag = rng.choice(ART_TAGS)
-        pool, rule = f'atag:{tag} f:commander', f'only cards whose art shows a {tag}'
+        pool, rule = f'atag:{tag} {legal(allow_ub)}', f'only cards whose art shows a {tag}'
     elif kind == 'flavour':
         word = rng.choice(FLAVOUR_WORDS)
-        pool, rule = f'ft:{word} f:commander', f'only cards whose flavour text says "{word}"'
+        pool, rule = f'ft:{word} {legal(allow_ub)}', f'only cards whose flavour text says "{word}"'
     else:
         year = rng.choice(YEARS)
-        pool, rule = f'year:{year} f:commander', f'only cards printed in {year}\'s sets'
+        pool, rule = f'year:{year} {legal(allow_ub)}', f'only cards printed in {year}\'s sets'
     skip = set(map(_front, exclude))
     leaders = sorted(c['name'] for c in scryfall.search(f'{pool} is:commander') if _front(c['name']) not in skip)
     name = rng.choice(leaders)

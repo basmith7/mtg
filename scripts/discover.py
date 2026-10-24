@@ -10,7 +10,8 @@
 Mechanics: control-swap, goad, vote, coin, monarch, each-player, chaos (queries in mtg/discovery.py).
 Commanders are listed least played first by Scryfall's EDHREC rank. Commanders of the decks in --decks
 (default decks/commander) are skipped, and so are --avoid names (one per line, '#' comments ignored).
---colours keeps commanders whose identity fits inside the colours. --counts adds EDHREC's deck count
+--colours keeps commanders whose identity fits inside the colours. Universes Beyond cards are left out
+(house rule) unless --allow-ub. --counts adds EDHREC's deck count
 for the first 15 (one EDHREC request each) and orders those by it. Check a challenge deck with
 scripts/check_commander.py --pool "<query>".
 """
@@ -46,6 +47,7 @@ def main():
     ap.add_argument('--challenge', action='store_true')
     ap.add_argument('--kind', action='append', choices=discovery.KINDS, help='challenge kinds to roll from')
     ap.add_argument('--seed', type=int)
+    ap.add_argument('--allow-ub', action='store_true', help='include Universes Beyond cards')
     a = ap.parse_args()
 
     exclude = set().union(*map(read_names, a.avoid)) if a.avoid else set()
@@ -53,7 +55,7 @@ def main():
         exclude.update(decklist.commanders(path))
 
     if a.challenge:
-        c = discovery.challenge(random.Random(a.seed), a.kind, exclude)
+        c = discovery.challenge(random.Random(a.seed), a.kind, exclude, a.allow_ub)
         print(c['text'])
         print(f'   pool: {c["query"]}')
         return
@@ -65,7 +67,9 @@ def main():
         if not mechanics:
             sys.exit(f"nothing in players/{player}.md's enjoys bullets matches a mechanic; pass --mechanic")
         print(f'from {player.capitalize()}\'s profile: {", ".join(mechanics)}')
-    rows = discovery.candidates(mechanics, exclude, a.colours)[:a.limit]
+    rows = discovery.candidates(mechanics, exclude, a.colours, a.allow_ub)[:a.limit]
+    if not rows:
+        sys.exit('no commanders left: every match is already one of your decks or on --avoid (try another --mechanic)')
     counts = {}
     if a.counts:  # edhrec_rank is the card's rank in all decks, so a commander's own deck count orders better
         for name, *_ in rows[:15]:

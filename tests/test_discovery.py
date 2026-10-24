@@ -31,10 +31,11 @@ class MechanicsTest(unittest.TestCase):
 
     def test_every_query_is_bounded_to_commanders_and_monarch_reads_oracle_text(self):
         for m in discovery.MECHANICS:
-            self.assertTrue(discovery.query(m).endswith('is:commander f:commander'), m)
+            self.assertTrue(discovery.query(m).endswith('is:commander f:commander not:universesbeyond'), m)
         self.assertIn('o:monarch', discovery.query('monarch'))
         self.assertNotIn('kw:', ' '.join(discovery.MECHANICS.values()))
-        self.assertEqual(discovery.query('goad', 'BR'), 'o:goad is:commander f:commander id<=BR')
+        self.assertEqual(discovery.query('goad', 'BR'), 'o:goad is:commander f:commander not:universesbeyond id<=BR')
+        self.assertNotIn('universesbeyond', discovery.query('goad', allow_ub=True))
 
 
 @mock.patch.object(scryfall, 'search', side_effect=fake_search)
@@ -61,15 +62,15 @@ class ChallengeTest(unittest.TestCase):
 
     def test_pool_queries_by_kind(self, _):
         art = discovery.challenge(random.Random(1), ['art'])
-        self.assertRegex(art['query'], r'^atag:[a-z]+ f:commander$')
+        self.assertRegex(art['query'], r'^atag:[a-z]+ f:commander not:universesbeyond$')
         self.assertIn(art['text'].split()[2], 'Dragon Lord Wyrm King Old Drake')
-        self.assertRegex(discovery.challenge(random.Random(1), ['flavour'])['query'], r'^ft:[a-z]+ f:commander$')
-        self.assertRegex(discovery.challenge(random.Random(1), ['year'])['query'], r'^year:\d{4} f:commander$')
+        self.assertRegex(discovery.challenge(random.Random(1), ['flavour'])['query'], r'^ft:[a-z]+ f:commander not:universesbeyond$')
+        self.assertRegex(discovery.challenge(random.Random(1), ['year'])['query'], r'^year:\d{4} f:commander not:universesbeyond$')
 
     def test_commander_challenge_pools_by_its_colours(self, search):
         with mock.patch.object(discovery, 'MECHANICS', {'goad': 'o:goad'}):
             c = discovery.challenge(random.Random(0), ['commander'], exclude={'Popular Goad', 'Shared One'})
-        self.assertEqual(c['query'], 'id<=BR f:commander')
+        self.assertEqual(c['query'], 'id<=BR f:commander not:universesbeyond')
         self.assertIn('Obscure Goad', c['text'])
 
 
