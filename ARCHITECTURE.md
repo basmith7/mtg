@@ -16,9 +16,9 @@ Verified against 8892047 on 2026-10-24.
   - `edhrec`, `spellbook`, `moxfield`: recommendations, combos, reading Moxfield decks.
   - `roles`: card roles (ramp, draw, removal…) from Scryfall oracle tags, cached per card; `alternatives` finds other cards with a role.
   - `scores`: scores from EDHREC data and lists: hidden gems, staple share, overlap, synergy density (pure).
-  - `goldfish`: mana maths and the goldfish simulation (pure).
+  - `goldfish`: mana maths: `simulate` (the goldfish) and `sources_needed` (Karsten's colour-source table; pure).
   - `brackets`: the official WotC bracket, the house verdict, what makes a combo fast (pure).
-  - `patterns`: what a card does to the table, from oracle-text regexes (MLD, extra turns…; pure).
+  - `patterns`: what a card does to the table: `classify` over the `PATTERNS` oracle-text regexes (MLD, extra turns…; pure).
   - `discovery`: underplayed commanders by mechanic, and challenge-deck rolls (Scryfall searches).
   - `profile`: the player profile format (`enjoys`, play-log `render_entry` / `add_entry`).
   - `forge`: our list to a Forge `.dck`, running Forge's headless `sim`, parsing its results.
@@ -77,7 +77,8 @@ erDiagram
 - `scripts/check_commander.py`: legality, colour identity, Game Changers, combos (Commander Spellbook), bracket (official, Spellbook, house).
 - `scripts/table_feel.py`: how a deck feels to the other players (salt, table-touching cards) and a Rule 0 pitch.
 - `scripts/deck_stats.py`: role counts, mana sources, a goldfish simulation.
-- `scripts/discover.py`: commanders matching the player's taste, or a challenge deck and its pool.
+- `scripts/discover.py`: commanders matching the player's taste, or a challenge deck and its pool; `--avoid <file|->`
+  skips names (e.g. the friends' commanders mtg-table's `meta.py --names` prints).
 - `scripts/forge_sim.py`: 2 to 4 of the player's decks played against each other by Forge's AI (rough win share).
 
 **File formats:** the decklist `.txt` (header `# Name | COLOURS`, `# source:` / `# updated:` lines,
