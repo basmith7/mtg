@@ -36,3 +36,19 @@ Challenge: build Gyruda with only cards showing dragons (atag:dragon f:commander
 **Tests:** `tests/test_discovery.py`: faked `scryfall.search` → ordering and exclusion; enjoys parse on
 an inline profile; same seed → same challenge; query strings. `tests/test_profile.py` for `enjoys`.
 **Delegated:** the art-tag list, the keyword map, output layout.
+
+## Done (2026-10-24)
+
+Probed live (Scryfall `total_cards`, `is:commander f:commander`): control-swap 9 (spec's three phrases 7;
+Zedruu matches), goad 30, vote 7, coin 7, monarch 15 (`kw:monarch` 3497), each-player 86, chaos
+(`o:"at random"`) 28. Art tags 111-2240 each, flavour words 132-831 (choices/07.md).
+`scripts/discover.py` from Brian's profile (main checkout's decks, so Zedruu, Xantcha, Jon Irenicus skipped):
+```
+from Brian's profile: control-swap
+  control-swap   rank 15543  RG    Abby, Merciless Soldier  18 decks
+  control-swap   rank 10487  U     Bilbo, Luckwearer // Burglar's Plot  253 decks
+  ...
+Challenge: build Sally Pride, Lioness Leader with only cards whose art shows a frog   (--seed 3)
+Challenge: build The Peregrine Dynamo with only cards printed in 2022's sets          (--seed 11)
+```
+`check_commander.py --no-combos --pool "atag:dragon f:commander" zedruu.txt`: 74 cards outside, exit 1.

@@ -17,6 +17,8 @@ Verified against fd3c976 on 2026-10-20.
   - `scores`: scores from EDHREC data and lists: hidden gems, staple share, overlap, synergy density (pure).
   - `goldfish`: mana maths and the goldfish simulation (pure).
   - `brackets`: bracket rules, starting with what makes a combo fast (pure).
+  - `discovery`: underplayed commanders by mechanic, and challenge-deck rolls (Scryfall searches).
+  - `profile`: the player profile format (`enjoys`).
   - `importdeck`: turns a link (Moxfield, Archidekt, MTGGoldfish, plain text, Instagram) into a deck.
   - `decklist`: the `.txt` list format (`parse`, `render`, `meta`, `set_meta`).
   - `quill`: primer markdown ↔ Archidekt's Quill delta (`to_delta`, `from_delta`).
@@ -69,6 +71,7 @@ erDiagram
 - `scripts/originality.py`: staple share, overlap with the player's other decks, synergy density, odd swaps.
 - `scripts/check_commander.py`: legality, colour identity, Game Changers, combos (Commander Spellbook).
 - `scripts/deck_stats.py`: role counts, mana sources, a goldfish simulation.
+- `scripts/discover.py`: commanders matching the player's taste, or a challenge deck and its pool.
 
 **File formats:** the decklist `.txt` (header `# Name | COLOURS`, `# source:` / `# updated:` lines,
 `Commander:` lines, `N Card` lines; full `A // B` names) and the primer `.md` (light markdown, see

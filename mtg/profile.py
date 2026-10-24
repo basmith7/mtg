@@ -30,3 +30,23 @@ def add_entry(player, entry, players_dir=PLAYERS):
     lines[at:at] = [''] + entry.rstrip('\n').split('\n')
     with open(path, 'w') as f:
         f.write('\n'.join(lines))
+
+
+def enjoys(player, players_dir=PLAYERS):
+    """The bullets under the profile's '## What <player> enjoys' heading, one string per bullet
+    (wrapped lines joined). [] if the profile has no such section."""
+    bullets, inside = [], False
+    with open(os.path.join(players_dir, f'{player}.md')) as f:
+        lines = f.readlines()
+    for line in lines:
+        if line.startswith('#'):
+            inside = line.startswith('## What') and 'enjoys' in line
+            continue
+        if not inside:
+            continue
+        text = line.strip()
+        if text.startswith(('- ', '* ')):
+            bullets.append(text[2:].strip())
+        elif text and bullets and line[:1].isspace():
+            bullets[-1] += ' ' + text
+    return bullets

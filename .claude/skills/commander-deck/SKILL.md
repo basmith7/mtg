@@ -1,6 +1,6 @@
 ---
 name: commander-deck
-description: Use when the player wants a Magic deck built, tuned, imported or put on Archidekt — "build a <commander> deck", "improve this deck", "add this deck (link) to Archidekt", "write a primer", or when they say how a game with one of their decks went.
+description: Use when the player wants a Magic deck built, tuned, imported or put on Archidekt — "build a <commander> deck", "find me a commander", "something weird", "challenge deck", "improve this deck", "add this deck (link) to Archidekt", "write a primer", or when they say how a game with one of their decks went.
 ---
 
 # Commander deck workflow
@@ -23,6 +23,17 @@ missing. If it lists candidates instead of picking one, show the player the cand
 guessing. Then ask whether to keep the list close to the original or tune it to the rules before
 changing cards. Rename the header to "Commander – Nickname (B#)" and credit the original author in the
 primer.
+
+## Finding a commander
+When the player has no commander in mind, pull their decks first (so their commanders are skipped),
+then `scripts/discover.py`: it reads the profile's "enjoys" bullets, picks matching mechanics and lists
+underplayed commanders. `--mechanic` overrides the pick, `--colours` bounds the identity, `--avoid
+<file|->` skips the playgroup's commanders, `--counts` orders the top 15 by EDHREC deck count (the
+reliable "underplayed" signal). Offer three, each with a line on why it fits their play log.
+
+**Challenge deck:** `scripts/discover.py --challenge` rolls a brief (a commander plus an art tag,
+flavour word or year) and the Scryfall query for its pool. Build from that query and check with
+`scripts/check_commander.py <file> --pool "<query>"`; basic lands are always in the pool.
 
 ## Building or tuning
 1. **Start from data, not memory.** `scripts/edhrec_recs.py "<Commander>" --themes`, then

@@ -13,6 +13,9 @@ Then asks Commander Spellbook which combos the deck contains (network; --no-comb
 Combos are fine if they're fun and late (house rule, RULES.md). A combo is FAST when its pieces total mana
 value 6 or less, or Spellbook rates it Ruthless or Banned; a fast infinite combo is a problem (`!!`).
 --near also lists combos missing one card. Primers should take their combo claims from this output.
+
+--pool "<query>" checks a challenge deck (scripts/discover.py --challenge): every card but basic lands
+must match the Scryfall query, e.g. --pool "atag:dragon f:commander".
 """
 import argparse
 import os
@@ -113,6 +116,25 @@ def check(path, max_gc, allow_ub, combos=True, near=False):
     return not problems
 
 
+def outside_pool(path, query):
+    """Cards in the list (basic lands aside) that the Scryfall query doesn't match. Searches the
+    query ANDed with the deck's names, in chunks short enough for Scryfall."""
+    names = [n for n in decklist.parse(path)[2] if n not in decklist.BASICS]
+    inside, chunk = set(), []
+    for n in names + [None]:
+        if chunk and (n is None or sum(map(len, chunk)) > 700):
+            try:
+                found = scryfall.search(f'({query}) (' + ' or '.join(chunk) + ')')
+                inside |= {x for c in found for x in (c['name'], c['name'].split(' // ')[0])}
+            except scryfall.http.urllib.error.HTTPError as e:  # 404: nothing in this chunk matches
+                if e.code != 404:
+                    raise
+            chunk = []
+        if n:
+            chunk.append(f'!"{n.split(" // ")[0]}"')
+    return [n for n in names if n not in inside and n.split(' // ')[0] not in inside]
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('decks', nargs='+')
@@ -120,8 +142,17 @@ def main():
     ap.add_argument('--allow-ub', action='store_true')
     ap.add_argument('--near', action='store_true', help='also list combos missing one card')
     ap.add_argument('--no-combos', action='store_true', help='skip the Commander Spellbook lookup')
+    ap.add_argument('--pool', help='challenge pool: a Scryfall query every card must match')
     a = ap.parse_args()
-    ok = [check(p, a.max_gc, a.allow_ub, not a.no_combos, a.near) for p in a.decks]
+    ok = []
+    for p in a.decks:
+        ok.append(check(p, a.max_gc, a.allow_ub, not a.no_combos, a.near))
+        if a.pool:
+            out = outside_pool(p, a.pool)
+            print(f'   pool ({a.pool}): {len(out)} cards outside')
+            ok[-1] &= not out
+            for n in out:
+                print(f'   !! outside the pool: {n}')
     sys.exit(0 if all(ok) else 1)
 
 
