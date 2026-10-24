@@ -18,3 +18,15 @@ few decks play.
 **Tests:** fixture `tests/fixtures/edhrec_commander_zur.json` (trimmed real page) through a faked
 `edhrec._fetch`: order, inclusion cap, `min_decks` cut, exclusion of deck cards.
 **Delegated:** column layout, the default thresholds (record what you picked and why).
+
+## Done (2026-10-24)
+
+`scripts/edhrec_recs.py "Zedruu the Greathearted" --gems --deck decks/commander/zedruu.txt --top 8`:
+```
+== Hidden gems (inclusion under 15%, by lift) ==
+  lift 32.6  inc 12.4%  trend +15.0  Dack Fayden, Helping Hand
+  lift 28.2  inc  9.5%  trend -0.2  Jinxed Ring
+  lift 27.8  inc  6.5%  trend +0.0  Embargo
+  ...
+```
+Tests: `tests/test_gems.py` (6, on the trimmed Zur fixture). Choices: [choices/04.md](../choices/04.md).

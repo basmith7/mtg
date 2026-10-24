@@ -191,7 +191,9 @@ Commander page shape: top-level `tag_counts` (`[{slug, value, count}]` = themes)
 `container.json_dict.cardlists[]`: `{header, tag, cardviews[]}`. Headers: `New Cards`, `Top Cards`,
 `High Lift Cards`, then `Creatures`, `Instants`, `Sorceries`, `Utility Artifacts`, `Enchantments`,
 `Planeswalkers`, `Utility Lands`, `Mana Artifacts`, `Lands`. Each cardview: `name`, `slug`, `num_decks`,
-`potential_decks`, `synergy` (fraction, -1..1), `lift`, `trend_zscore`. There is no inclusion field:
+`potential_decks`, `synergy` (fraction, -1..1), `lift`, `trend_zscore`. `lift` is a ratio, not a fraction:
+~1 for colour staples (Path to Exile 1.03 under Zur), ~20–30 for cards this commander alone plays;
+`trend_zscore` is recent change in play, mostly within ±1 (seen 2026-10-24). There is no inclusion field:
 **inclusion = num_decks / potential_decks**.
 
 Gotchas: the highlight lists (`Top Cards` etc.) *remove* their cards from the type lists, so merge them

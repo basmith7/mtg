@@ -24,7 +24,7 @@ Warnings:
 - [x] [01 seams](slices/01-seams.md)
 - [ ] [02 bracket check](slices/02-bracket.md)
 - [ ] [03 table feel](slices/03-table-feel.md)
-- [ ] [04 hidden gems](slices/04-gems.md)
+- [x] [04 hidden gems](slices/04-gems.md)
 - [ ] [05 originality and synergy density](slices/05-originality.md)
 - [ ] [06 goldfish and mana](slices/06-goldfish.md)
 - [ ] [07 discovery and challenges](slices/07-discovery.md)

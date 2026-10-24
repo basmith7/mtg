@@ -68,13 +68,14 @@ def _cards(page):
             pot = c.get('potential_decks') or 0
             out.append({'name': c['name'], 'section': lst['header'], 'num_decks': c.get('num_decks', 0),
                         'potential_decks': pot, 'inclusion': 100 * c.get('num_decks', 0) / pot if pot else 0.0,
-                        'synergy': c.get('synergy', 0.0)})
+                        'synergy': c.get('synergy', 0.0), 'lift': c.get('lift', 0.0),
+                        'trend_zscore': c.get('trend_zscore', 0.0)})
     return out
 
 
 def commander(name, theme=None, budget=None):
     """Commander page. budget: 'budget' or 'expensive'. Returns dict with name, theme, num_decks,
-    themes, similar, and cards (flat list: name, section, inclusion %, synergy, num_decks, potential_decks)."""
+    themes, similar, and cards (flat list: name, section, inclusion %, synergy, lift, trend_zscore, num_decks, potential_decks)."""
     page = _page(name, theme, budget)
     cards = _cards(page)
     return {'name': page['header'], 'theme': theme, 'num_decks': max((c['potential_decks'] for c in cards), default=0),

@@ -14,6 +14,7 @@ Verified against fd3c976 on 2026-10-20.
   - `scryfall`: card data (`collection`, `oracle_text`, `color_identity`, `ub_only`).
   - `edhrec`, `spellbook`, `moxfield`: recommendations, combos, reading Moxfield decks.
   - `roles`: card roles (ramp, draw, removal…) from Scryfall oracle tags, cached per card.
+  - `scores`: scores from EDHREC data and lists: hidden gems, staple share, overlap, synergy density (pure).
   - `goldfish`: mana maths and the goldfish simulation (pure).
   - `brackets`: bracket rules, starting with what makes a combo fast (pure).
   - `importdeck`: turns a link (Moxfield, Archidekt, MTGGoldfish, plain text, Instagram) into a deck.
