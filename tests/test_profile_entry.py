@@ -40,6 +40,11 @@ class EntryTest(unittest.TestCase):
         self.assertIn('- Change: not given\n\n### 2026-01-01 — Old Deck', text)
         self.assertEqual(text.count('### YYYY-MM-DD'), 1)
 
+    def test_a_backfilled_older_game_goes_below_newer_entries(self):
+        profile.add_entry('tester', profile.render_entry('2025-11-01 to 2025-12-24', 'Older Deck'), self.dir)
+        text = open(self.path).read()
+        self.assertLess(text.index('### 2026-01-01 — Old Deck'), text.index('### 2025-11-01 to 2025-12-24'))
+
     def test_add_without_a_play_log_raises(self):
         with open(self.path, 'w') as f:
             f.write('# Tester\n')

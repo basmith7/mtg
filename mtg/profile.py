@@ -1,5 +1,6 @@
 """Player profiles: players/<player>.md (taste, preferences, play log). See players/README.md."""
 import os
+import re
 
 PLAYERS = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'players')
 FIELDS = ('Result', 'Fun', 'Flopped', 'Change')
@@ -13,8 +14,9 @@ def render_entry(date, deck, result='', fun='', flopped='', change=''):
 
 
 def add_entry(player, entry, players_dir=PLAYERS):
-    """Insert a rendered entry at the top of the profile's '## Play log' (newest first), below the
-    format template. Raises ValueError if the profile has no play log."""
+    """Insert a rendered entry into the profile's '## Play log', below the format template, keeping
+    entries newest first by the latest date in each heading (a backfilled older game goes further
+    down). Raises ValueError if the profile has no play log."""
     path = os.path.join(players_dir, f'{player}.md')
     lines = open(path).read().split('\n')
     try:
@@ -25,11 +27,19 @@ def add_entry(player, entry, players_dir=PLAYERS):
         if lines[at].startswith('```'):  # skip the fenced format template
             at = next(i for i in range(at + 1, len(lines)) if lines[i].startswith('```'))
         at += 1
+    mine = _latest(entry.split('\n', 1)[0])
+    while at < len(lines) and lines[at].startswith('### ') and _latest(lines[at]) > mine:
+        at = next((i for i in range(at + 1, len(lines)) if lines[i].startswith(('###', '## '))), len(lines))
     while at > 0 and not lines[at - 1].strip():
         at -= 1
     lines[at:at] = [''] + entry.rstrip('\n').split('\n')
     with open(path, 'w') as f:
         f.write('\n'.join(lines))
+
+
+def _latest(heading):
+    """The latest YYYY-MM-DD in a play-log heading ('' if none)."""
+    return max(re.findall(r'\d{4}-\d{2}-\d{2}', heading), default='')
 
 
 def enjoys(player, players_dir=PLAYERS):
