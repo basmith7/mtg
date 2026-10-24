@@ -54,10 +54,14 @@ def role_of(name):
     return next((r for r in SHOW if name in hits[r]), None)
 
 
+STAPLE_RANK = 1000  # Scryfall edhrec_rank: the top thousand cards are in every other deck, so never "odd"
+
+
 def alternatives(card, identity, n=3, exclude=()):
     """Up to n other Commander-legal cards in colour identity `identity` (e.g. 'WU') with the same role
     as `card`, most played first after leaving out `exclude` (the deck's cards and the commander's
-    staples, so what's left is the less obvious pick), Game Changers and joke sets. [] if no role."""
+    staples), the format-wide staples (edhrec_rank under STAPLE_RANK), Game Changers and joke sets, so
+    what's left is a real card that isn't the default pick. [] if no role."""
     role = role_of(card)
     if role is None:
         return []
@@ -66,6 +70,8 @@ def alternatives(card, identity, n=3, exclude=()):
     out = []
     try:
         for c in scryfall.search(q, order='edhrec', dir='asc'):
+            if (c.get('edhrec_rank') or STAPLE_RANK) < STAPLE_RANK:
+                continue
             if c['name'].lower() not in skip and front(c['name']).lower() not in skip:
                 out.append(c['name'])
                 if len(out) == n:

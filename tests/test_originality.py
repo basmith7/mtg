@@ -72,14 +72,15 @@ class DensityTest(unittest.TestCase):
 
 
 class AlternativesTest(unittest.TestCase):
-    def test_same_role_minus_excluded_most_played_first(self):
-        found = [{'name': n} for n in ('Swords to Plowshares', 'Path to Exile', 'Generous Gift',
-                                        'Chaos Warp', 'Stroke of Midnight', 'Fateful Absence')]
+    def test_same_role_minus_excluded_and_format_staples_most_played_first(self):
+        found = [{'name': n, 'edhrec_rank': r} for n, r in (
+            ('Swords to Plowshares', 5), ('Chaos Warp', 40), ('Path to Exile', 1200), ('Generous Gift', 1500),
+            ('Stroke of Midnight', 2100), ('Fateful Absence', 2500), ('Sundering Eruption', 3000))]
         with mock.patch.object(roles, 'role_hits', return_value={r: ({'Swords to Plowshares'} if r == 'removal' else set())
                                                                  for r in roles.ROLES}), \
                 mock.patch.object(roles.scryfall, 'search', return_value=iter(found)) as search:
             alts = roles.alternatives('Swords to Plowshares', 'WR', exclude={'Path to Exile'})
-        self.assertEqual(alts, ['Generous Gift', 'Chaos Warp', 'Stroke of Midnight'])
+        self.assertEqual(alts, ['Generous Gift', 'Stroke of Midnight', 'Fateful Absence'])  # Chaos Warp: top 1000
         q = search.call_args[0][0]
         self.assertIn('otag:removal', q)
         self.assertIn('id<=WR', q)
