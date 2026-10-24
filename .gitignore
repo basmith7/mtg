@@ -4,3 +4,5 @@ __pycache__/
 *.pyc
 /.venv/
 .env
+# Stale repo-root cache from before config.CACHE (~/.cache/mtg); nothing reads it.
+/cache/
