@@ -15,6 +15,7 @@ Verified against fd3c976 on 2026-10-20.
   - `edhrec`, `spellbook`, `moxfield`: recommendations, combos, reading Moxfield decks.
   - `roles`: card roles (ramp, draw, removal…) from Scryfall oracle tags, cached per card.
   - `goldfish`: mana maths and the goldfish simulation (pure).
+  - `forge`: our list to a Forge `.dck`, running Forge's headless `sim`, parsing its results.
   - `brackets`: bracket rules, starting with what makes a combo fast (pure).
   - `importdeck`: turns a link (Moxfield, Archidekt, MTGGoldfish, plain text, Instagram) into a deck.
   - `decklist`: the `.txt` list format (`parse`, `render`, `meta`, `set_meta`).
@@ -25,7 +26,8 @@ Verified against fd3c976 on 2026-10-20.
 - **`tests/`**: offline `unittest` suite; fakes sit at `archidekt.call` and `archidekt.resolve`.
 - **`RULES.md`**: house rules for Commander decks (power target, card rules, list and primer format).
 - **`players/`**: one profile per player (taste, preferences, play log).
-- **`docs/apis.md`**: what we know about each site's API, private ones included.
+- **`docs/apis.md`**: what we know about each site's API, private ones included; `docs/forge.md`: the Forge install and `sim` mode.
+- **`.mcp.json`**: the j4th/mtg-mcp-server MCP server (pinned, read-only card search) for agents.
 - **`.claude/skills/commander-deck/`**: the agent workflow for building, tuning and pushing decks.
 - **`specs/`**: build plans; finished ones live in `specs/done/` as rationale records.
 - **`decks/`** (gitignored): each player's local working copy of their Archidekt decks.
@@ -67,6 +69,7 @@ erDiagram
 - `scripts/edhrec_recs.py`: EDHREC recommendations and cut candidates for a commander or list.
 - `scripts/check_commander.py`: legality, colour identity, Game Changers, combos (Commander Spellbook).
 - `scripts/deck_stats.py`: role counts, mana sources, a goldfish simulation.
+- `scripts/forge_sim.py`: 2 to 4 of the player's decks played against each other by Forge's AI (rough win share).
 
 **File formats:** the decklist `.txt` (header `# Name | COLOURS`, `# source:` / `# updated:` lines,
 `Commander:` lines, `N Card` lines; full `A // B` names) and the primer `.md` (light markdown, see

@@ -266,6 +266,28 @@ Checked 2026-10-20.
 
 ---
 
+## MCP server — j4th/mtg-mcp-server (`.mcp.json`)
+
+A third-party MCP server (MIT) that gives agents read-only card tools we have no script for:
+`theme_search`, `bulk_similar_cards`, `build_around`, `card_comparison`, `rules_lookup`,
+`rules_interaction`, plus wrappers over Scryfall and Spellbook (`spellbook_estimate_bracket`). Every
+tool is annotated `readOnlyHint`; none writes to an account. Checked 2026-10-24.
+
+- **Pinned to a commit, not PyPI 3.0.0.** 3.0.0 fails at import with current `selectolax` (≥1.0
+  removed the Modest backend) and its bulk-data tools fail on Scryfall's renamed bulk field
+  (`download_uri` → `jsonl_download_uri`, upstream issue #69). Both are fixed on `main` but unreleased.
+  `uvx --from git+…` ignores the repo's `uv.lock`, so `--exclude-newer` freezes the dependency
+  resolution to the date the tree was audited (81 packages, 0 known advisories).
+- **Modules default to on** in this release (all of EDHREC, Moxfield, 17Lands, Spicerack,
+  MTGGoldfish, bulk data, rules). `.mcp.json` turns off EDHREC (its traffic stays in our 1 req/s
+  cache via `mtg/edhrec.py`), Moxfield (we have a client) and the constructed and draft sources.
+  Bulk data (a ~30 MB Scryfall Oracle download per start, held in memory) and rules stay on.
+- `evaluate_upgrade` and `deck_analysis` lean on EDHREC; with it off they return combos and prices only.
+- `rules_lookup` loads the April 2025 Comprehensive Rules; check newer rules on Scryfall rulings.
+- The server reads `MTG_MCP_*` keys from a `.env` in its working directory (ours has none).
+
+---
+
 ## Finding endpoints again
 
 Archidekt is a Next.js app. Fetch a page (deck, folder, collection), collect its

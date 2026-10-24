@@ -27,3 +27,16 @@ cards per deck. Record evidence and stop.
 
 **Checkpoint:** go / no-go with the spike numbers.
 **Delegated:** timeout default, deck name mangling.
+
+## Done (2026-10-24): go
+
+Spike, Forge 2.0.15 on OpenJDK 25 (`/usr/bin/java`, no system packages), Krenko (goblins), Talrand
+(spells), Phage (voltron), Lathril (elves), `-n 5 -c 600 -q`:
+- **Starts on JDK 25** with `forge.sh`'s flags, no extra `--add-opens` (only `sun.misc.Unsafe`
+  deprecation warnings). Card DB loads in ~6 s.
+- **5 games in 144 s wall; games took 17.1, 22.2, 23.2, 28.2, 47.2 s** (mean 27.6 s).
+- **Draws: 0/5.** Wins: Talrand 2, Lathril 2, Krenko 1, Phage 0.
+- **Unsupported cards: 4** (Krenko 1, Talrand 1, Lathril 2), all modal/transform DFCs written `A // B`;
+  after `card_name` uses the front face, 0. A follow-up `forge_sim.py` run (n=2) reported none.
+- Kill criteria not met. Fixture: `tests/fixtures/forge_sim_4pod.txt` (real run, noise lines trimmed).
+- Not verified: a split card (`Fire // Ice`) loading in a sim; Forge's RAM at 4 GB `-Xmx` beyond this pod.
