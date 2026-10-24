@@ -68,16 +68,22 @@ def _shared(flags):
     return out
 
 
+def _two(c):
+    """'two-card combo', or 'two-card combo (plus the commander)' when Spellbook counts a three-piece combo
+    as two cards because one piece is the commander, always available."""
+    return 'two-card combo' + (' (plus the commander)' if len(set(c['cards'])) > 2 else '')
+
+
 def official(gcs, flags, combos):
     """(bracket, [reasons]). gcs: Game Changer names; flags: from flags(); combos: dicts with 'cards',
     'two_card' and 'fast' (spellbook.estimate_bracket combos, 'fast' from is_fast)."""
     two = [c for c in combos if c['two_card']]
     four = [f'{len(gcs)} Game Changers'] if len(gcs) > OFFICIAL_MAX_GC else []
-    four += _shared(flags) + [f'fast two-card combo: {_cards(c)}' for c in two if c['fast']]
+    four += _shared(flags) + [f'fast {_two(c)}: {_cards(c)}' for c in two if c['fast']]
     if four:
         return 4, four
     three = [f'{len(gcs)} Game Changer{"s" * (len(gcs) > 1)}'] if gcs else []
-    three += [f'late two-card combo: {_cards(c)}' for c in two]
+    three += [f'late {_two(c)}: {_cards(c)}' for c in two]
     if three:
         return 3, three
     return 2, ['no Game Changers or two-card combos']
