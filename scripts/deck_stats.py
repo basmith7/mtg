@@ -23,7 +23,8 @@ from collections import Counter
 ROOT = os.path.join(os.path.dirname(__file__), '..')
 sys.path.insert(0, ROOT)
 from mtg import decklist, scryfall
-from mtg.goldfish import Card, Cost, faces, is_land, land_produces, mana_producer, pips, simulate, sources_needed
+from mtg.cards import is_land
+from mtg.goldfish import Card, Cost, faces, land_produces, mana_producer, pips, simulate, sources_needed
 from mtg.roles import ROLES, SHOW, TARGETS, TARGETS_60, role_hits
 
 TYPES = ['Land', 'Creature', 'Planeswalker', 'Battle', 'Artifact', 'Enchantment', 'Instant', 'Sorcery']

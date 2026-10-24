@@ -3,6 +3,7 @@ import time
 import urllib.parse
 
 from . import http
+from .cards import front, oracle_text  # noqa: F401  oracle_text: RULES.md and the commander-deck skill cite it here
 
 BASE = 'https://api.scryfall.com'
 HEADERS = {'User-Agent': 'mtg-tools (github.com/basmith7/mtg)'}
@@ -18,43 +19,46 @@ def search(query, unique='cards', **params):
         time.sleep(0.1)
 
 
-def oracle_text(card):
-    """Oracle text, joining faces for split/double-faced cards."""
-    return card.get('oracle_text') or ' // '.join(f.get('oracle_text', '') for f in card.get('card_faces', []))
-
-
 def collection(names):
     """{name: card} for many card names, 75 per request. Missing names are left out.
     Split and double-faced cards are looked up by their front name, so 'Fire // Ice' works too."""
     names, out = list(names), {}
     for i in range(0, len(names), 75):
         r = http.request('POST', f'{BASE}/cards/collection', headers=HEADERS,
-                         body={'identifiers': [{'name': n.split(' // ')[0]} for n in names[i:i + 75]]})
+                         body={'identifiers': [{'name': front(n)} for n in names[i:i + 75]]})
         for c in r['data']:
             out[c['name']] = c
-            out.setdefault(c['name'].split(' // ')[0], c)
+            out.setdefault(front(c['name']), c)
         time.sleep(0.1)
     return out
 
 
-def ub_only(names):
-    """The names whose every printing is Universes Beyond (e.g. Fallout cards, but not Sol Ring)."""
-    names, has_normal = list(names), set()
+def matching(names, query):
+    """The names (in order) that the Scryfall query also matches, by full name or front face: one search
+    per chunk of names ANDed with the query. Scryfall truncates queries around 1000 characters, so
+    chunks stay under 800."""
+    names, hit = list(names), set()
     chunk, size = [], 0
-    for n in names + [None]:  # Scryfall truncates queries around 1000 characters, so chunk by length
-        term = f'!"{n.split(" // ")[0]}"' if n else ''
+    for n in names + [None]:
+        term = f'!"{front(n)}"' if n else ''
         if chunk and (n is None or size + len(term) > 800):
-            q = '(' + ' or '.join(chunk) + ') not:universesbeyond'
             try:
-                has_normal |= {name for c in search(q) for name in (c['name'], c['name'].split(' // ')[0])}
-            except http.urllib.error.HTTPError as e:  # 404: none of this chunk has a normal printing
+                hit |= {x for c in search(f'({" or ".join(chunk)}) ({query})') for x in (c['name'], front(c['name']))}
+            except http.urllib.error.HTTPError as e:  # 404: nothing in this chunk matches
                 if e.code != 404:
                     raise
             chunk, size = [], 0
         if n:
             chunk.append(term)
             size += len(term) + 4
-    return [n for n in names if n not in has_normal and n.split(' // ')[0] not in has_normal]
+    return [n for n in names if n in hit or front(n) in hit]
+
+
+def ub_only(names):
+    """The names whose every printing is Universes Beyond (e.g. Fallout cards, but not Sol Ring)."""
+    names = list(names)
+    normal = set(matching(names, 'not:universesbeyond'))
+    return [n for n in names if n not in normal]
 
 
 def color_identity(names):

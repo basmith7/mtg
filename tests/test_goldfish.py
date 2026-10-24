@@ -18,7 +18,7 @@ def library(red=18, black=18, colourless=0):
 
 class SimulateTest(unittest.TestCase):
     def test_seeded_run_is_reproducible(self):
-        # Golden values re-pinned in slice 06, when the model learnt colours, commander tax and the free mulligan.
+        # Golden values: re-pin them only when the simulation model deliberately changes.
         r = goldfish.simulate(library(), RR5, 500, random.Random(7))
         self.assertEqual(r, goldfish.simulate(library(), RR5, 500, random.Random(7)))
         self.assertAlmostEqual(r['keep7'], GOLDEN['keep7'])

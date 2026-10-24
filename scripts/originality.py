@@ -19,6 +19,7 @@ import sys
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 from mtg import decklist, edhrec, roles, scores, scryfall
+from mtg.cards import is_land
 
 # Calibrated 2026-10-24 on the player's decks (specs/deck-tools/slices/05-originality.md).
 BANDS = 'Zedruu group hug 0.17, Ayula bears 0.21, Breya artifacts 0.59'
@@ -34,7 +35,7 @@ cmdrs = decklist.commanders(args.list)
 if not cmdrs:
     sys.exit(f'{args.list}: no "Commander:" line')
 data = scryfall.collection(cards)
-nonland = [n for n in cards if n not in cmdrs and 'Land' not in data.get(n, {}).get('type_line', 'Land')]
+nonland = [n for n in cards if n not in cmdrs and n in data and not is_land(data[n])]
 missing = [n for n in cards if n not in data]
 
 recs = edhrec.commander(cmdrs[0])['cards']

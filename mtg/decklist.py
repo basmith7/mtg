@@ -9,7 +9,8 @@ Other lines are ignored.
 import os
 from collections import Counter
 
-BASICS = {'Plains', 'Island', 'Swamp', 'Mountain', 'Forest'}
+_BASIC_TYPES = ('Plains', 'Island', 'Swamp', 'Mountain', 'Forest')
+BASICS = {*_BASIC_TYPES, 'Wastes', *('Snow-Covered ' + b for b in _BASIC_TYPES)}
 
 
 def parse(path):

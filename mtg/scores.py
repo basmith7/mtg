@@ -11,15 +11,13 @@
 import re
 
 from mtg import decklist
+from mtg.cards import front, is_land, oracle_text
 
-# --- gems, staple share, overlap, density (slices 04-05) ---
-
-BASICS = decklist.BASICS | {'Wastes'} | {'Snow-Covered ' + b for b in decklist.BASICS}
-
+# --- gems, staple share, overlap, density ---
 
 def _keys(names):
     """Lower-cased names plus split/double-faced front faces, for matching EDHREC names to ours."""
-    return {n.lower() for n in names} | {n.split('//')[0].strip().lower() for n in names}
+    return {n.lower() for n in names} | {front(n).lower() for n in names}
 
 
 def gems(cards, max_inclusion=15, min_decks=20, exclude=()):
@@ -46,7 +44,7 @@ def staple_share(deck_names, edhrec_cards, threshold=40):
 def overlap(deck_names, others):
     """[(path, shared, jaccard)] against each other deck ({path: set of names}), most shared first.
     Basics don't count."""
-    basics = {b.lower() for b in BASICS}
+    basics = {b.lower() for b in decklist.BASICS}
     mine = {n.lower() for n in deck_names} - basics
     out = []
     for path, names in others.items():
@@ -70,7 +68,7 @@ _NOT_KIND = {'a', 'an', 'the', 'of', 'that', 'those', 'more', 'two', 'three', 'a
 
 def _text(card):
     """Oracle text (faces joined) with the card's own name replaced, so a card never names itself."""
-    text = card.get('oracle_text') or ' // '.join(f.get('oracle_text', '') for f in card.get('card_faces', []))
+    text = oracle_text(card)
     name = card.get('name', '')
     for n in sorted({name, *name.split(' // ')} - {''}, key=len, reverse=True):
         text = text.replace(n, 'CARDNAME')
@@ -113,7 +111,7 @@ def density(names, data):
     """Mean pairwise interaction over the nonland cards among names (data: {name: Scryfall card}).
     Two cards interact if one's oracle text names a type, subtype, counter, keyword or token the other
     is or makes. Idea from dreliq9/urza (MIT), reimplemented. Rough bands: goodstuff ~0.1, tribal ~0.5."""
-    cards = [data[n] for n in dict.fromkeys(names) if n in data and 'Land' not in data[n].get('type_line', '')]
+    cards = [data[n] for n in dict.fromkeys(names) if n in data and not is_land(data[n])]
     traits = [_traits(c) for c in cards]
     vocab = set().union(*(h for h, _ in traits))
     said = [_mentions(_text(c), vocab, kw) for c, (_, kw) in zip(cards, traits)]
@@ -125,7 +123,7 @@ def density(names, data):
     return hits / pairs if pairs else 0.0
 
 
-# --- salt and table share (slice 03) ---
+# --- salt and table share ---
 
 SALTY = 2.0  # EDHREC salt score above which a card is called out
 TOP_SALT = 3

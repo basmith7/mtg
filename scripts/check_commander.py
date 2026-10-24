@@ -27,6 +27,7 @@ from collections import Counter
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 from mtg import brackets, decklist, patterns, scryfall, spellbook
+from mtg.cards import is_land, oracle_text
 
 
 def show_combos(cmdrs, cards, data, near):
@@ -81,7 +82,7 @@ def check(path, max_gc, allow_ub, combos=True, near=False):
             continue
         if c['name'] != card:  # the site exports the full name, so a front-face name shows up as a change
             problems.append(f'use the full name: {card} -> {c["name"]}')
-        if q > 1 and 'Basic' not in c['type_line'] and 'any number of cards named' not in scryfall.oracle_text(c):
+        if q > 1 and 'Basic' not in c['type_line'] and 'any number of cards named' not in oracle_text(c):
             problems.append(f'{q} copies: {card}')
         if c['legalities'].get('commander') != 'legal':
             problems.append(f'not Commander-legal: {card}')
@@ -89,7 +90,7 @@ def check(path, max_gc, allow_ub, combos=True, near=False):
             problems.append(f'off-colour: {card} ({"".join(c["color_identity"])})')
         if c.get('game_changer'):
             gcs.append(card)
-        if 'Land' in c['type_line'].split('//')[0]:
+        if is_land(c):
             lands += q
         elif card not in cmdrs:
             curve[min(int(c.get('cmc', 0)), 7)] += q
@@ -121,22 +122,10 @@ def check(path, max_gc, allow_ub, combos=True, near=False):
 
 
 def outside_pool(path, query):
-    """Cards in the list (basic lands aside) that the Scryfall query doesn't match. Searches the
-    query ANDed with the deck's names, in chunks short enough for Scryfall."""
+    """Cards in the list (basic lands aside) that the Scryfall query doesn't match."""
     names = [n for n in decklist.parse(path)[2] if n not in decklist.BASICS]
-    inside, chunk = set(), []
-    for n in names + [None]:
-        if chunk and (n is None or sum(map(len, chunk)) > 700):
-            try:
-                found = scryfall.search(f'({query}) (' + ' or '.join(chunk) + ')')
-                inside |= {x for c in found for x in (c['name'], c['name'].split(' // ')[0])}
-            except scryfall.http.urllib.error.HTTPError as e:  # 404: nothing in this chunk matches
-                if e.code != 404:
-                    raise
-            chunk = []
-        if n:
-            chunk.append(f'!"{n.split(" // ")[0]}"')
-    return [n for n in names if n not in inside and n.split(' // ')[0] not in inside]
+    inside = set(scryfall.matching(names, query))
+    return [n for n in names if n not in inside]
 
 
 def main():

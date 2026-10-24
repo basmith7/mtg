@@ -11,7 +11,8 @@ Verified against fd3c976 on 2026-10-20.
 
 - **`mtg/`**: one module per outside site, plus the formats they share.
   - `archidekt`: `login` (token cached in `~/.config/mtg/archidekt-session.json`), deck reads, `resolve` (card ids), `sync` (push), `export` (pull), `archive`.
-  - `scryfall`: card data (`collection`, `oracle_text`, `color_identity`, `ub_only`).
+  - `scryfall`: card data (`collection`, `color_identity`; `matching` runs one chunked "these names AND this query" search, behind `ub_only`, roles and `--pool`).
+  - `cards`: card-name and card-dict basics every module shares (`front`, `oracle_text`, `is_land`; pure).
   - `edhrec`, `spellbook`, `moxfield`: recommendations, combos, reading Moxfield decks.
   - `roles`: card roles (ramp, draw, removal…) from Scryfall oracle tags, cached per card; `alternatives` finds other cards with a role.
   - `scores`: scores from EDHREC data and lists: hidden gems, staple share, overlap, synergy density (pure).
@@ -19,10 +20,10 @@ Verified against fd3c976 on 2026-10-20.
   - `brackets`: the official WotC bracket, the house verdict, what makes a combo fast (pure).
   - `patterns`: what a card does to the table, from oracle-text regexes (MLD, extra turns…; pure).
   - `discovery`: underplayed commanders by mechanic, and challenge-deck rolls (Scryfall searches).
-  - `profile`: the player profile format (`enjoys`).
+  - `profile`: the player profile format (`enjoys`, play-log `render_entry` / `add_entry`).
   - `forge`: our list to a Forge `.dck`, running Forge's headless `sim`, parsing its results.
   - `importdeck`: turns a link (Moxfield, Archidekt, MTGGoldfish, plain text, Instagram) into a deck.
-  - `decklist`: the `.txt` list format (`parse`, `render`, `meta`, `set_meta`).
+  - `decklist`: the `.txt` list format (`parse`, `render`, `meta`, `set_meta`) and `BASICS` (snow and Wastes too).
   - `quill`: primer markdown ↔ Archidekt's Quill delta (`to_delta`, `from_delta`).
   - `config`: settings from the environment or `.env`; `CACHE` dir.
   - `http`: JSON requests with retry on HTTP 429.
@@ -133,6 +134,8 @@ flowchart LR
   and existing cards keep their categories.
 - **Fresh worktrees have no decks**: `decks/` is gitignored, so pull first.
 - **Caches and backups** live in `~/.cache/mtg` (`config.CACHE`), shared by every checkout.
+- **Logic lives in `mtg/`, scripts parse arguments and print.** The pure modules (`cards`, `patterns`,
+  `brackets`, `scores`, `goldfish`) never import `http`: callers fetch and pass the data in, so tests need no fakes.
 
 ## Where to start
 
