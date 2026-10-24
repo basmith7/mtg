@@ -29,3 +29,25 @@ odd swaps: Swords to Plowshares (removal) -> Chaos Warp?, Generous Gift?, ...
 a tiny synthetic set (two Elves + an elf lord interact; Sol Ring + Island don't). `alternatives` with
 faked `scryfall.search`.
 **Delegated:** the interaction rules' details, thresholds, how many swaps to show.
+
+## Done (2026-10-24)
+
+Density calibration (nonland cards, commander included):
+
+| Deck | Style | Density |
+|---|---|---|
+| zedruu.txt | group hug / donate | 0.17 |
+| ayula.txt | bear tribal | 0.21 |
+| breya.txt | artifacts | 0.59 |
+
+`scripts/originality.py decks/commander/zedruu.txt`:
+```
+staples: 34% of the nonland 99 (22 cards at 40%+ inclusion) · closest own deck: oloro.txt, 29 shared (Jaccard 0.20)
+synergy density: 0.17 (own decks: Zedruu group hug 0.17, Ayula bears 0.21, Breya artifacts 0.59)
+odd swaps:
+  Sol Ring (ramp) -> Mind Stone?, Solemn Simulacrum?, Commander's Sphere?
+  Arcane Signet (ramp) -> Chromatic Lantern?, Mana Drain?, Lotus Petal?
+  Humble Defector (draw) -> Skullclamp?, Brainstorm?, Esper Sentinel?
+```
+Tests in `tests/test_originality.py` (not `test_scores.py`, which the salt slice owns). Deviations
+(no `patterns` clause, most-played-first swaps, own-deck bands): [choices/05.md](../choices/05.md).

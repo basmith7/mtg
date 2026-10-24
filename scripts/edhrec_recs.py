@@ -5,6 +5,11 @@
     scripts/edhrec_recs.py "Ruric Thar, the Unbowed" --theme burn --top 10
     scripts/edhrec_recs.py "Ruric Thar, the Unbowed" --deck decks/commander/foo.txt --min-inclusion 20
     scripts/edhrec_recs.py "Ruric Thar, the Unbowed" --themes     # just list themes
+    scripts/edhrec_recs.py "Ruric Thar, the Unbowed" --gems [--deck decks/commander/foo.txt]
+
+--gems: hidden gems, cards few decks play (under --gem-max %) that fit this commander unusually well,
+ranked by EDHREC lift (how much likelier the card is here than in other decks of these colours).
+With --deck it leaves out cards the deck already has.
 
 With --deck: shows deck cards EDHREC lists (in deck), the top cards you're missing, and deck cards
 EDHREC plays rarely (cut candidates; under --cut-below % inclusion, or missing from EDHREC's list, which is capped per category).
@@ -15,7 +20,7 @@ import sys
 from collections import defaultdict
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
-from mtg import decklist, edhrec
+from mtg import decklist, edhrec, scores
 
 ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
 ap.add_argument('commander')
@@ -25,6 +30,9 @@ ap.add_argument('--deck')
 ap.add_argument('--min-inclusion', type=float, default=10, help='ignore recs below this %% (default 10)')
 ap.add_argument('--top', type=int, default=15, help='cards per category (default 15)')
 ap.add_argument('--cut-below', type=float, default=5, help='with --deck: cut-candidate threshold %% (default 5)')
+ap.add_argument('--gems', action='store_true', help='list hidden gems (low inclusion, high lift) and exit')
+ap.add_argument('--gem-max', type=float, default=15, help='with --gems: inclusion cap %% (default 15)')
+ap.add_argument('--gem-min-decks', type=int, default=20, help='with --gems: at least this many decks (default 20)')
 ap.add_argument('--themes', action='store_true', help='list available themes and exit')
 args = ap.parse_args()
 
@@ -54,6 +62,18 @@ def show(title, cards):
 
 
 basics = decklist.BASICS | {'Snow-Covered ' + b for b in decklist.BASICS}
+if args.gems:
+    exclude = set(basics)
+    if args.deck:
+        exclude |= set(decklist.parse(args.deck)[2])
+    found = scores.gems(data['cards'], args.gem_max, args.gem_min_decks, exclude)
+    print(f'\n== Hidden gems (inclusion under {args.gem_max:g}%, by lift) ==')
+    for c in found[:args.top]:
+        print(f"  lift {c['lift']:4.1f}  inc {c['inclusion']:4.1f}%  trend {c['trend_zscore']:+4.1f}  {c['name']}")
+    if not found:
+        print('  none')
+    sys.exit()
+
 recs = [c for c in data['cards'] if c['inclusion'] >= args.min_inclusion and c['name'] not in basics]
 if not args.deck:
     show('Recommended', recs)

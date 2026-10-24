@@ -62,3 +62,31 @@ def role_hits(names):
                 chunk.append(n)
                 size += len(term) + 4
     return {r: {n for n in names if cache[r].get(n)} for r in ROLES}
+
+
+def role_of(name):
+    """The card's first role in SHOW order (from the role_hits cache), or None."""
+    hits = role_hits([name])
+    return next((r for r in SHOW if name in hits[r]), None)
+
+
+def alternatives(card, identity, n=3, exclude=()):
+    """Up to n other Commander-legal cards in colour identity `identity` (e.g. 'WU') with the same role
+    as `card`, most played first after leaving out `exclude` (the deck's cards and the commander's
+    staples, so what's left is the less obvious pick), Game Changers and joke sets. [] if no role."""
+    role = role_of(card)
+    if role is None:
+        return []
+    skip = {x.lower() for x in exclude} | {card.lower()}
+    q = f'{ROLES[role][0]} id<={identity or "C"} f:commander -is:gamechanger not:funny'
+    out = []
+    try:
+        for c in scryfall.search(q, order='edhrec', dir='asc'):
+            if c['name'].lower() not in skip and front(c['name']).lower() not in skip:
+                out.append(c['name'])
+                if len(out) == n:
+                    break
+    except http.urllib.error.HTTPError as e:  # 404: no card matches
+        if e.code != 404:
+            raise
+    return out
