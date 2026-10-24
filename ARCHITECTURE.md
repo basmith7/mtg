@@ -20,6 +20,7 @@ Verified against fd3c976 on 2026-10-20.
   - `patterns`: what a card does to the table, from oracle-text regexes (MLD, extra turns…; pure).
   - `discovery`: underplayed commanders by mechanic, and challenge-deck rolls (Scryfall searches).
   - `profile`: the player profile format (`enjoys`).
+  - `forge`: our list to a Forge `.dck`, running Forge's headless `sim`, parsing its results.
   - `importdeck`: turns a link (Moxfield, Archidekt, MTGGoldfish, plain text, Instagram) into a deck.
   - `decklist`: the `.txt` list format (`parse`, `render`, `meta`, `set_meta`).
   - `quill`: primer markdown ↔ Archidekt's Quill delta (`to_delta`, `from_delta`).
@@ -29,7 +30,8 @@ Verified against fd3c976 on 2026-10-20.
 - **`tests/`**: offline `unittest` suite; fakes sit at `archidekt.call` and `archidekt.resolve`.
 - **`RULES.md`**: house rules for Commander decks (power target, card rules, list and primer format).
 - **`players/`**: one profile per player (taste, preferences, play log).
-- **`docs/apis.md`**: what we know about each site's API, private ones included.
+- **`docs/apis.md`**: what we know about each site's API, private ones included; `docs/forge.md`: the Forge install and `sim` mode.
+- **`.mcp.json`**: the j4th/mtg-mcp-server MCP server (pinned, read-only card search) for agents.
 - **`.claude/skills/commander-deck/`**: the agent workflow for building, tuning and pushing decks.
 - **`specs/`**: build plans; finished ones live in `specs/done/` as rationale records.
 - **`decks/`** (gitignored): each player's local working copy of their Archidekt decks.
@@ -74,6 +76,7 @@ erDiagram
 - `scripts/table_feel.py`: how a deck feels to the other players (salt, table-touching cards) and a Rule 0 pitch.
 - `scripts/deck_stats.py`: role counts, mana sources, a goldfish simulation.
 - `scripts/discover.py`: commanders matching the player's taste, or a challenge deck and its pool.
+- `scripts/forge_sim.py`: 2 to 4 of the player's decks played against each other by Forge's AI (rough win share).
 
 **File formats:** the decklist `.txt` (header `# Name | COLOURS`, `# source:` / `# updated:` lines,
 `Commander:` lines, `N Card` lines; full `A // B` names) and the primer `.md` (light markdown, see

@@ -29,8 +29,8 @@ Warnings:
 - [x] [06 goldfish and mana](slices/06-goldfish.md)
 - [x] [07 discovery and challenges](slices/07-discovery.md)
 - [ ] [08 primer extras and challenger review](slices/08-primer.md)
-- [ ] [09 MCP server](slices/09-mcp.md)
-- [ ] [10 Forge pods](slices/10-forge.md)
+- [x] [09 MCP server](slices/09-mcp.md)
+- [x] [10 Forge pods](slices/10-forge.md)
 - [x] [11 post-game report (mtg-table)](slices/11-postgame.md)
 - [x] [12 playgroup meta (mtg-table)](slices/12-meta.md)
 
