@@ -33,6 +33,11 @@ The limit is per machine, so several agents running checkers at once hit 429s.
 - `POST /cards/collection` (75 names a request) accepts a double-faced card's front-face name, and
   `scryfall.collection()` returns such cards under both the full and the front name, so looping over its
   values gives duplicates. Cards not yet released aren't there (EDHREC has no page for them either).
+- Search gotchas (probed 2026-10-24): `kw:monarch` matches thousands of commanders (use `o:monarch`);
+  `edhrec_rank` ranks a card across all decks, not as a commander (Abby, Merciless Soldier: rank 15543,
+  18 decks; Bill Ferny: rank 21974, 604), so EDHREC's `num_decks` is the real "underplayed" signal.
+  `atag:` (art tags) and `ft:` (flavour text) work; `total_cards` on page one is the match count.
+  Several agents on one IP get 429s within ~30 quick searches; ~1.5 s between them recovers.
 
 **The Scryfall UUID is the join key across sites:** Moxfield exposes it as `card.scryfall_id`,
 Archidekt as `card.uid`.
