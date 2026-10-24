@@ -13,7 +13,7 @@ import re
 from mtg import decklist
 from mtg.cards import front, is_land, oracle_text
 
-# --- gems, staple share, overlap, density (slices 04-05) ---
+# --- gems, staple share, overlap, density ---
 
 def _keys(names):
     """Lower-cased names plus split/double-faced front faces, for matching EDHREC names to ours."""
@@ -123,7 +123,7 @@ def density(names, data):
     return hits / pairs if pairs else 0.0
 
 
-# --- salt and table share (slice 03) ---
+# --- salt and table share ---
 
 SALTY = 2.0  # EDHREC salt score above which a card is called out
 TOP_SALT = 3
