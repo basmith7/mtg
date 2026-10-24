@@ -21,7 +21,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 from mtg import decklist, edhrec, roles, scores, scryfall
 from mtg.cards import is_land
 
-# Calibrated 2026-10-24 on the player's decks (specs/deck-tools/slices/05-originality.md).
+# Calibrated 2026-10-24 on the player's decks (specs/done/deck-tools/README.md).
 BANDS = 'Zedruu group hug 0.17, Ayula bears 0.21, Breya artifacts 0.59'
 
 ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)

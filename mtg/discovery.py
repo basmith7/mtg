@@ -19,7 +19,7 @@ def legal(allow_ub=False):
     """The Scryfall terms every discovery and challenge query carries."""
     return LEGAL if allow_ub else f'{LEGAL} {NO_UB}'
 
-# Oracle-text queries, each ANDed with COMMANDER and legal(). Counts probed live are in the slice file.
+# Oracle-text queries, each ANDed with COMMANDER and legal(). Probed counts: specs/done/deck-tools/README.md.
 # kw:monarch is wrong: it matched thousands of commanders, so monarch is an oracle search.
 MECHANICS = {
     'control-swap': '(o:"target opponent gains control" or o:"target player gains control" '

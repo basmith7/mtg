@@ -30,5 +30,6 @@ power verdict, and never at the player's table. Checked 2026-10-24 with Forge 2.
 
 ## Spike numbers (2026-10-24)
 
-Krenko (goblins), Talrand (spells), Phage (voltron), Lathril (elves), `-n 5 -c 600`: see
-`specs/deck-tools/slices/10-forge.md`.
+Krenko (goblins), Talrand (spells), Phage (voltron), Lathril (elves), `-n 5 -c 600` on OpenJDK 25: card
+database loads in ~6 s, games took 17–47 s (mean 28), no draws, no unsupported cards once double-faced
+cards use their front name.
