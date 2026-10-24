@@ -5,7 +5,7 @@ decks (mostly Commander) on their own Archidekt accounts. Archidekt holds the de
 the tools, the house rules and one profile per player. It is not a deck archive, a web app or a
 packaged library: scripts run from the repo root with the standard library only.
 
-Verified against fd3c976 on 2026-10-20.
+Verified against 8892047 on 2026-10-24.
 
 ## Codemap
 
@@ -28,7 +28,8 @@ Verified against fd3c976 on 2026-10-20.
   - `config`: settings from the environment or `.env`; `CACHE` dir.
   - `http`: JSON requests with retry on HTTP 429.
 - **`scripts/`**: the command line. Each script's docstring is its usage (`--help`).
-- **`tests/`**: offline `unittest` suite; fakes sit at `archidekt.call` and `archidekt.resolve`.
+- **`tests/`**: offline `unittest` suite; network fakes sit at each client (`archidekt.call`, `scryfall.search`,
+  `edhrec._fetch`, `spellbook`'s `http.request`), trimmed real responses in `tests/fixtures/`.
 - **`RULES.md`**: house rules for Commander decks (power target, card rules, list and primer format).
 - **`players/`**: one profile per player (taste, preferences, play log).
 - **`docs/apis.md`**: what we know about each site's API, private ones included; `docs/forge.md`: the Forge install and `sim` mode.
@@ -98,6 +99,14 @@ read the house rules and the player's profile, pull data (EDHREC, Scryfall), dra
 (`check_commander.py`, `deck_stats.py`), write a primer, push. The profile's play log feeds back
 into later builds.
 
+**Fun-first checks and finders.** Beside legality, an agent checks how a deck will feel to the
+table: the bracket line (official WotC bracket, Spellbook's tag, house verdict), `table_feel.py`
+(salt, interaction, a Rule 0 pitch), `originality.py` (same-99 share, odd swaps) and a colour-aware
+goldfish against Karsten's source table. `discover.py` finds underplayed commanders for the mechanics
+the player enjoys or rolls a challenge deck; `edhrec_recs.py --gems` finds high-lift, rarely played
+cards. Outside tools: an MCP server for card search (`.mcp.json`) and Forge AI pods
+(`forge_sim.py`). Rationale in [specs/done/deck-tools](specs/done/deck-tools/README.md).
+
 **Importing decks.** `importdeck.load` dispatches on the link; Instagram is a best-effort chain
 (caption, link-in-bio pages, profile decks scored against the caption) that lists candidates rather
 than guessing.
@@ -132,6 +141,9 @@ flowchart LR
   against Scryfall oracle text.
 - **Push leaves site structure alone:** Maybeboard, Sideboard and not-in-deck categories are skipped
   and existing cards keep their categories.
+- **Nothing from Mulligan Labs game history goes in this public repo** (friends' names, commanders,
+  replays). The post-game report and playgroup meta live in the private `~/Projects/mtg-table`, which
+  imports `mtg`; only a play-log entry the player confirms crosses back.
 - **Fresh worktrees have no decks**: `decks/` is gitignored, so pull first.
 - **Caches and backups** live in `~/.cache/mtg` (`config.CACHE`), shared by every checkout.
 - **Logic lives in `mtg/`, scripts parse arguments and print.** The pure modules (`cards`, `patterns`,
@@ -140,7 +152,10 @@ flowchart LR
 ## Where to start
 
 - **Archidekt changed its API:** `mtg/archidekt.py` and `docs/apis.md` (how endpoints were found).
-- **A new check on deck lists:** `scripts/check_commander.py` (rules) or `scripts/deck_stats.py` (numbers).
+- **A new check on deck lists:** the logic in a pure module (`mtg/brackets.py` for rules and brackets,
+  `mtg/patterns.py` for what cards do, `mtg/scores.py` for numbers), printed by `scripts/check_commander.py`
+  (rule breaks), `scripts/table_feel.py` (table feel) or `scripts/deck_stats.py` (roles, mana, goldfish).
+- **Tune what discovery looks for:** `discovery.MECHANICS` and `KEYWORDS` in `mtg/discovery.py`.
 - **Change the list format:** `mtg/decklist.py`, then `tests/test_decklist.py`.
 - **Change how agents build decks:** `.claude/skills/commander-deck/SKILL.md` and `RULES.md`.
 - **Import from a new site:** `mtg/importdeck.py` (`load` dispatch) and `docs/apis.md`.
