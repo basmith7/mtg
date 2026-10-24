@@ -26,7 +26,7 @@ Warnings:
 - [ ] [03 table feel](slices/03-table-feel.md)
 - [ ] [04 hidden gems](slices/04-gems.md)
 - [ ] [05 originality and synergy density](slices/05-originality.md)
-- [ ] [06 goldfish and mana](slices/06-goldfish.md)
+- [x] [06 goldfish and mana](slices/06-goldfish.md)
 - [ ] [07 discovery and challenges](slices/07-discovery.md)
 - [ ] [08 primer extras and challenger review](slices/08-primer.md)
 - [ ] [09 MCP server](slices/09-mcp.md)
