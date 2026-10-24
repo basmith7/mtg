@@ -37,7 +37,7 @@ caller sees None.
 **Feedback that changes this slice:** Brian answering the Game Changer cap question (changes `--max-gc`
 default and RULES.md, nothing else).
 
-**Done 2026-10-24.** WotC criteria re-read (no change; see `choices/02.md`). Checkpoint:
+**Done 2026-10-24.** WotC criteria re-read (no change; see `choices.md`). Checkpoint:
 ```
 Etali:  bracket: Official B4 (4 Game Changers) · Spellbook R (Ruthless) · House 3.75 ✓
 Gonti:  bracket: Official B3 (3 Game Changers) · Spellbook P (Powerful) · House 3.75 ✓

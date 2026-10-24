@@ -21,4 +21,4 @@ reviews every deck before it is pushed. Docs and skill only, no code.
 RULES.md primer format and the `commander-deck` skill updated. Test: the Etali primer rewritten under the
 new format by an agent following only RULES.md and the skill (510 → 494 words), with the fresh-eyes
 review. The review caught a real error the old primer had (tutors can't find the commander) and
-showed the reviewer needs the scripts' output; both fixed here. Choices: [choices/08.md](../choices/08.md).
+showed the reviewer needs the scripts' output; both fixed here. Choices: [choices.md](../choices.md).

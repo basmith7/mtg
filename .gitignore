@@ -6,3 +6,5 @@ __pycache__/
 .env
 # Stale repo-root cache from before config.CACHE (~/.cache/mtg); nothing reads it.
 /cache/
+# Agent worktrees (Claude Code)
+/.claude/worktrees/

@@ -17,4 +17,4 @@ public repo.
 
 `mtg-table/meta.py` (commanders, themes, `--names`) with synthetic-replay tests; mtg-table's README
 documents both tools. Themes use `mtg.patterns` once slice 02 lands (tested against that module) and fall
-back to the site's tags before then. Choices: [choices/12.md](../choices/12.md).
+back to the site's tags before then. Choices: [choices.md](../choices.md).

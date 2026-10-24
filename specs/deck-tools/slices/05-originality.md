@@ -50,4 +50,4 @@ odd swaps:
   Humble Defector (draw) -> Skullclamp?, Brainstorm?, Esper Sentinel?
 ```
 Tests in `tests/test_originality.py` (not `test_scores.py`, which the salt slice owns). Deviations
-(no `patterns` clause, most-played-first swaps, own-deck bands): [choices/05.md](../choices/05.md).
+(no `patterns` clause, most-played-first swaps, own-deck bands): [choices.md](../choices.md).

@@ -36,7 +36,7 @@ summary and share on a synthetic deck. Pitch contains no script or tool name.
 **Delegated:** regex details, display order.
 **Feedback that changes this slice:** pitch wording.
 
-**Done 2026-10-24.** Salt source: MTGJSON (probe and reasons in `choices/03.md`, `docs/apis.md`). Checkpoint:
+**Done 2026-10-24.** Salt source: MTGJSON (probe and reasons in `choices.md`, `docs/apis.md`). Checkpoint:
 ```
 Kardur – Forced Combat
    salt: average 0.4; saltiest Sol Ring 1.6, Archfiend of Depravity 1.1, Mana Geyser 0.9 (0 cards over 2.0)

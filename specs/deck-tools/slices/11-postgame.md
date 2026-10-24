@@ -34,4 +34,4 @@ Built in mtg-table (local commit, no remote): `replays.py`, `postgame`, syntheti
 `mtg.profile.render_entry` / `add_entry` with `tests/test_profile_entry.py`. Spike passed: more than half
 of the player's completed games map to a local list by `sourceUrl`. Privacy audit run: this repo shows no
 replay data and mtg-table's `replays/` is ignored. Game details stayed in the private report; the draft
-entry waits for Brian. Choices: [choices/11.md](../choices/11.md).
+entry waits for Brian. Choices: [choices.md](../choices.md).

@@ -29,4 +29,4 @@ few decks play.
   lift 27.8  inc  6.5%  trend +0.0  Embargo
   ...
 ```
-Tests: `tests/test_gems.py` (6, on the trimmed Zur fixture). Choices: [choices/04.md](../choices/04.md).
+Tests: `tests/test_gems.py` (6, on the trimmed Zur fixture). Choices: [choices.md](../choices.md).

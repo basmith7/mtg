@@ -41,7 +41,7 @@ an inline profile; same seed → same challenge; query strings. `tests/test_prof
 
 Probed live (Scryfall `total_cards`, `is:commander f:commander`): control-swap 9 (spec's three phrases 7;
 Zedruu matches), goad 30, vote 7, coin 7, monarch 15 (`kw:monarch` 3497), each-player 86, chaos
-(`o:"at random"`) 28. Art tags 111-2240 each, flavour words 132-831 (choices/07.md).
+(`o:"at random"`) 28. Art tags 111-2240 each, flavour words 132-831 (`choices.md`).
 `scripts/discover.py` from Brian's profile (main checkout's decks, so Zedruu, Xantcha, Jon Irenicus skipped):
 ```
 from Brian's profile: control-swap
