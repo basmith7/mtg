@@ -15,7 +15,8 @@ Verified against fd3c976 on 2026-10-20.
   - `edhrec`, `spellbook`, `moxfield`: recommendations, combos, reading Moxfield decks.
   - `roles`: card roles (ramp, draw, removal…) from Scryfall oracle tags, cached per card.
   - `goldfish`: mana maths and the goldfish simulation (pure).
-  - `brackets`: bracket rules, starting with what makes a combo fast (pure).
+  - `brackets`: the official WotC bracket, the house verdict, what makes a combo fast (pure).
+  - `patterns`: what a card does to the table, from oracle-text regexes (MLD, extra turns…; pure).
   - `importdeck`: turns a link (Moxfield, Archidekt, MTGGoldfish, plain text, Instagram) into a deck.
   - `decklist`: the `.txt` list format (`parse`, `render`, `meta`, `set_meta`).
   - `quill`: primer markdown ↔ Archidekt's Quill delta (`to_delta`, `from_delta`).
@@ -65,7 +66,7 @@ erDiagram
 **Building and checking (read-only):**
 - `scripts/import_deck.py`: someone else's deck link to a local list.
 - `scripts/edhrec_recs.py`: EDHREC recommendations and cut candidates for a commander or list.
-- `scripts/check_commander.py`: legality, colour identity, Game Changers, combos (Commander Spellbook).
+- `scripts/check_commander.py`: legality, colour identity, Game Changers, combos (Commander Spellbook), bracket (official, Spellbook, house).
 - `scripts/deck_stats.py`: role counts, mana sources, a goldfish simulation.
 
 **File formats:** the decklist `.txt` (header `# Name | COLOURS`, `# source:` / `# updated:` lines,

@@ -13,6 +13,10 @@ Then asks Commander Spellbook which combos the deck contains (network; --no-comb
 Combos are fine if they're fun and late (house rule, RULES.md). A combo is FAST when its pieces total mana
 value 6 or less, or Spellbook rates it Ruthless or Banned; a fast infinite combo is a problem (`!!`).
 --near also lists combos missing one card. Primers should take their combo claims from this output.
+
+The bracket line shows the official WotC bracket, Spellbook's own tag (information only) and the house
+verdict (RULES.md: Game Changers, no mass land denial, no extra-turn chains, no fast infinite combo).
+Official Bracket 4 alone is not a problem; a house failure is.
 """
 import argparse
 import os
@@ -20,45 +24,43 @@ import sys
 from collections import Counter
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
-from mtg import brackets, decklist, scryfall, spellbook
+from mtg import brackets, decklist, patterns, scryfall, spellbook
 
 
-def show_combos(cmdrs, cards, data, near):
-    """Print Spellbook combos; return problem strings."""
+def mana_value(data):
+    """card name -> mana value or None, from Scryfall data."""
     def mv(n):  # Spellbook sometimes names one face of a double-faced card
         c = data.get(n) or next((v for k, v in data.items() if n in k.split(' // ')), None)
         return c.get('cmc', 0) if c else None
+    return mv
 
-    def total(c):
-        t = brackets.total_mv(c, mv)
-        return '?' if t is None else t
 
-    def fast(c):
-        return brackets.is_fast(c, mv)
-
+def show_combos(cmdrs, cards, data, near):
+    """Spellbook combos: (the included ones with 'fast' and 'infinite' set, the lines to print)."""
+    mv = mana_value(data)
     found = spellbook.find_combos(cmdrs, list(cards))
     if near:  # look up the missing pieces too, so near-miss combos get a real total
         missing = {n for c in found['almost'] for n in c['cards'] if mv(n) is None}
-        data = {**data, **(scryfall.collection(missing) if missing else {})}
-    problems = []
+        mv = mana_value({**data, **(scryfall.collection(missing) if missing else {})})
+    out = [f'   combos: {len(found["included"])} included, {len(found["almost"])} one card away']
 
-    def line(c, tag=''):
-        print(f'   {tag}{" + ".join(c["cards"])} [{c["bracket"]}] total MV {total(c)}{" FAST" if fast(c) else ""}')
-        print(f'      -> {"; ".join(c["results"])}')
+    def show(c, tag=''):
+        t = brackets.total_mv(c, mv)
+        fast = ' FAST' if brackets.is_fast(c, mv) else ''
+        out.append(f'   {tag}{" + ".join(c["cards"])} [{c["bracket"]}] total MV {"?" if t is None else t}{fast}')
+        out.append(f'      -> {"; ".join(c["results"])}')
         if c['prerequisites'] and not tag:
-            print(f'      needs: {c["prerequisites"].replace(chr(10), " ")}')
-        print(f'      {c["url"]}')
+            out.append(f'      needs: {c["prerequisites"].replace(chr(10), " ")}')
+        out.append(f'      {c["url"]}')
 
-    print(f'   combos: {len(found["included"])} included, {len(found["almost"])} one card away')
     for c in found['included']:
-        line(c)
-        if fast(c) and any(r.lower().startswith('infinite') for r in c['results']):
-            problems.append(f'fast infinite combo: {" + ".join(c["cards"])} ({c["url"]})')
+        show(c)
     if near:
-        print('   near (missing one card):')
+        out.append('   near (missing one card):')
         for c in found['almost']:
-            line(c, f'+{c["missing"][0]}: ' if c['missing'] else '')
-    return problems
+            show(c, f'+{c["missing"][0]}: ' if c['missing'] else '')
+    infinite = lambda c: any(r.lower().startswith('infinite') for r in c['results'])
+    return [{**c, 'fast': brackets.is_fast(c, mv), 'infinite': infinite(c)} for c in found['included']], out
 
 
 def check(path, max_gc, allow_ub, combos=True, near=False):
@@ -97,17 +99,28 @@ def check(path, max_gc, allow_ub, combos=True, near=False):
             lands += q
         elif card not in cmdrs:
             curve[min(int(c.get('cmc', 0)), 7)] += q
-    if len(gcs) > max_gc:
-        problems.append(f'{len(gcs)} Game Changers (max {max_gc})')
     if not allow_ub:
         problems += [f'Universes Beyond: {c}' for c in scryfall.ub_only([n for n in cards if n in data]) if c not in cmdrs]
     print(f'{name}: {total} cards, {lands} lands, Game Changers {len(gcs)}: {", ".join(gcs) or "-"}')
-    print('   curve ' + '  '.join(f'{k}{"+" if k == 7 else ""}:{curve[k]}' for k in range(8)))
+    est, sb, found, combo_lines = None, 'skipped', [], []
     if combos:
+        est = spellbook.estimate_bracket(cmdrs, list(cards))
+        sb = est or 'unavailable'
         try:
-            problems += show_combos(cmdrs, cards, data, near)
+            found, combo_lines = show_combos(cmdrs, cards, data, near)
         except (OSError, KeyError, TypeError) as e:  # network down or an unexpected response
-            print(f'   combos: Spellbook unavailable ({e})')
+            combo_lines = [f'   combos: Spellbook unavailable ({e})']
+    mv = mana_value(data)
+    fl = brackets.flags({n: patterns.classify(data[n]) for n in cards if n in data}, est and est['cards'])
+    official = brackets.official(gcs, fl, [{**c, 'fast': brackets.is_fast(c, mv)} for c in est['combos']] if est else [])
+    if not est:
+        official[1].append('combos not checked')
+    house = brackets.house(gcs, fl, found, max_gc)
+    problems += house[1]
+    print('   ' + brackets.line(official, sb, house))
+    print('   curve ' + '  '.join(f'{k}{"+" if k == 7 else ""}:{curve[k]}' for k in range(8)))
+    for ln in combo_lines:
+        print(ln)
     for p in problems:
         print(f'   !! {p}')
     return not problems

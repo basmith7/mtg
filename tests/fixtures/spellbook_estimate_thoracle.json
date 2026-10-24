@@ -1,0 +1,123 @@
+{
+ "bracketTag": "R",
+ "cards": [
+  {
+   "card": {
+    "name": "Thassa's Oracle"
+   },
+   "quantity": 1,
+   "banned": false,
+   "gameChanger": true,
+   "massLandDenial": false,
+   "extraTurn": false
+  },
+  {
+   "card": {
+    "name": "Demonic Consultation"
+   },
+   "quantity": 1,
+   "banned": false,
+   "gameChanger": false,
+   "massLandDenial": false,
+   "extraTurn": false
+  },
+  {
+   "card": {
+    "name": "Armageddon"
+   },
+   "quantity": 1,
+   "banned": false,
+   "gameChanger": false,
+   "massLandDenial": true,
+   "extraTurn": false
+  },
+  {
+   "card": {
+    "name": "Time Warp"
+   },
+   "quantity": 1,
+   "banned": false,
+   "gameChanger": false,
+   "massLandDenial": false,
+   "extraTurn": true
+  },
+  {
+   "card": {
+    "name": "Rhystic Study"
+   },
+   "quantity": 1,
+   "banned": false,
+   "gameChanger": true,
+   "massLandDenial": false,
+   "extraTurn": false
+  },
+  {
+   "card": {
+    "name": "Sol Ring"
+   },
+   "quantity": 1,
+   "banned": false,
+   "gameChanger": false,
+   "massLandDenial": false,
+   "extraTurn": false
+  },
+  {
+   "card": {
+    "name": "Tymna the Weaver"
+   },
+   "quantity": 1,
+   "banned": false,
+   "gameChanger": false,
+   "massLandDenial": false,
+   "extraTurn": false
+  }
+ ],
+ "combos": [
+  {
+   "relevant": true,
+   "borderlineRelevant": true,
+   "arguablyTwoCard": true,
+   "definitelyTwoCard": true,
+   "speed": 5,
+   "massLandDenial": false,
+   "extraTurn": false,
+   "lock": false,
+   "skipTurns": false,
+   "controlAllOpponents": false,
+   "controlSomeOpponents": false,
+   "combo": {
+    "id": "742-1295",
+    "uses": [
+     {
+      "card": {
+       "name": "Demonic Consultation"
+      },
+      "quantity": 1
+     },
+     {
+      "card": {
+       "name": "Thassa's Oracle"
+      },
+      "quantity": 1
+     }
+    ],
+    "produces": [
+     {
+      "feature": {
+       "name": "Exile your library",
+       "status": "H"
+      }
+     },
+     {
+      "feature": {
+       "name": "Win the game",
+       "status": "S"
+      }
+     }
+    ],
+    "bracketTag": "R",
+    "manaValueNeeded": 3
+   }
+  }
+ ]
+}

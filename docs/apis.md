@@ -171,6 +171,14 @@ Public, no auth. OpenAPI schema (Swagger) at `/schema/`; client is `mtg/spellboo
   own tiers, not the same as the house "B3.75"). No mana values come back; the checker gets them from Scryfall.
 - Combo names in `uses` are sometimes a face name only; `uses` can also list a combo's commander.
 - Cheap to call (one request per deck, ~1 s); no rate limit hit so far.
+- `POST /estimate-bracket`, same body as `/find-my-combos` (probed 2026-10-24; client
+  `spellbook.estimate_bracket`). Returns `bracketTag` (the deck's tag on the scale above), `cards[]`
+  (only cards it flags: `card.name`, `gameChanger`, `massLandDenial`, `extraTurn`, `banned`) and
+  `combos[]` (`combo` is a full variant; beside it `definitelyTwoCard`, `arguablyTwoCard`, `speed`
+  (small int), `lock`, `massLandDenial`, `extraTurn`, `skipTurns`, `relevant`). Its tag is not a WotC
+  bracket: 4 Game Changers → `R`, Winter Orb alone → `R`, Time Warp alone → `C`; Thassa's Oracle +
+  Demonic Consultation is `definitelyTwoCard` though it produces "Win the game", not an "Infinite …"
+  feature. Trimmed reply: `tests/fixtures/spellbook_estimate_thoracle.json`.
 ## EDHREC — `https://json.edhrec.com/pages`
 
 No auth, no documentation; these are the JSON files the edhrec.com site loads (found 2026-10-09).
