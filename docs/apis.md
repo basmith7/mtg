@@ -26,7 +26,9 @@ Docs: <https://scryfall.com/docs/api>. Send `User-Agent` **and** `Accept: applic
 The limit is per machine, so several agents running checkers at once hit 429s.
 
 - `GET /cards/search?q=<query>&unique=cards|prints&order=usd&dir=asc` — full Scryfall search syntax.
-  Paginated: follow `next_page` until absent.
+  Paginated: follow `next_page` until absent. `order=edhrec&dir=asc` is most-played first; `dir=desc`
+  starts with unranked playtest and joke cards (`Cursed Firebreathing Yogurt`) even under `f:commander`,
+  so add `not:funny`. `-is:gamechanger` drops Game Changers (seen 2026-10-24).
 - `GET /cards/named?exact=<name>` — one card. `fuzzy=` also works.
 - Useful card fields: `name`, `mana_cost`, `type_line`, `oracle_text` (or `card_faces[].oracle_text` for
   split/DFC cards), `color_identity`, `rarity`, `legalities`, `prices.usd`, `id` (Scryfall UUID).

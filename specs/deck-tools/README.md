@@ -25,7 +25,7 @@ Warnings:
 - [ ] [02 bracket check](slices/02-bracket.md)
 - [ ] [03 table feel](slices/03-table-feel.md)
 - [x] [04 hidden gems](slices/04-gems.md)
-- [ ] [05 originality and synergy density](slices/05-originality.md)
+- [x] [05 originality and synergy density](slices/05-originality.md)
 - [ ] [06 goldfish and mana](slices/06-goldfish.md)
 - [ ] [07 discovery and challenges](slices/07-discovery.md)
 - [ ] [08 primer extras and challenger review](slices/08-primer.md)
