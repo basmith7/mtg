@@ -61,7 +61,7 @@ folded in here and deleted.
 ### Rule 0 pitch wording — confidence: medium
 - **Scenario:** one sentence: up to two themes with 3+ cards, else "Interactive" (25%+ share) or "Mostly
   self-focused"; "B<n> on paper (first reason)"; then "with …" or "but no …" stax / land wipes /
-  extra-turn chains / fast combos; the saltiest card if any is over 2.0. Example: "Goad deck, B2 on paper
+  extra-turn chains / fast combos; the saltiest card if any is over 2.0; "it bends our house rules" when the house check fails. Example: "Goad deck, B2 on paper
   (no Game Changers or two-card combos) but no stax, land wipes, extra-turn chains or fast combos." The
   "but" reads oddly after B2; cosmetic, left.
 
@@ -69,13 +69,13 @@ folded in here and deleted.
 - **Scenario:** salt is EDHREC's community "how annoying is this card" score (0–4). EDHREC's per-card
   pages would cost ~85 requests a deck at 1 a second; MTGJSON's AtomicCards file (52 MB download) has
   the same number (`edhrecSaltiness`, matched EDHREC's page on 3 decks, 245/245 cards). `edhrec.salt`
-  downloads it weekly, keeps a 0.9 MB `{name: salt}` table in `~/.cache/mtg/edhrec/salt.json`, and
-  deletes the download. Basics are left out of the average (Forest scores 0.62).
+  downloads it weekly, keeps a 0.9 MB `{name: salt}` table in `~/.cache/mtg/edhrec/salt.json`; the
+  download is read in memory and never stored. Basics are left out of the average (Forest scores 0.62).
 
 ### Hidden gems: inclusion under 15%, at least 20 decks, ranked by EDHREC lift — confidence: medium
 - **Scenario:** EDHREC's commander pages carry `lift` (how much more often a card appears with this
   commander than its general popularity predicts). `edhrec_recs.py --gems` lists cards under 15%
-  inclusion and over 20 decks, highest lift first, basics always out, deck cards out with `--deck`.
+  inclusion and at least 20 decks, highest lift first, basics always out, deck cards out with `--deck`.
   `--gem-max` and `--gem-min-decks` override. The 20-deck floor never bit on a real page tried; it's
   there for tiny commanders.
 
@@ -84,7 +84,7 @@ folded in here and deleted.
   same Scryfall role tag in colour identity. Ordering least-played first (the spec) surfaced joke cards
   (Cursed Firebreathing Yogurt), so it orders most-played first, skips the deck's cards, the
   commander's EDHREC staples, Game Changers, `is:funny` sets, and (added in the final audit) any card in
-  the EDHREC top 1000 overall, which had made Sol Ring's swaps Mind Stone and Thought Vessel. Gonti now
+  the top 1000 by Scryfall's `edhrec_rank` (unranked cards are kept), which had made Sol Ring's swaps Mind Stone and Thought Vessel. Gonti now
   gets Sol Ring → Kodama of the East Tree, Nyxbloom Ancient, Roiling Regrowth.
 - **Reach:** role tags are crowd-sourced and noisy (Mana Drain is tagged ramp), so swaps are prompts
   for the agent, printed with "?".
@@ -152,7 +152,7 @@ folded in here and deleted.
 - **Scenario:** Mulligan Labs replays log cards entering play and moving zones, but not which cards were
   drawn. A card counts as played if it entered the battlefield, or (instants, sorceries) moved hand →
   graveyard/exile, so a discarded spell also counts. "Never played" leaves out basics, splits lands from
-  spells, names at most ten, and says the replay can't tell undrawn from held. Default: the last 5
+  spells, names at most ten in the draft entry (the report lists all), and says the replay can't tell undrawn from held. Default: the last 5
   games with that deck. The draft entry's Fun and Change read "ask the player".
 
 ### Playgroup meta finds Brian's seat by his Mulligan Labs player id — confidence: high
@@ -180,5 +180,4 @@ folded in here and deleted.
   new skills. High.
 - **Play-log entries need Brian's confirmation**; `profile.add_entry` inserts newest first below the
   template, `render_entry` writes "not given" for empty fields. High.
-- **Trivial discretion** (column layouts, flag names, test file split, fixture trimming): 14 entries,
-  not listed.
+- **Trivial discretion** (column layouts, flag names, test file split, fixture trimming): not listed.

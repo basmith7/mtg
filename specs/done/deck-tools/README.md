@@ -34,8 +34,8 @@ efficient:
   rule; RULES.md says `Official B4 · House 3.75 ✓` is a normal result.
 - **Spellbook informs, our code decides.** `/estimate-bracket` uses its own scale (4 Game Changers or
   Winter Orb alone → Ruthless), so only its per-card and per-combo flags feed `brackets.official`.
-- **Table feel is its own script.** `check_commander.py`'s `!!` lines mean "breaks the house rules";
-  salt and solitaire play are judgement calls, not rule breaks.
+- **Table feel is its own script.** `check_commander.py`'s `!!` lines mean "this list has a problem"
+  (legality, colour, a house rule); salt and solitaire play are judgement calls, not problems.
 - **One skill owns deckbuilding.** Discovery, gems, table feel and originality are steps in
   `commander-deck`, not separate skills.
 - **Logic in `mtg/`, scripts print.** Pure modules (`cards`, `brackets`, `patterns`, `scores`,
@@ -45,24 +45,31 @@ efficient:
   rather than ~85 EDHREC card pages per deck; discovery ranks by Scryfall's `edhrec_rank` and spends
   EDHREC requests only on `--counts`.
 - **Experiments carried kill criteria.** The MCP server and Forge each started with a spike that could
-  end the slice; both survived (numbers below).
+  have ruled them out; both survived (numbers below).
 
 ## Invariants
 
+Enforced by structure or code:
+
 - **Nothing from Mulligan Labs game history enters this public repo**: no replays, other players'
   names or commanders, game ids or meta. That tooling lives in `~/Projects/mtg-table` (no remote,
-  `replays/` gitignored) and imports `mtg`, never the reverse. The only crossing is a play-log entry for
-  the player's own deck, written by `mtg.profile.add_entry` only after the player confirms it. Tests
-  use invented seats.
-- **Mulligan Labs: read-only, low volume, only when the player asks**; never game actions or a seat.
+  `replays/` gitignored) and imports `mtg`, never the reverse. Tests use invented seats.
 - **Every bracket `!!` comes from `brackets.house`**; the fast-infinite-combo rule is
-  `brackets.is_fast` (pieces total 6 mana or less, or Spellbook says Ruthless/Banned).
+  `brackets.is_fast` (pieces total 6 mana or less, an unknown mana value, or Spellbook says
+  Ruthless/Banned).
 - **Universes Beyond stays out of discovery and challenge pools** unless `--allow-ub`
   (`discovery.legal`), matching the profile.
-- **The MCP server is read-only use**; `push.py` owns every Archidekt write. Its EDHREC module stays
-  off so all EDHREC traffic goes through `edhrec._fetch`'s cache and 1 req/s limit.
-- **Forge keeps all its files under `~/.local/share/forge`** (`forge.profile.properties`) and never
-  plays at the player's table.
+- **The MCP server's EDHREC module is off** (`.mcp.json`), so all EDHREC traffic goes through
+  `edhrec._fetch`'s cache and 1 req/s limit.
+
+Policy (followed by agents, not checked by code):
+
+- **Play-log entries cross into this repo only after the player confirms them.** `postgame` prints a
+  draft; nothing calls `profile.add_entry` on its own.
+- **Mulligan Labs: read-only GETs, low volume, only when the player asks**; never game actions or a seat.
+- **The MCP server is for searching**; `push.py` owns every Archidekt write.
+- **Forge keeps its files under its install folder** via a hand-made `forge.profile.properties`
+  (`docs/forge.md`), and only ever plays the player's decks against each other offline.
 - **Primers never mention the tools**; the odds and combos they state come from the scripts' output.
 
 ## Pointers into the code
