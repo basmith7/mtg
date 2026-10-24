@@ -31,8 +31,8 @@ Warnings:
 - [ ] [08 primer extras and challenger review](slices/08-primer.md)
 - [ ] [09 MCP server](slices/09-mcp.md)
 - [ ] [10 Forge pods](slices/10-forge.md)
-- [ ] [11 post-game report (mtg-table)](slices/11-postgame.md)
-- [ ] [12 playgroup meta (mtg-table)](slices/12-meta.md)
+- [x] [11 post-game report (mtg-table)](slices/11-postgame.md)
+- [x] [12 playgroup meta (mtg-table)](slices/12-meta.md)
 
 ## Slice graph
 

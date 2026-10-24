@@ -27,3 +27,11 @@ instance mapping; no double count; abandoned games skipped; the draft contains n
 **Checkpoint:** privacy audit — `git -C ~/Projects/mtg status` shows nothing from replays;
 `git -C ~/Projects/mtg-table status` shows `replays/` ignored. The draft entry goes into
 `players/brian.md` only after Brian confirms it.
+
+## Done (2026-10-24)
+
+Built in mtg-table (local commit, no remote): `replays.py`, `postgame`, synthetic-replay tests; here,
+`mtg.profile.render_entry` / `add_entry` with `tests/test_profile_entry.py`. Spike passed: more than half
+of the player's completed games map to a local list by `sourceUrl`. Privacy audit run: this repo shows no
+replay data and mtg-table's `replays/` is ignored. Game details stayed in the private report; the draft
+entry waits for Brian. Choices: [choices/11.md](../choices/11.md).
