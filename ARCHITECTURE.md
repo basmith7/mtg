@@ -16,7 +16,8 @@ Verified against fd3c976 on 2026-10-20.
   - `roles`: card roles (ramp, draw, removal…) from Scryfall oracle tags, cached per card; `alternatives` finds other cards with a role.
   - `scores`: scores from EDHREC data and lists: hidden gems, staple share, overlap, synergy density (pure).
   - `goldfish`: mana maths and the goldfish simulation (pure).
-  - `brackets`: bracket rules, starting with what makes a combo fast (pure).
+  - `brackets`: the official WotC bracket, the house verdict, what makes a combo fast (pure).
+  - `patterns`: what a card does to the table, from oracle-text regexes (MLD, extra turns…; pure).
   - `discovery`: underplayed commanders by mechanic, and challenge-deck rolls (Scryfall searches).
   - `profile`: the player profile format (`enjoys`).
   - `importdeck`: turns a link (Moxfield, Archidekt, MTGGoldfish, plain text, Instagram) into a deck.
@@ -69,7 +70,8 @@ erDiagram
 - `scripts/import_deck.py`: someone else's deck link to a local list.
 - `scripts/edhrec_recs.py`: EDHREC recommendations and cut candidates for a commander or list; `--gems`.
 - `scripts/originality.py`: staple share, overlap with the player's other decks, synergy density, odd swaps.
-- `scripts/check_commander.py`: legality, colour identity, Game Changers, combos (Commander Spellbook).
+- `scripts/check_commander.py`: legality, colour identity, Game Changers, combos (Commander Spellbook), bracket (official, Spellbook, house).
+- `scripts/table_feel.py`: how a deck feels to the other players (salt, table-touching cards) and a Rule 0 pitch.
 - `scripts/deck_stats.py`: role counts, mana sources, a goldfish simulation.
 - `scripts/discover.py`: commanders matching the player's taste, or a challenge deck and its pool.
 

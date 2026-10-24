@@ -5,6 +5,8 @@
     scores.staple_share(nonland_99, edhrec_cards)          # (0.38, [staples])
     scores.overlap(names, {path: names, ...})              # [(path, shared, jaccard)]
     scores.density(names, scryfall.collection(names))      # 0.0-1.0 pairwise interaction
+    scores.salt_summary(names, edhrec.salt(names))         # {'avg', 'top', 'over2'}
+    scores.table_share({name: patterns.classify(card)})    # share of spells that touch other players
 """
 import re
 
@@ -121,3 +123,25 @@ def density(names, data):
             pairs += 1
             hits += bool(said[i] & traits[j][0] or said[j] & traits[i][0])
     return hits / pairs if pairs else 0.0
+
+
+# --- salt and table share (slice 03) ---
+
+SALTY = 2.0  # EDHREC salt score above which a card is called out
+TOP_SALT = 3
+
+
+def salt_summary(names, salt):
+    """{'avg', 'top': [(name, s)], 'over2': [names]} for the cards that have a salt score.
+    salt: edhrec.salt(names). avg is None when no card has a score."""
+    scored = sorted(((n, salt[n]) for n in dict.fromkeys(names) if n in salt), key=lambda x: -x[1])
+    return {'avg': sum(s for _, s in scored) / len(scored) if scored else None,
+            'top': scored[:TOP_SALT], 'over2': [n for n, s in scored if s > SALTY]}
+
+
+def table_share(classified):
+    """Share of cards with any table-touching tag. classified: {name: patterns.classify(card)} for the
+    deck's nonland cards (the caller drops lands); every patterns tag but `extra-turn` touches the table."""
+    if not classified:
+        return 0.0
+    return sum(bool(tags - {'extra-turn'}) for tags in classified.values()) / len(classified)

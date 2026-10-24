@@ -36,3 +36,12 @@ caller sees None.
 **Delegated:** reason wording; whether to list Spellbook's per-card flags under `--verbose`.
 **Feedback that changes this slice:** Brian answering the Game Changer cap question (changes `--max-gc`
 default and RULES.md, nothing else).
+
+**Done 2026-10-24.** WotC criteria re-read (no change; see `choices/02.md`). Checkpoint:
+```
+Etali:  bracket: Official B4 (4 Game Changers) · Spellbook R (Ruthless) · House 3.75 ✓
+Gonti:  bracket: Official B3 (3 Game Changers) · Spellbook P (Powerful) · House 3.75 ✓
+Krark:  bracket: Official B3 (2 Game Changers) · Spellbook S (Spicy) · House 3.75 ✓
+Kardur: bracket: Official B2 (no Game Changers or two-card combos) · Spellbook E (Exhibition) · House 3.75 ✓
+```
+Known gap: Spellbook may name a double-faced card by one face; such a card keeps its regex flags.

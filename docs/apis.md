@@ -178,6 +178,14 @@ Public, no auth. OpenAPI schema (Swagger) at `/schema/`; client is `mtg/spellboo
   own tiers, not the same as the house "B3.75"). No mana values come back; the checker gets them from Scryfall.
 - Combo names in `uses` are sometimes a face name only; `uses` can also list a combo's commander.
 - Cheap to call (one request per deck, ~1 s); no rate limit hit so far.
+- `POST /estimate-bracket`, same body as `/find-my-combos` (probed 2026-10-24; client
+  `spellbook.estimate_bracket`). Returns `bracketTag` (the deck's tag on the scale above), `cards[]`
+  (only cards it flags: `card.name`, `gameChanger`, `massLandDenial`, `extraTurn`, `banned`) and
+  `combos[]` (`combo` is a full variant; beside it `definitelyTwoCard`, `arguablyTwoCard`, `speed`
+  (small int), `lock`, `massLandDenial`, `extraTurn`, `skipTurns`, `relevant`). Its tag is not a WotC
+  bracket: 4 Game Changers → `R`, Winter Orb alone → `R`, Time Warp alone → `C`; Thassa's Oracle +
+  Demonic Consultation is `definitelyTwoCard` though it produces "Win the game", not an "Infinite …"
+  feature. Trimmed reply: `tests/fixtures/spellbook_estimate_thoracle.json`.
 ## EDHREC — `https://json.edhrec.com/pages`
 
 No auth, no documentation; these are the JSON files the edhrec.com site loads (found 2026-10-09).
@@ -206,6 +214,14 @@ Commander page shape: top-level `tag_counts` (`[{slug, value, count}]` = themes)
 Gotchas: the highlight lists (`Top Cards` etc.) *remove* their cards from the type lists, so merge them
 (`mtg/edhrec.py` does, preferring the type list). Each list is capped (~50 creatures), so a card absent from
 the lists is not necessarily rare in the deck. Basics appear in `Lands`.
+
+**Salt scores come from MTGJSON, not card pages** (probed 2026-10-24). MTGJSON's
+`https://mtgjson.com/api/v5/AtomicCards.json.gz` (52 MB, no auth; `data` maps each name, `A // B` for
+double-faced cards, to a list of faces) carries EDHREC's salt as `edhrecSaltiness` on every card:
+it covered 100% of the nonbasic cards in three of the player's decks, and matched the card page's `salt`
+(Cyclonic Rift 2.35 both). Scores run 0–4; most cards sit under 1 and basics have one too.
+`edhrec.salt` downloads it once a week and keeps only `{name: salt}` in `~/.cache/mtg/edhrec/salt.json`,
+instead of fetching ~85 card pages a deck at 1 request a second.
 
 ---
 

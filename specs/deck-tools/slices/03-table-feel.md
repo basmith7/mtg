@@ -35,3 +35,16 @@ summary and share on a synthetic deck. Pitch contains no script or tool name.
 **Checkpoint:** the pitch tone on two of Brian's decks.
 **Delegated:** regex details, display order.
 **Feedback that changes this slice:** pitch wording.
+
+**Done 2026-10-24.** Salt source: MTGJSON (probe and reasons in `choices/03.md`, `docs/apis.md`). Checkpoint:
+```
+Kardur – Forced Combat
+   salt: average 0.4; saltiest Sol Ring 1.6, Archfiend of Depravity 1.1, Mana Geyser 0.9 (0 cards over 2.0)
+   table: 43% of spells touch other players · theft 1 (Varchild, Betrayer of Kjeldor) · donate 1 (Xantcha, Sleeper Agent) · goad 13 · MLD 0 · extra turns 0
+   Rule 0: "Goad deck, B2 on paper (no Game Changers or two-card combos) but no stax, land wipes, extra-turn chains or fast combos."
+Gonti – Finders Keepers, Losers Weepers (B3.75)
+   salt: average 0.6; saltiest Tergrid, God of Fright // Tergrid's Lantern 2.8, Opposition Agent 2.4, Cyclonic Rift 2.4 (3 cards over 2.0)
+   table: 26% of spells touch other players · theft 5 · goad 1 (Bident of Thassa) · monarch 1 (Court of Locthwain) · MLD 0 · extra turns 0
+   Rule 0: "Theft deck, B3 on paper (3 Game Changers) but no stax, land wipes, extra-turn chains or fast combos; the saltiest card is Tergrid, God of Fright // Tergrid's Lantern."
+```
+Salt runs lower than the slice's example (most cards under 1; the slice's 1.3 average was invented).
