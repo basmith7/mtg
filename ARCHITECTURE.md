@@ -13,6 +13,9 @@ Verified against fd3c976 on 2026-10-20.
   - `archidekt`: `login` (token cached in `~/.config/mtg/archidekt-session.json`), deck reads, `resolve` (card ids), `sync` (push), `export` (pull), `archive`.
   - `scryfall`: card data (`collection`, `oracle_text`, `color_identity`, `ub_only`).
   - `edhrec`, `spellbook`, `moxfield`: recommendations, combos, reading Moxfield decks.
+  - `roles`: card roles (ramp, draw, removal…) from Scryfall oracle tags, cached per card.
+  - `goldfish`: mana maths and the goldfish simulation (pure).
+  - `brackets`: bracket rules, starting with what makes a combo fast (pure).
   - `importdeck`: turns a link (Moxfield, Archidekt, MTGGoldfish, plain text, Instagram) into a deck.
   - `decklist`: the `.txt` list format (`parse`, `render`, `meta`, `set_meta`).
   - `quill`: primer markdown ↔ Archidekt's Quill delta (`to_delta`, `from_delta`).

@@ -9,8 +9,10 @@
   `simulate` from `scripts/deck_stats.py`.
 - `mtg/brackets.py`: `FAST_MV` and `is_fast(combo, mv) -> bool` (the nested `fast()` in
   `check_commander.show_combos`; `mv` is a callable name -> MV or None; unknown counts as fast).
-- `mtg/patterns.py`: created empty but for its docstring and `classify(card) -> frozenset[str]`
-  returning `frozenset()`; slice 02 fills it.
+- `mtg/patterns.py` is created by slice 02, not stubbed here (an empty module owns no contract).
+
+**Done 2026-10-24:** `deck_stats.py` (2 decks, 2000 games) and `check_commander.py --no-combos` output
+byte-identical before and after. `brackets.total_mv` added beside `is_fast` (the combo line prints it).
 
 `scripts/deck_stats.py` and `scripts/check_commander.py` import from these; their output is unchanged.
 

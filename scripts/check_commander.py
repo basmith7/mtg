@@ -20,9 +20,7 @@ import sys
 from collections import Counter
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
-from mtg import decklist, scryfall, spellbook
-
-FAST_MV = 6  # combo pieces totalling this much mana value or less can land by turn 3-4
+from mtg import brackets, decklist, scryfall, spellbook
 
 
 def show_combos(cmdrs, cards, data, near):
@@ -32,11 +30,11 @@ def show_combos(cmdrs, cards, data, near):
         return c.get('cmc', 0) if c else None
 
     def total(c):
-        mvs = [mv(n) for n in c['cards']]
-        return '?' if None in mvs else int(sum(mvs))
+        t = brackets.total_mv(c, mv)
+        return '?' if t is None else t
 
-    def fast(c):  # an unknown mana value counts as fast, so it gets looked at
-        return total(c) == '?' or total(c) <= FAST_MV or c['bracket'] in ('Ruthless', 'Banned')
+    def fast(c):
+        return brackets.is_fast(c, mv)
 
     found = spellbook.find_combos(cmdrs, list(cards))
     if near:  # look up the missing pieces too, so near-miss combos get a real total
