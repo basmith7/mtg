@@ -9,6 +9,8 @@ Regexes are a fallback and a cross-check: where Commander Spellbook flags a card
 """
 import re
 
+from mtg.cards import oracle_text
+
 PATTERNS = {
     'mld': r"(destroy|exile) all [^.]*\blands\b|return all lands|sacrifices? (all|\w+) lands|lands don't untap"
            r"|nonbasic lands are mountains",
@@ -28,5 +30,5 @@ _RE = {tag: re.compile(p, re.I) for tag, p in PATTERNS.items()}
 
 def classify(card):
     """frozenset of tags whose pattern matches the card's oracle text (all faces)."""
-    text = card.get('oracle_text') or ' // '.join(f.get('oracle_text', '') for f in card.get('card_faces', []))
+    text = oracle_text(card)
     return frozenset(tag for tag, rx in _RE.items() if rx.search(text))

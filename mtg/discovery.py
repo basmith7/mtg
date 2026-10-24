@@ -8,6 +8,7 @@
 Everything comes from Scryfall searches (`edhrec_rank` rides along on each card); no EDHREC calls.
 """
 from . import scryfall
+from .cards import front
 
 COMMANDER = 'is:commander'
 LEGAL = 'f:commander'
@@ -65,18 +66,14 @@ def query(mechanic, colours=None, allow_ub=False):
     return f'{q} id<={colours}' if colours else q
 
 
-def _front(name):
-    return name.split(' // ')[0]
-
-
 def candidates(mechanics, exclude=(), colours=None, allow_ub=False):
     """[(name, [mechanics], edhrec_rank, identity)] for commanders with any of the mechanics, least played first
     (highest Scryfall edhrec_rank; unranked ones first of all). exclude: names to skip (front faces match)."""
-    skip = set(map(_front, exclude))
+    skip = set(map(front, exclude))
     found = {}
     for m in mechanics:
         for c in scryfall.search(query(m, colours, allow_ub)):
-            if _front(c['name']) in skip:
+            if front(c['name']) in skip:
                 continue
             entry = found.setdefault(c['name'], [c, []])
             entry[1].append(m)
@@ -106,7 +103,7 @@ def challenge(rng, kinds=None, exclude=(), allow_ub=False):
     else:
         year = rng.choice(YEARS)
         pool, rule = f'year:{year} {legal(allow_ub)}', f'only cards printed in {year}\'s sets'
-    skip = set(map(_front, exclude))
-    leaders = sorted(c['name'] for c in scryfall.search(f'{pool} is:commander') if _front(c['name']) not in skip)
+    skip = set(map(front, exclude))
+    leaders = sorted(c['name'] for c in scryfall.search(f'{pool} is:commander') if front(c['name']) not in skip)
     name = rng.choice(leaders)
     return {'text': f'Challenge: build {name} with {rule}', 'query': pool}

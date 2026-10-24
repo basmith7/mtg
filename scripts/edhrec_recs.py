@@ -61,7 +61,7 @@ def show(title, cards):
             print(line(c))
 
 
-basics = decklist.BASICS | {'Snow-Covered ' + b for b in decklist.BASICS}
+basics = decklist.BASICS
 if args.gems:
     exclude = set(basics)
     if args.deck:

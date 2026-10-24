@@ -14,6 +14,7 @@ import sys
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 from mtg import brackets, decklist, edhrec, patterns, scores, scryfall, spellbook
+from mtg.cards import is_land
 
 SHOW = [('theft', 'theft'), ('donate', 'donate'), ('goad', 'goad'), ('stax', 'stax'), ('vote', 'vote'),
         ('coin', 'coin'), ('monarch', 'monarch'), ('mld', 'MLD'), ('extra-turn', 'extra turns')]
@@ -25,7 +26,7 @@ def feel(path, max_gc):
     name, _, cards = decklist.parse(path)
     cmdrs = decklist.commanders(path)
     data = scryfall.collection(cards)
-    spells = [n for n in cards if n in data and 'Land' not in data[n]['type_line'].split('//')[0]]
+    spells = [n for n in cards if n in data and not is_land(data[n])]
     classified = {n: patterns.classify(data[n]) for n in spells}
     est = spellbook.estimate_bracket(cmdrs, list(cards))
     fl = brackets.flags(classified, est and est['cards'])

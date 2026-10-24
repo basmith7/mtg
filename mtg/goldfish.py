@@ -9,6 +9,8 @@ import re
 from collections import Counter, namedtuple
 from itertools import combinations
 
+from .cards import is_land
+
 # One library entry. kind: land, rock, dork, lramp, other. amount: mana it adds once online.
 # produces: colours it adds (WUBRG, C for colourless). pips: {colour: count} in its cost.
 Card = namedtuple('Card', 'kind mv amount produces pips')
@@ -19,10 +21,6 @@ TURNS = 12
 
 def faces(c):
     return c.get('card_faces') or [c]
-
-
-def is_land(c):
-    return 'Land' in c['type_line'].split('//')[0]
 
 
 def mana_producer(c):

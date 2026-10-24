@@ -14,6 +14,7 @@ import unicodedata
 import urllib.request
 
 from mtg import config, http
+from mtg.cards import front
 
 BASE = 'https://json.edhrec.com/pages'
 CACHE = os.path.join(config.CACHE, 'edhrec')
@@ -120,7 +121,7 @@ def _salt_table():
         s = faces[0].get('edhrecSaltiness')
         if s is not None:
             table[name] = s
-            table.setdefault(name.split(' // ')[0], s)
+            table.setdefault(front(name), s)
     os.makedirs(CACHE, exist_ok=True)
     json.dump(table, open(SALT_FILE + '.tmp', 'w'))
     os.replace(SALT_FILE + '.tmp', SALT_FILE)
