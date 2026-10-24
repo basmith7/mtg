@@ -15,3 +15,10 @@ reviews every deck before it is pushed. Docs and skill only, no code.
 
 **Verify:** rewrite one existing primer (pull it; don't push unless Brian asks) and count its words.
 **Checkpoint:** word budget, shown with the rewritten primer.
+
+## Done (2026-10-24)
+
+RULES.md primer format and the `commander-deck` skill updated. Test: the Etali primer rewritten under the
+new format by an agent following only RULES.md and the skill (510 → 494 words), with the fresh-eyes
+review. The review caught a real error the old primer had (tutors can't find the commander) and
+showed the reviewer needs the scripts' output; both fixed here. Choices: [choices/08.md](../choices/08.md).

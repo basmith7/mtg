@@ -40,20 +40,31 @@ flavour word or year) and the Scryfall query for its pool. Build from that query
    `--theme <t>` for the angle the player wants, and `--deck <file>` on a draft for missing staples and
    cut candidates. "Not on the EDHREC list" only means outside its top lists; low inclusion % is the
    real cut signal. Taste beats popularity: keep odd, fun cards that fit the player's profile.
+   `--gems` lists cards that fit the commander unusually well but few decks play: the first place to
+   look for something less expected.
 2. **Check roles and mana.** `scripts/deck_stats.py <file>` shows ramp, draw, removal and wipe counts
-   against targets, colour sources, and a goldfish sim (commander on curve %). Fix shortfalls.
+   against targets, colour sources (against Karsten's Commander table), and a goldfish sim (keepable
+   sevens, commander on curve, recast after removal). Fix shortfalls.
 3. **Check legality and combos.** `scripts/check_commander.py <file> --near` must show no `!!` lines:
    fix them or justify them (the rule is moderation). Fun late combos are fine; fast infinite combos
    (pieces totalling 6 MV or less, or rated Ruthless/Banned by Spellbook) are not. `--near` shows
    combos one card away, for suggestions or to avoid half-building one.
-4. **Use canonical names and check legality while drafting**, not at the end. Double-faced, split and
+   Its bracket line (official, Spellbook, house) answers the pregame "what bracket is it?".
+4. **Check how it feels to the table.** `scripts/table_feel.py <file>` shows salt, how much of the deck
+   touches other players, stax / theft / goad counts and a Rule 0 pitch; `scripts/originality.py <file>`
+   shows how much of it is the same 99 every deck runs, overlap with the player's other decks, synergy
+   density and odd same-job swaps. Fun first: a solitaire deck or a salt pile gets reworked even when
+   the numbers are fine.
+5. **Use canonical names and check legality while drafting**, not at the end. Double-faced, split and
    adventure cards take the full `A // B` name (RULES.md; the checker flags a front-face name). Drafts have picked banned (Dockside Extortionist), Universes Beyond (Delighted Halfling) and
    off-colour cards (Phyrexian Metamorph in RG). Red decks keep landing one card from a fast combo:
    Dualcaster Mage with Twinflame / Heat Shimmer / Electroduplicate / Molten Duplication, Reiterate with
    Jeska's Will, Rionya with Terror of the Peaks.
-5. **Verify card text** against Scryfall (`scryfall.collection(names)`, `scryfall.oracle_text(card)`)
-   before writing anything about a card.
-6. A brand-new deck is a medium task: give the player a short pitch (angle, nickname, key cards)
+6. **Verify card text** against Scryfall (`scryfall.collection(names)`, `scryfall.oracle_text(card)`)
+   before writing anything about a card. Then check claims about how cards *combine*, which per-card
+   checks miss: tutors and recursion can't reach the commander in the command zone (a primer once said
+   Natural Order finds Etali).
+7. A brand-new deck is a medium task: give the player a short pitch (angle, nickname, key cards)
    before building the full list, unless they already gave the direction (e.g. "build these seven").
    Tuning an existing deck: just do it and report the swaps.
 
@@ -65,7 +76,12 @@ Scryfall checks from many agents hit 429s.
 `<slug>.md` beside the list, in the format RULES.md describes, written for any player reading it on
 Archidekt. Which combos to name comes from the checker's output only, but the primer states them as
 facts about the deck and never mentions the checker, sims or scripts. Card counts you state (e.g. "94
-permanents") must be computed, not estimated. Agents tend to run long: hold the 300–500 words.
+permanents") must be computed, not estimated. Agents tend to run long: hold the 300–550 words.
+
+**Fresh-eyes review before push.** Give a subagent the list, the primer, `RULES.md`, the player's
+profile and the raw output of the four check scripts (none of your reasoning), and ask for rule breaks,
+card text the primer gets wrong, and stretches of the deck that would be dull to play. Fix what it
+finds, then push.
 
 ## Archidekt
 Writes go to the player's real account: push only when they asked for the deck on Archidekt (or
