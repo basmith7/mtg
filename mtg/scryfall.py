@@ -7,16 +7,29 @@ from .cards import front
 
 BASE = 'https://api.scryfall.com'
 HEADERS = {'User-Agent': 'mtg-tools (github.com/basmith7/mtg)'}
+# Scryfall's hard limit on /cards/search, /cards/named and /cards/collection is 2 a second
+# (scryfall.com/docs/api/rate-limits); other endpoints allow 10.
+SLOW_GAP = 0.55
+_last = 0.0
+
+
+def _slow(method, url, **kw):
+    """One request to a 2-a-second endpoint, spaced from the previous one."""
+    global _last
+    time.sleep(max(0.0, SLOW_GAP - (time.monotonic() - _last)))
+    try:
+        return http.request(method, url, headers=HEADERS, backoff=2, **kw)
+    finally:
+        _last = time.monotonic()
 
 
 def search(query, unique='cards', **params):
     """Yield every card matching a Scryfall search query (follows pagination)."""
     url = f'{BASE}/cards/search?' + urllib.parse.urlencode({'q': query, 'unique': unique, **params})
     while url:
-        page = http.get(url, headers=HEADERS, backoff=2)
+        page = _slow('GET', url)
         yield from page['data']
         url = page.get('next_page')
-        time.sleep(0.1)
 
 
 def collection(names):
@@ -24,12 +37,11 @@ def collection(names):
     Split and double-faced cards are looked up by their front name, so 'Fire // Ice' works too."""
     names, out = list(names), {}
     for i in range(0, len(names), 75):
-        r = http.request('POST', f'{BASE}/cards/collection', headers=HEADERS,
-                         body={'identifiers': [{'name': front(n)} for n in names[i:i + 75]]})
+        r = _slow('POST', f'{BASE}/cards/collection',
+                  body={'identifiers': [{'name': front(n)} for n in names[i:i + 75]]})
         for c in r['data']:
             out[c['name']] = c
             out.setdefault(front(c['name']), c)
-        time.sleep(0.1)
     return out
 
 

@@ -15,7 +15,7 @@ Read `ARCHITECTURE.md` first to orient: the codemap, the deck flow and the invar
   main checkout's). The password can fall back to 1Password (`ARCHIDEKT_OP_ITEM`), which prompts the
   player. Tokens are cached in `~/.config/mtg/archidekt-session.json`.
 - **Rate limits:** Archidekt returns 429 quickly (keep ~1 req/s; resolve card ids in bulk with
-  `archidekt.resolve`, never one name at a time); Scryfall wants ~10 req/s max and an `Accept` header.
+  `archidekt.resolve`, never one name at a time); Scryfall allows 2 req/s on search and collection (10 elsewhere; `mtg.scryfall` spaces them) and wants an `Accept` header.
 - **Before writing to Archidekt**, back up what you'll change (`push.py` does this), and confirm
   deletes with the player. Archive rather than delete (`archidekt.archive`). If `push.py`
   refuses because the site deck changed, pull and redo the change on top; don't `--force` over the

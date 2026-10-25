@@ -22,8 +22,10 @@ Python clients for all of these live in `mtg/` (see the README).
 ## Scryfall — `https://api.scryfall.com`
 
 Docs: <https://scryfall.com/docs/api>. Send `User-Agent` **and** `Accept: application/json`
-(requests without `Accept` get HTTP 400). Keep to ~10 requests/sec; on HTTP 429 back off and retry.
-The limit is per machine, so several agents running checkers at once hit 429s.
+(requests without `Accept` get HTTP 400). Hard limits ([rate-limits](https://scryfall.com/docs/api/rate-limits),
+checked 2026-10-24): **2/s** on `/cards/search`, `/cards/named`, `/cards/random`, `/cards/collection`;
+10/minute on `/cards/manifest`; 10/s elsewhere. `mtg.scryfall` spaces its search and collection calls
+0.55 s apart. The limit is per machine, so several agents running checkers at once still hit 429s.
 
 - `GET /cards/search?q=<query>&unique=cards|prints&order=usd&dir=asc` — full Scryfall search syntax.
   Paginated: follow `next_page` until absent. `order=edhrec&dir=asc` is most-played first; `dir=desc`

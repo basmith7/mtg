@@ -135,7 +135,7 @@ flowchart LR
   on the machine, so two worktrees can't push over each other. Lists without it must be pulled first.
 - **Archive, don't delete** decks on Archidekt (`archidekt.archive`); ask the player before any delete.
 - **Rate limits:** Archidekt returns 429 quickly (about 1 request a second; resolve card ids in bulk),
-  Scryfall wants under 10 a second with an `Accept` header, EDHREC about 1 a second (cached a week).
+  Scryfall 2 a second on search and collection (10 elsewhere; `mtg.scryfall` spaces them) with an `Accept` header, EDHREC about 1 a second (cached a week).
 - **Use full `A // B` names** for double-faced and split cards: the site exports them, so a front-face
   name shows as a change on every push. `check_commander.py` flags it.
 - **Primers are public:** written for any player, never mentioning our tools; card text checked

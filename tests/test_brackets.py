@@ -47,6 +47,11 @@ class OfficialTest(unittest.TestCase):
         self.assertEqual(brackets.official([], NONE, [two_card(True)])[0], 4)
         self.assertEqual(brackets.official([], NONE, [two_card(False)])[0], 3)
 
+    def test_a_combo_counted_two_card_through_the_commander_says_so(self):
+        combo = {'cards': ['Commander', 'A', 'B'], 'two_card': True, 'fast': False}
+        self.assertEqual(brackets.official([], NONE, [combo])[1],
+                         ['late two-card combo (plus the commander): Commander + A + B'])
+
     def test_one_extra_turn_card_is_not_a_chain(self):
         self.assertEqual(brackets.official([], {**NONE, 'extra-turn': ['Time Warp']}, [])[0], 2)
 
