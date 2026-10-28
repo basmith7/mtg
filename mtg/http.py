@@ -8,7 +8,7 @@ BROWSER_UA = 'Mozilla/5.0 (X11; Linux x86_64; rv:130.0) Gecko/20100101 Firefox/1
 
 
 def request(method, url, body=None, headers=None, retries=8, backoff=5):
-    """Return parsed JSON ({} for empty bodies, {'_raw': ...} for non-JSON). Retries HTTP 429."""
+    """Return parsed JSON ({} for empty bodies, {'_raw': ...} for non-JSON). Retries HTTP 429 and network errors."""
     hdrs = {'User-Agent': BROWSER_UA, 'Accept': 'application/json', **(headers or {})}
     data = None
     if body is not None:
@@ -26,6 +26,10 @@ def request(method, url, body=None, headers=None, retries=8, backoff=5):
                 return {'_raw': raw[:200].decode(errors='replace')}
         except urllib.error.HTTPError as e:
             if e.code != 429 or attempt == retries - 1:
+                raise
+            time.sleep(backoff * (attempt + 1))
+        except urllib.error.URLError:  # DNS or connection blip: one killed a 74-deck push midway
+            if attempt == retries - 1:
                 raise
             time.sleep(backoff * (attempt + 1))
 
