@@ -14,14 +14,15 @@ class SyncTest(unittest.TestCase):
     def setUp(self):
         self.dir = tempfile.mkdtemp()
         self.site = dict(copy.deepcopy(DECK), id=7, updatedAt=SITE_VERSION)
-        self.writes = []
+        self.writes, self.bodies = [], []
 
         def call(method, path, body=None, auth=True):
             if method == 'GET':
                 return copy.deepcopy(self.site)
             self.writes.append(path)
+            self.bodies.append(body)
 
-        for target, value in [('call', call), ('resolve', lambda names: {n: (1, 'Creature') for n in names})]:
+        for target, value in [('call', call), ('resolve', lambda names: {n: (1, 'Creature', True) for n in names})]:
             p = mock.patch.object(archidekt, target, value)
             p.start()
             self.addCleanup(p.stop)
@@ -82,6 +83,19 @@ class SyncTest(unittest.TestCase):
         self.assertIn('italic', str(e.exception))
         self.assertEqual(self.writes, [])
         self.assertFalse(archidekt.sync(self.deck_file(primer='Old'))['primer'])  # same text: left alone
+
+    def test_reprint_moves_only_cards_on_another_printing_and_keeps_their_categories(self):
+        # Site has id 1 for everything; Sol Ring and Mountain have another printing, but Mountain's
+        # is only the site's own pick (no allowed printing), so it stays.
+        picked = lambda names: {n: {'Sol Ring': (5, 'Other', True), 'Mountain': (6, 'Land', False)}.get(n, (1, 'Other', True))
+                                for n in names}
+        with mock.patch.object(archidekt, 'resolve', picked):
+            self.assertEqual(archidekt.sync(self.deck_file(), dry_run=True)['reprinted'], [])  # off by default
+            self.assertEqual(archidekt.sync(self.deck_file(), dry_run=True, reprint=True)['reprinted'], ['Sol Ring'])
+            archidekt.sync(self.deck_file(), reprint=True)
+        cards = [c for b in self.bodies if b and 'cards' in b for c in b['cards']]
+        self.assertEqual([(c['action'], c['cardid'], c['categories']) for c in cards],
+                         [('remove', 1, ['Artifact']), ('add', 5, ['Artifact'])])
 
 
 if __name__ == '__main__':

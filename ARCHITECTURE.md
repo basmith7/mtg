@@ -10,8 +10,9 @@ Verified against 8892047 on 2026-10-24.
 ## Codemap
 
 - **`mtg/`**: one module per outside site, plus the formats they share.
-  - `archidekt`: `login` (token cached in `~/.config/mtg/archidekt-session.json`), deck reads, `resolve` (card ids), `sync` (push), `export` (pull), `archive`.
-  - `scryfall`: card data (`collection`, `color_identity`; `matching` runs one chunked "these names AND this query" search, behind `ub_only`, roles and `--pool`).
+  - `archidekt`: `login` (token cached in `~/.config/mtg/archidekt-session.json`), deck reads, `resolve` (card ids, at the printing `printings` picks), `sync` (push; `reprint` moves existing cards to that printing), `export` (pull), `archive`.
+  - `printings`: which printing goes on Archidekt: `rank` (fancy but readable, never Universes Beyond or Secret Lair) and `best` (top picks per card, from Scryfall).
+  - `scryfall`: card data (`collection`, `color_identity`; `search_names` runs one chunked "these names AND this query" search, behind `matching`, `ub_only`, `printings`, roles and `--pool`).
   - `cards`: card-name and card-dict basics every module shares (`front`, `oracle_text`, `is_land`; pure).
   - `edhrec`, `spellbook`, `moxfield`: recommendations, combos, reading Moxfield decks.
   - `roles`: card roles (ramp, draw, removal…) from Scryfall oracle tags, cached per card; `alternatives` finds other cards with a role.

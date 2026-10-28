@@ -81,8 +81,13 @@ item `ARCHIDEKT_OP_ITEM`, which prompts.
     It diffs two pasted lists and returns `toAdd` / `toRemove` (each with the full `card`, the printing
     the site picks), `categories` from `# Category` lines, `syntaxErrors` and `cardErrors`. It only
     parses; the page then saves through `modifyCards/v2`. Accepts `2x`, `(SET) 123`, front-face names.
-    A 100-card list resolves in one ~1 s request. `archidekt.resolve(names)` uses it with `current: ""`.
-  - `GET /api/cards/v2/?uids=<scryfall id>,...` — bulk lookup by Scryfall id, 60 a page (follow `next`).
+    A 100-card list resolves in one ~1 s request. `archidekt.resolve(names)` uses it with `current: ""`
+    for cards with no usable printing pick. The site's own pick is often a Universes Beyond reprint
+    (Marvel `msc`, Final Fantasy `fic`) of a normal card. `(set) number` after a name picks a printing,
+    but a wrong number is a card error, so prefer the uid lookup below.
+  - `GET /api/cards/v2/?uids=<scryfall id>,...` — bulk lookup by Scryfall id, 60 a page (follow `next`);
+    each result has `uid`, `id`, `edition.editioncode` and `oracleCard.types`. Ids Archidekt lacks are
+    just missing. `archidekt.resolve` uses it for the printings `mtg.printings` picks.
     `name=` with a comma-joined list returns nothing.
   - `GET /api/cards/v2/?exact=true&name=<name>` — one name, every printing. **Rate-limited hard (HTTP
     429)**, ~1 request/sec, and needs the full `A // B` name for double-faced cards. No longer used.

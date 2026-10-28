@@ -9,10 +9,11 @@ import json
 import os
 import re
 import subprocess
+import time
 import urllib.error
 from collections import Counter
 
-from . import config, decklist, http, quill
+from . import config, decklist, http, printings, quill
 
 BASE = 'https://archidekt.com'
 SESSION = os.path.expanduser('~/.config/mtg/archidekt-session.json')
@@ -114,22 +115,51 @@ def my_decks():
 # ---- card ids ------------------------------------------------------------------------------
 
 def resolve(names):
-    """{name: (Archidekt card id, type category)} for card names, in one request.
+    """{name: (Archidekt card id, type category, picked?)} for card names, at the printing mtg.printings
+    picks (fancy but readable, never Universes Beyond) where it can.
 
-    Archidekt adds cards by its own id. This asks the parser behind the deck editor's "Import cards"
-    box (massDeckEdit), which takes a pasted list and returns each card with the printing the site
-    itself picks; it accepts front-face names. Raises KeyError listing every card it can't find.
+    Archidekt adds cards by its own id. The picked printings are looked up by Scryfall id; a card whose
+    picks Archidekt lacks goes through the parser behind the deck editor's "Import cards" box
+    (massDeckEdit), which takes a pasted list, returns the printing the site itself picks, and accepts
+    front-face names; those come back with picked False. Raises KeyError listing every card it can't find.
     """
     names = list(dict.fromkeys(names))
     if not names:
         return {}
-    r = call('POST', '/api/cards/massDeckEdit/', {'parser': 'archidekt', 'current': '',
-                                                  'edit': ''.join(f'1 {n}\n' for n in names)})
-    if r['syntaxErrors'] or r['cardErrors']:
-        raise KeyError('; '.join(r['syntaxErrors'] + r['cardErrors']))
-    found = {e['name']: e['card'] for e in r['toAdd']}
-    return {n: (found[n]['id'], next((t for t in TYPES if t in found[n]['oracleCard']['types']), 'Other'))
-            for n in names}
+    picks = printings.best(names)
+    by_uid = _by_uid([u for us in picks.values() for u in us])
+    out = {}
+    for n in names:
+        card = next((by_uid[u] for u in picks.get(n, []) if u in by_uid), None)
+        if card:
+            out[n] = (card['id'], _category(card), True)
+    rest = [n for n in names if n not in out]
+    if rest:
+        r = call('POST', '/api/cards/massDeckEdit/', {'parser': 'archidekt', 'current': '',
+                                                      'edit': ''.join(f'1 {n}\n' for n in rest)})
+        if r['syntaxErrors'] or r['cardErrors']:
+            raise KeyError('; '.join(r['syntaxErrors'] + r['cardErrors']))
+        found = {e['name']: e['card'] for e in r['toAdd']}
+        out.update({n: (found[n]['id'], _category(found[n]), False) for n in rest})
+    return {n: out[n] for n in names}
+
+
+def _category(card):
+    return next((t for t in TYPES if t in card['oracleCard']['types']), 'Other')
+
+
+def _by_uid(uids):
+    """{Scryfall id: Archidekt card} for the ids Archidekt has, 60 a request."""
+    out = {}
+    for i in range(0, len(uids), 60):
+        url = f"/api/cards/v2/?uids={','.join(uids[i:i + 60])}"
+        while url:
+            if out or i:
+                time.sleep(1)  # Archidekt rate-limits quickly
+            r = call('GET', url)
+            out.update({c['uid']: c for c in r['results']})
+            url = r.get('next') and r['next'].removeprefix(BASE)
+    return out
 
 
 # ---- writing -------------------------------------------------------------------------------
@@ -146,11 +176,11 @@ def create_deck(name, fmt='custom', folder_id=None):
 
 
 def add_cards(deck_id, cards):
-    """cards: iterable of (archidekt_card_id, quantity, category, foil?)."""
-    adds = [{'action': 'add', 'cardid': cid, 'categories': [cat], 'patchId': f'p{i}',
+    """cards: iterable of (archidekt_card_id, quantity, categories list, foil?)."""
+    adds = [{'action': 'add', 'cardid': cid, 'categories': cats, 'patchId': f'p{i}',
              'modifications': {'quantity': q, 'modifier': 'Foil' if foil else 'Normal', 'customCmc': None,
                                'companion': False, 'flippedDefault': False, 'label': ',#656565'}}
-            for i, (cid, q, cat, foil) in enumerate(cards)]
+            for i, (cid, q, cats, foil) in enumerate(cards)]
     return call('PATCH', f'/api/decks/{deck_id}/modifyCards/v2/', {'cards': adds}) if adds else {}
 
 
@@ -214,10 +244,12 @@ class Refused(Exception):
     """sync would overwrite something on the site; nothing was written."""
 
 
-def sync(path, primer=True, dry_run=False, force=False):
+def sync(path, primer=True, dry_run=False, force=False, reprint=False):
     """Make the deck on a decklist's '# source:' line match the file. Returns a summary dict.
 
-    Existing cards keep their categories (only Commander membership is enforced); Maybeboard,
+    New cards get the printing mtg.printings picks; with reprint, so do existing cards on another
+    printing (re-added in their categories and foil, so a printing chosen on the site is lost). Existing cards keep their
+    categories (only Commander membership is enforced); Maybeboard,
     Sideboard and not-in-deck categories on the site are left alone. Renames the deck to the file's
     '# Name' header. With primer, the '.md' beside the file replaces the site primer if they differ.
     Resolves every new card id before writing anything, and backs up the deck JSON.
@@ -251,9 +283,14 @@ def sync(path, primer=True, dry_run=False, force=False):
         if e['quantity'] != q or is_commander(e) != (c in cmdrs):
             mod.append((e, c, q))
     # Card ids and categories for what's added or moved; an unknown card fails here, before any write.
-    cards = resolve([c for c, _ in add] + [c for e, c, _ in mod if is_commander(e) != (c in cmdrs)])
+    cards = resolve([c for c, _ in add] + [c for e, c, _ in mod if is_commander(e) != (c in cmdrs)]
+                    + ([c for c in want if c in have and len(have[c]) == 1] if reprint else []))
+    # Reprint only to a picked printing: the site's own pick may be the Universes Beyond one.
+    moving = {id(e) for e, _, _ in mod}
+    reprints = [(c, have[c][0]) for c in want if reprint and len(have.get(c, [])) == 1 and id(have[c][0]) not in moving
+                and cards[c][2] and have[c][0]['card']['id'] != cards[c][0]]
     cat = lambda c: 'Commander' if c in cmdrs else cards[c][1]
-    mod = [(e, q, [cat(c)] if c in cards else None) for e, c, q in mod]
+    mod = [(e, q, [cat(c)] if is_commander(e) != (c in cmdrs) else None) for e, c, q in mod]
     site_md, dropped = quill.from_delta(d.get('description') or '')
     md = os.path.splitext(path)[0] + '.md'
     text = open(md).read() if primer and os.path.exists(md) else None
@@ -264,6 +301,7 @@ def sync(path, primer=True, dry_run=False, force=False):
                'added': [f'{q} {c}' for c, q in add],
                'changed': [f"{e['card']['oracleCard']['name']}: {e['quantity']} -> {q}" if e['quantity'] != q
                            else f"{e['card']['oracleCard']['name']}: -> {k[0]}" for e, q, k in mod],
+               'reprinted': sorted(c for c, _ in reprints),
                'renamed': name if rename else None, 'primer': text is not None, 'match': None,
                'stale': decklist.meta(path, 'updated') != d['updatedAt'],
                'primer_loses': dropped if text is not None else []}
@@ -279,9 +317,10 @@ def sync(path, primer=True, dry_run=False, force=False):
     os.makedirs(backups, exist_ok=True)
     summary['backup'] = os.path.join(backups, f"{deck_id}-{datetime.datetime.now():%Y%m%d-%H%M%S-%f}.json")
     json.dump(d, open(summary['backup'], 'w'))
-    remove_cards(deck_id, rm)
+    remove_cards(deck_id, rm + [e for _, e in reprints])
     modify_cards(deck_id, mod)
-    add_cards(deck_id, [(cards[c][0], q, cat(c), False) for c, q in add])
+    add_cards(deck_id, [(cards[c][0], q, [cat(c)], False) for c, q in add]
+              + [(cards[c][0], e['quantity'], e['categories'], e.get('modifier') == 'Foil') for c, e in reprints])
     if rename:
         update(deck_id, name=name)
     if text is not None:

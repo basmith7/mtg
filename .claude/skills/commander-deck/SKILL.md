@@ -91,6 +91,9 @@ confirm first).
   the line. Push backs up first and verifies afterwards. It refuses if the deck changed on the site since
   the file's `# updated:` version: pull again and redo your change rather than `--force`.
 - The `.md` beside the list is the primer, pushed only when it changed; `--no-primer` leaves it.
+- New cards go up at the printing `mtg/printings.py` picks (fancy frames the player can read, never a
+  Universes Beyond or Secret Lair printing). `--reprint` moves cards already on the deck to it too; it
+  replaces printings the player chose on the site, so ask before using it on a deck they've edited there.
 - Never delete on Archidekt without asking; archive instead: `archidekt.archive([deck_id])`.
 
 ## Finishing

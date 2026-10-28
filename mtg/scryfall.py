@@ -45,17 +45,16 @@ def collection(names):
     return out
 
 
-def matching(names, query):
-    """The names (in order) that the Scryfall query also matches, by full name or front face: one search
-    per chunk of names ANDed with the query. Scryfall truncates queries around 1000 characters, so
-    chunks stay under 800."""
-    names, hit = list(names), set()
+def search_names(names, query, unique='cards'):
+    """Yield the cards matching the query among these names (by full name or front face): one search per
+    chunk of names ANDed with the query. Scryfall truncates queries around 1000 characters, so chunks stay
+    under 800. A search also finds cards whose other face has the name; callers filter if that matters."""
     chunk, size = [], 0
-    for n in names + [None]:
+    for n in list(names) + [None]:
         term = f'!"{front(n)}"' if n else ''
         if chunk and (n is None or size + len(term) > 800):
             try:
-                hit |= {x for c in search(f'({" or ".join(chunk)}) ({query})') for x in (c['name'], front(c['name']))}
+                yield from search(f'({" or ".join(chunk)}) ({query})', unique=unique)
             except http.urllib.error.HTTPError as e:  # 404: nothing in this chunk matches
                 if e.code != 404:
                     raise
@@ -63,6 +62,12 @@ def matching(names, query):
         if n:
             chunk.append(term)
             size += len(term) + 4
+
+
+def matching(names, query):
+    """The names (in order) that the Scryfall query also matches, by full name or front face."""
+    names = list(names)
+    hit = {x for c in search_names(names, query) for x in (c['name'], front(c['name']))}
     return [n for n in names if n in hit or front(n) in hit]
 
 

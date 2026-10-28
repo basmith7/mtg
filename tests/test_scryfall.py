@@ -10,7 +10,7 @@ class MatchingTest(unittest.TestCase):
         names = [f'Card {i:03}' for i in range(120)] + ['Fire // Ice']
         hits = {'Card 007', 'Card 110', 'Fire // Ice'}
 
-        def search(q):
+        def search(q, unique="cards"):
             return iter([{'name': n} for n in hits if f'!"{scryfall.front(n)}"' in q])
 
         with mock.patch.object(scryfall, 'search', side_effect=search) as s:
