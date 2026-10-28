@@ -43,6 +43,19 @@ class ResolveTest(unittest.TestCase):
         self.assertEqual(got, {'Sol Ring': (1, 'Artifact', False), 'Dryad Arbor': (2, 'Land', False),
                                'Brazen Borrower': (3, 'Creature', False)})
 
+    def test_uid_lookup_follows_every_page_of_results(self):
+        self.best.return_value = {'Sol Ring': ['sr'], 'Counterspell': ['cs']}
+        pages = {  # Archidekt's next link is plain http, even though the API is served over https
+            '/api/cards/v2/?uids=sr,cs': {'results': [{'id': 1, 'uid': 'sr', 'oracleCard': {'types': ['Artifact']}}],
+                                          'next': 'http://archidekt.com/api/cards/v2/?page=2&uids=sr,cs'},
+            '/api/cards/v2/?page=2&uids=sr,cs': {'results': [{'id': 2, 'uid': 'cs', 'oracleCard': {'types': ['Instant']}}],
+                                                 'next': None},
+        }
+        with mock.patch.object(archidekt, 'call', side_effect=lambda method, path, body=None: pages[path]), \
+                mock.patch.object(archidekt.time, 'sleep'):
+            got = archidekt.resolve(['Sol Ring', 'Counterspell'])
+        self.assertEqual(got, {'Sol Ring': (1, 'Artifact', True), 'Counterspell': (2, 'Instant', True)})
+
     def test_unknown_card_raises_naming_it(self):
         reply = parsed(card_errors=['Could not find a card matching Notacard'])
         with mock.patch.object(archidekt, 'call', return_value=reply):

@@ -11,6 +11,7 @@ import re
 import subprocess
 import time
 import urllib.error
+import urllib.parse
 from collections import Counter
 
 from . import config, decklist, http, printings, quill
@@ -158,7 +159,7 @@ def _by_uid(uids):
                 time.sleep(1)  # Archidekt rate-limits quickly
             r = call('GET', url)
             out.update({c['uid']: c for c in r['results']})
-            url = r.get('next') and r['next'].removeprefix(BASE)
+            url = r.get('next') and urllib.parse.urlsplit(r['next'])._replace(scheme='', netloc='').geturl()  # http://, not BASE
     return out
 
 
