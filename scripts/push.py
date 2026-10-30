@@ -1,13 +1,16 @@
 #!/usr/bin/env python3
 """Push local decklists to Archidekt, creating the deck for a file that has none yet.
 
-    scripts/push.py decks/commander/foo.txt [more.txt ...] [--dry-run] [--no-primer] [--force] [--folder ID]
+    scripts/push.py decks/commander/foo.txt [more.txt ...] [--dry-run] [--no-primer] [--force] [--reprint]
+                    [--folder ID]
     scripts/push.py --dry-run decks/**/*.txt        # what differs between the working copy and the site
 
 A file's deck is its '# source:' line (pull.py writes it). A file without one becomes a new deck in
 --folder (default ARCHIDEKT_DECKS_FOLDER), unless a deck of that name is already on the account: then
 pull that deck instead. The '.md' beside a list is its primer, written only if it differs from the
 site's. Maybeboard/Sideboard cards on the site are left alone; existing cards keep their categories.
+New cards get the printing mtg.printings picks (fancy but readable, never Universes Beyond); --reprint
+moves existing cards to it too.
 Each deck's JSON is backed up to ~/.cache/mtg/backups/ before any write.
 
 Refuses (unless --force) if the deck changed on the site since the file's '# updated:' version, or if a
@@ -44,8 +47,8 @@ def create(path, folder, dry_run):
 def push(path, a):
     if not decklist.meta(path, 'source') and not create(path, a.folder, a.dry_run):
         return a.dry_run
-    s = archidekt.sync(path, not a.no_primer, a.dry_run, a.force)
-    changes = [f'  {k}: {x}' for k in ('removed', 'added', 'changed') for x in s[k]]
+    s = archidekt.sync(path, not a.no_primer, a.dry_run, a.force, a.reprint)
+    changes = [f'  {k}: {x}' for k in ('removed', 'added', 'changed', 'reprinted') for x in s[k]]
     changes += [f"  rename -> {s['renamed']}"] * bool(s['renamed']) + ['  primer: update'] * s['primer']
     if a.dry_run:
         changes += ['  warning: changed on the site since this file was pulled; pull first'] * s['stale']
@@ -62,6 +65,8 @@ def main():
     ap.add_argument('--dry-run', action='store_true', help='show what would change; write nothing')
     ap.add_argument('--no-primer', action='store_true', help="don't touch the deck's primer")
     ap.add_argument('--force', action='store_true', help='overwrite newer site edits and site-only formatting')
+    ap.add_argument('--reprint', action='store_true',
+                    help="move cards already on the site to the picked printing (replaces site-chosen printings)")
     ap.add_argument('--folder', type=int, help='folder for new decks (default: ARCHIDEKT_DECKS_FOLDER)')
     a = ap.parse_args()
     a.folder = a.folder or int(config.get('ARCHIDEKT_DECKS_FOLDER'))

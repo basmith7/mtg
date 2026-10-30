@@ -1,7 +1,7 @@
 import unittest
 from unittest import mock
 
-from mtg import archidekt
+from mtg import archidekt, printings
 
 
 def parsed(*cards, card_errors=()):
@@ -13,6 +13,26 @@ def parsed(*cards, card_errors=()):
 
 
 class ResolveTest(unittest.TestCase):
+    def setUp(self):  # no printing picks unless a test sets them: every card goes through massDeckEdit
+        p = mock.patch.object(printings, 'best', return_value={})
+        self.best = p.start()
+        self.addCleanup(p.stop)
+
+    def test_picked_printing_is_used_and_a_missing_pick_falls_back(self):
+        self.best.return_value = {'Sol Ring': ['sr-best', 'sr-next'], 'Counterspell': ['cs-gone']}
+        archidekt_has = {'sr-next': {'id': 22, 'uid': 'sr-next', 'oracleCard': {'types': ['Artifact']}}}
+
+        def call(method, path, body=None):
+            if method == 'GET':  # the uid lookup
+                return {'results': [archidekt_has[u] for u in path.split('uids=')[1].split(',') if u in archidekt_has],
+                        'next': None}
+            self.assertEqual(body['edit'], '1 Counterspell\n')  # only the card with no usable pick
+            return parsed(('Counterspell', 9, ['Instant']))
+
+        with mock.patch.object(archidekt, 'call', side_effect=call):
+            got = archidekt.resolve(['Sol Ring', 'Counterspell'])
+        self.assertEqual(got, {'Sol Ring': (22, 'Artifact', True), 'Counterspell': (9, 'Instant', False)})
+
     def test_one_request_gives_ids_and_type_categories(self):
         reply = parsed(('Sol Ring', 1, ['Artifact']), ('Dryad Arbor', 2, ['Land', 'Creature']),
                        ('Brazen Borrower', 3, ['Creature']))
@@ -20,8 +40,21 @@ class ResolveTest(unittest.TestCase):
             got = archidekt.resolve(['Sol Ring', 'Dryad Arbor', 'Brazen Borrower', 'Sol Ring'])
         self.assertEqual(call.call_count, 1)
         self.assertEqual(call.call_args.args[2]['edit'], '1 Sol Ring\n1 Dryad Arbor\n1 Brazen Borrower\n')
-        self.assertEqual(got, {'Sol Ring': (1, 'Artifact'), 'Dryad Arbor': (2, 'Land'),
-                               'Brazen Borrower': (3, 'Creature')})
+        self.assertEqual(got, {'Sol Ring': (1, 'Artifact', False), 'Dryad Arbor': (2, 'Land', False),
+                               'Brazen Borrower': (3, 'Creature', False)})
+
+    def test_uid_lookup_follows_every_page_of_results(self):
+        self.best.return_value = {'Sol Ring': ['sr'], 'Counterspell': ['cs']}
+        pages = {  # Archidekt's next link is plain http, even though the API is served over https
+            '/api/cards/v2/?uids=sr,cs': {'results': [{'id': 1, 'uid': 'sr', 'oracleCard': {'types': ['Artifact']}}],
+                                          'next': 'http://archidekt.com/api/cards/v2/?page=2&uids=sr,cs'},
+            '/api/cards/v2/?page=2&uids=sr,cs': {'results': [{'id': 2, 'uid': 'cs', 'oracleCard': {'types': ['Instant']}}],
+                                                 'next': None},
+        }
+        with mock.patch.object(archidekt, 'call', side_effect=lambda method, path, body=None: pages[path]), \
+                mock.patch.object(archidekt.time, 'sleep'):
+            got = archidekt.resolve(['Sol Ring', 'Counterspell'])
+        self.assertEqual(got, {'Sol Ring': (1, 'Artifact', True), 'Counterspell': (2, 'Instant', True)})
 
     def test_unknown_card_raises_naming_it(self):
         reply = parsed(card_errors=['Could not find a card matching Notacard'])
