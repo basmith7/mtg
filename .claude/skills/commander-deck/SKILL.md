@@ -76,7 +76,7 @@ Scryfall checks from many agents hit 429s.
 `<slug>.md` beside the list, in the format RULES.md describes, written for any player reading it on
 Archidekt. Which combos to name comes from the checker's output only, but the primer states them as
 facts about the deck and never mentions the checker, sims or scripts. Card counts you state (e.g. "94
-permanents") must be computed, not estimated. Agents tend to run long: hold the 300–550 words.
+permanents") must be computed, not estimated. Hold it to RULES.md's 300–550 words.
 
 **Fresh-eyes review before push.** Give a subagent the list, the primer, `RULES.md`, the player's
 profile and the raw output of the four check scripts (none of your reasoning), and ask for rule breaks,
