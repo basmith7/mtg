@@ -38,8 +38,6 @@ and [players/](players/README.md), one profile per player with their taste and p
 
 ## Layout
 
-[ARCHITECTURE.md](ARCHITECTURE.md) is the map: how the parts fit and what must stay true.
-
 - **`mtg/`**: clients and formats. `archidekt`, `moxfield`, `scryfall`, `edhrec` and `spellbook`
   wrap one site each. `decklist` owns the decklist text format, `quill` owns primer markdown ↔
   Archidekt's rich text, and `config` reads account settings.
